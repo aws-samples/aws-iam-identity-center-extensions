@@ -1,0 +1,56 @@
+{
+  "name": "aws-sso-extensions-for-enterprise",
+  "version": "0.1.0",
+  "bin": {
+    "aws-sso-extensions-for-enterprise": "bin/aws-sso-extensions-for-enterprise.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "jest",
+    "cdk": "cdk",
+    "prettier": "prettier -w .",
+    "cdk-synth-env": "cdk synth env-aws-sso-extensions-for-enterprise -c config=env",
+    "cdk-deploy-env": "cdk deploy env-aws-sso-extensions-for-enterprise -c config=env",
+    "cdk-destroy-env": "cdk destroy env-aws-sso-extensions-for-enterprise -c config=env"
+  },
+  "devDependencies": {
+    "@aws-cdk/assert": "1.127.0",
+    "@types/jest": "^27.0.2",
+    "@types/node": "16.10.3",
+    "aws-cdk": "1.127.0",
+    "eslint": "^7.30.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.23.4",
+    "jest": "^27.2.4",
+    "prettier": "^2.3.2",
+    "ts-jest": "^27.0.5",
+    "ts-node": "^10.2.1",
+    "typescript": "~4.4.3"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-amplify": "1.127.0",
+    "@aws-cdk/aws-apigateway": "1.127.0",
+    "@aws-cdk/aws-dynamodb": "1.127.0",
+    "@aws-cdk/aws-events": "1.127.0",
+    "@aws-cdk/aws-events-targets": "1.127.0",
+    "@aws-cdk/aws-iam": "1.127.0",
+    "@aws-cdk/aws-kms": "1.127.0",
+    "@aws-cdk/aws-lambda": "1.127.0",
+    "@aws-cdk/aws-lambda-event-sources": "1.127.0",
+    "@aws-cdk/aws-logs": "1.127.0",
+    "@aws-cdk/aws-s3": "1.127.0",
+    "@aws-cdk/aws-s3-notifications": "1.127.0",
+    "@aws-cdk/aws-sns": "1.127.0",
+    "@aws-cdk/aws-sns-subscriptions": "1.127.0",
+    "@aws-cdk/aws-sqs": "1.127.0",
+    "@aws-cdk/aws-ssm": "1.127.0",
+    "@aws-cdk/aws-stepfunctions": "1.127.0",
+    "@aws-cdk/core": "1.127.0",
+    "@aws-cdk/custom-resources": "1.127.0",
+    "@aws-cdk/pipelines": "1.127.0",
+    "cdk-watchful": "^0.5.250",
+    "js-yaml": "^4.1.0",
+    "source-map-support": "^0.5.16"
+  }
+}

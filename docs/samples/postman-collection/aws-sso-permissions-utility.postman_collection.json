@@ -1,0 +1,377 @@
+{
+  "info": {
+    "_postman_id": "e30089d9-5aba-4fab-b253-98c41f8df1bd",
+    "name": "aws-sso-extensions-for-enterprise",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Link - Root Scope",
+      "request": {
+        "auth": {
+          "type": "awsv4",
+          "awsv4": [
+            {
+              "key": "sessionToken",
+              "value": "{{sessionToken}}",
+              "type": "string"
+            },
+            {
+              "key": "secretKey",
+              "value": "{{secretAccessKey}}",
+              "type": "string"
+            },
+            {
+              "key": "accessKey",
+              "value": "{{accessKey}}",
+              "type": "string"
+            },
+            {
+              "key": "region",
+              "value": "{{region}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"root.all.permissionset-sample.group-sample.ssofile\"    \n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{linksEndpoint}}postLinkData",
+          "host": ["{{linksEndpoint}}postLinkData"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Link - Ou Scope",
+      "request": {
+        "auth": {
+          "type": "awsv4",
+          "awsv4": [
+            {
+              "key": "sessionToken",
+              "value": "{{sessionToken}}",
+              "type": "string"
+            },
+            {
+              "key": "region",
+              "value": "{{region}}",
+              "type": "string"
+            },
+            {
+              "key": "secretKey",
+              "value": "{{secretAccessKey}}",
+              "type": "string"
+            },
+            {
+              "key": "accessKey",
+              "value": "{{accessKey}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"ou_id.ou_id123435.permissionset-sample.group-sample.ssofile\"         \n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{linksEndpoint}}postLinkData",
+          "host": ["{{linksEndpoint}}postLinkData"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Link - Account Scope",
+      "request": {
+        "auth": {
+          "type": "awsv4",
+          "awsv4": [
+            {
+              "key": "sessionToken",
+              "value": "{{sessionToken}}",
+              "type": "string"
+            },
+            {
+              "key": "region",
+              "value": "{{region}}",
+              "type": "string"
+            },
+            {
+              "key": "secretKey",
+              "value": "{{secretAccessKey}}",
+              "type": "string"
+            },
+            {
+              "key": "accessKey",
+              "value": "{{accessKey}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"account.121111112211.permissionset-sample.group-sample.ssofile\"    \n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{linksEndpoint}}postLinkData",
+          "host": ["{{linksEndpoint}}postLinkData"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Link - Account Tag Scope",
+      "request": {
+        "auth": {
+          "type": "awsv4",
+          "awsv4": [
+            {
+              "key": "sessionToken",
+              "value": "{{sessionToken}}",
+              "type": "string"
+            },
+            {
+              "key": "region",
+              "value": "{{region}}",
+              "type": "string"
+            },
+            {
+              "key": "secretKey",
+              "value": "{{secretAccessKey}}",
+              "type": "string"
+            },
+            {
+              "key": "accessKey",
+              "value": "{{accessKey}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"account_tag.tagkey^tagvalue.permissionset-sample.group-sample.ssofile\"    \n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{linksEndpoint}}postLinkData",
+          "host": ["{{linksEndpoint}}postLinkData"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Link",
+      "request": {
+        "auth": {
+          "type": "awsv4",
+          "awsv4": [
+            {
+              "key": "sessionToken",
+              "value": "{{sessionToken}}",
+              "type": "string"
+            },
+            {
+              "key": "region",
+              "value": "{{region}}",
+              "type": "string"
+            },
+            {
+              "key": "secretKey",
+              "value": "{{secretAccessKey}}",
+              "type": "string"
+            },
+            {
+              "key": "accessKey",
+              "value": "{{accessKey}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"root.all.permissionset-sample.group-sample.ssofile\"    \n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{linksEndpoint}}postLinkData",
+          "host": ["{{linksEndpoint}}postLinkData"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Permission Set",
+      "request": {
+        "auth": {
+          "type": "awsv4",
+          "awsv4": [
+            {
+              "key": "accessKey",
+              "value": "{{accessKey}}",
+              "type": "string"
+            },
+            {
+              "key": "secretKey",
+              "value": "{{secretAccessKey}}",
+              "type": "string"
+            },
+            {
+              "key": "region",
+              "value": "{{region}}",
+              "type": "string"
+            },
+            {
+              "key": "sessionToken",
+              "value": "{{sessionToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"action\": \"create\",\n    \"permissionSetData\": {\n        \"permissionSetName\": \"permissionset-sample\",        \n        \"sessionDurationInMinutes\": \"200\",\n        \"relayState\": \"https://eu-west-1.console.aws.amazon.com/console/home?region=eu-west-1#\",\n        \"tags\": [                                 \n            {\n                \"Key\": \"versionid\",\n                \"Value\": \"01\"\n            },\n            {\n                \"Key\": \"team\",\n                \"Value\": \"appAteam\"\n            }\n        ],\n        \"managedPoliciesArnList\": [\n            \"arn:aws:iam::aws:policy/job-function/ViewOnlyAccess\"\n        ],\n        \"inlinePolicyDocument\": {\n            \"Version\": \"2012-10-17\",\n            \"Statement\": [\n                {\n                    \"Condition\": {\n                        \"StringLike\": {\n                            \"iam:PermissionsBoundary\": [\n                                \"arn:aws:iam::121111112211:policy/boundaries/ApplicationFullAdmin-PermissionsBoundary\"\n                            ]\n                        }\n                    },\n                    \"Action\": [\n                        \"iam:DetachRolePolicy\",\n                        \"iam:AttachRolePolicy\",\n                        \"iam:DeleteRolePolicy\",\n                        \"iam:PutRolePermissionsBoundary\",\n                        \"iam:CreateRole\",\n                        \"iam:PutRolePolicy\",\n                        \"iam:UpdateAssumeRolePolicy\"\n                    ],\n                    \"Resource\": [\n                        \"arn:aws:iam::*:role/Application_*\"\n                    ],\n                    \"Effect\": \"Allow\",\n                    \"Sid\": \"AllowAttachPermBoundary\"\n                },\n                {\n                    \"Action\": [\n                        \"iam:AddRoleToInstanceProfile\",\n                        \"iam:CreateInstanceProfile\",\n                        \"iam:CreatePolicy\",\n                        \"iam:CreatePolicyVersion\",\n                        \"iam:DeleteInstanceProfile\",\n                        \"iam:DeletePolicy\",\n                        \"iam:DeleteRole\",\n                        \"iam:PassRole\",\n                        \"iam:UpdateRole\",\n                        \"iam:DeleteRolePermissionsBoundary\",\n                        \"iam:UpdateRoleDescription\",\n                        \"iam:RemoveRoleFromInstanceProfile\"\n                    ],\n                    \"Resource\": [\n                        \"arn:aws:iam::*:role/Application_*\",\n                        \"arn:aws:iam::*:policy/Application_*\",\n                        \"arn:aws:iam::*:instance-profile/Application_*\"\n                    ],\n                    \"Effect\": \"Allow\",\n                    \"Sid\": \"AllowOtherIAMActions\"\n                },\n                {\n                    \"Action\": [\n                        \"iam:List*\",\n                        \"iam:Generate*\",\n                        \"iam:Get*\",\n                        \"iam:Simulate*\"\n                    ],\n                    \"Resource\": \"*\",\n                    \"Effect\": \"Allow\",\n                    \"Sid\": \"AllowReadIAMActions\"\n                },\n                {\n                    \"Action\": \"iam:DeleteRolePermissionsBoundary\",\n                    \"Resource\": \"arn:aws:iam::121111112211:policy/boundaries/ApplicationFullAdmin-PermissionsBoundary\",\n                    \"Effect\": \"Deny\",\n                    \"Sid\": \"DenyBoundaryPolicyDelete\"\n                },\n                {\n                    \"Action\": [\n                        \"s3:*\",\n                        \"lambda:*\",\n                        \"appsync:*\",\n                        \"athena:*\",\n                        \"ecr:*\",\n                        \"ecs:*\",\n                        \"elasticache:*\",\n                        \"es:*\",\n                        \"elasticmapreduce:*\",\n                        \"fsx:*\",\n                        \"firehose:*\",\n                        \"glue:*\",\n                        \"sagemaker:*\",\n                        \"states:*\",\n                        \"sns:*\",\n                        \"ses:*\",\n                        \"sqs:*\",\n                        \"cloudwatch:*\",\n                        \"logs:*\",\n                        \"applicationinsights:*\",\n                        \"apigateway:*\",\n                        \"cloudformation:*\",\n                        \"secretsmanager:*\",\n                        \"elasticfilesystem:*\",\n                        \"elasticbeanstalk:*\",\n                        \"elasticloadbalancing:*\",\n                        \"trustedadvisor:*\",\n                        \"cloudtrail:*\",\n                        \"ce:*\",\n                        \"support:*\",\n                        \"codebuild:*\",\n                        \"codedeploy:*\",\n                        \"codepipeline:*\",\n                        \"codecommit:*\",\n                        \"eks:*\",\n                        \"acm:*\"\n                    ],\n                    \"Resource\": \"*\",\n                    \"Effect\": \"Allow\",\n                    \"Sid\": \"AllowFullAccessToApprovedServices\"\n                },\n                {\n                    \"Action\": [\n                        \"compute-optimizer:*\",\n                        \"ec2:AssociateIamInstanceProfile\",\n                        \"ec2:AssociateAddress\",\n                        \"ec2:AcceptReservedInstancesExchangeQuote\",\n                        \"ec2:AllocateAddress\",\n                        \"ec2:AllocateHosts\",\n                        \"ec2:AssignIpv6Addresses\",\n                        \"ec2:AssignPrivateIpAddresses\",\n                        \"ec2:AttachVolume\",\n                        \"ec2:AttachNetworkInterface\",\n                        \"ec2:AuthorizeSecurityGroupEgress\",\n                        \"ec2:AuthorizeSecurityGroupIngress\",\n                        \"ec2:BundleInstance\",\n                        \"ec2:CancelBundleTask\",\n                        \"ec2:CancelCapacityReservation\",\n                        \"ec2:CancelConversionTask\",\n                        \"ec2:CancelExportTask\",\n                        \"ec2:CancelImportTask\",\n                        \"ec2:CancelReservedInstancesListing\",\n                        \"ec2:CancelSpotFleetRequests\",\n                        \"ec2:CancelSpotInstanceRequests\",\n                        \"ec2:ConfirmProductInstance\",\n                        \"ec2:CopyFpgaImage\",\n                        \"ec2:CopyImage\",\n                        \"ec2:CopySnapshot\",\n                        \"ec2:CreateCapacityReservation\",\n                        \"ec2:CreateFleet\",\n                        \"ec2:CreateFpgaImage\",\n                        \"ec2:CreateImage\",\n                        \"ec2:CreateInstanceExportTask\",\n                        \"ec2:CreateKeyPair\",\n                        \"ec2:CreateLaunchTemplate\",\n                        \"ec2:CreateLaunchTemplateVersion\",\n                        \"ec2:CreateManagedPrefixList\",\n                        \"ec2:CreatePlacementGroup\",\n                        \"ec2:CreateSecurityGroup\",\n                        \"ec2:CreateSnapshot\",\n                        \"ec2:CreateSnapshots\",\n                        \"ec2:CreateSpotDatafeedSubscription\",\n                        \"ec2:CreateVolume\",\n                        \"ec2:DeleteFleets\",\n                        \"ec2:DeleteFpgaImage\",\n                        \"ec2:DeleteKeyPair\",\n                        \"ec2:DeleteLaunchTemplate\",\n                        \"ec2:DeleteLaunchTemplateVersions\",\n                        \"ec2:DeleteNetworkInterface\",\n                        \"ec2:DeletePlacementGroup\",\n                        \"ec2:DeleteManagedPrefixList\",\n                        \"ec2:DeleteSecurityGroup\",\n                        \"ec2:DeleteSnapshot\",\n                        \"ec2:DeleteSpotDatafeedSubscription\",\n                        \"ec2:DeleteVolume\",\n                        \"ec2:DeregisterImage\",\n                        \"ec2:DeregisterInstanceEventNotificationAttributes\",\n                        \"ec2:DetachNetworkInterface\",\n                        \"ec2:DetachVolume\",\n                        \"ec2:DisassociateAddress\",\n                        \"ec2:DisassociateIamInstanceProfile\",\n                        \"ec2:EnableVolumeIO\",\n                        \"ec2:ExportImage\",\n                        \"ec2:ImportImage\",\n                        \"ec2:ImportInstance\",\n                        \"ec2:ImportKeyPair\",\n                        \"ec2:ImportSnapshot\",\n                        \"ec2:ImportVolume\",\n                        \"ec2:ModifyCapacityReservation\",\n                        \"ec2:ModifyDefaultCreditSpecification\",\n                        \"ec2:ModifyEbsDefaultKmsKeyId\",\n                        \"ec2:ModifyFleet\",\n                        \"ec2:ModifyFpgaImageAttribute\",\n                        \"ec2:ModifyHosts\",\n                        \"ec2:ModifyIdentityIdFormat\",\n                        \"ec2:ModifyIdFormat\",\n                        \"ec2:ModifyImageAttribute\",\n                        \"ec2:ModifyInstanceAttribute\",\n                        \"ec2:ModifyInstanceCapacityReservationAttributes\",\n                        \"ec2:ModifyInstanceCreditSpecification\",\n                        \"ec2:ModifyInstanceEventStartTime\",\n                        \"ec2:ModifyInstanceMetadataOptions\",\n                        \"ec2:ModifyInstancePlacement\",\n                        \"ec2:ModifyLaunchTemplate\",\n                        \"ec2:ModifyManagedPrefixList\",\n                        \"ec2:ModifyNetworkInterfaceAttribute\",\n                        \"ec2:ModifyReservedInstances\",\n                        \"ec2:ModifySpotFleetRequest\",\n                        \"ec2:ModifyVolume\",\n                        \"ec2:ModifyVolumeAttribute\",\n                        \"ec2:MonitorInstances\",\n                        \"ec2:PurchaseHostReservation\",\n                        \"ec2:PurchaseReservedInstancesOffering\",\n                        \"ec2:PurchaseScheduledInstances\",\n                        \"ec2:RebootInstances\",\n                        \"ec2:RegisterImage\",\n                        \"ec2:RegisterInstanceEventNotificationAttributes\",\n                        \"ec2:ReleaseAddress\",\n                        \"ec2:ReleaseHosts\",\n                        \"ec2:ReplaceIamInstanceProfileAssociation\",\n                        \"ec2:ReportInstanceStatus\",\n                        \"ec2:RequestSpotFleet\",\n                        \"ec2:RequestSpotInstances\",\n                        \"ec2:ResetEbsDefaultKmsKeyId\",\n                        \"ec2:ResetFpgaImageAttribute\",\n                        \"ec2:ResetImageAttribute\",\n                        \"ec2:ResetInstanceAttribute\",\n                        \"ec2:ResetNetworkInterfaceAttribute\",\n                        \"ec2:RestoreAddressToClassic\",\n                        \"ec2:RestoreManagedPrefixListVersion\",\n                        \"ec2:RevokeSecurityGroupEgress\",\n                        \"ec2:RevokeSecurityGroupIngress\",\n                        \"ec2:RunInstances\",\n                        \"ec2:RunScheduledInstances\",\n                        \"ec2:SendDiagnosticInterrupt\",\n                        \"ec2:StartInstances\",\n                        \"ec2:StopInstances\",\n                        \"ec2:TerminateInstances\",\n                        \"ec2:UnassignIpv6Addresses\",\n                        \"ec2:UnassignPrivateIpAddresses\",\n                        \"ec2:UnmonitorInstances\",\n                        \"ec2:UpdateSecurityGroupRuleDescriptionsEgress\",\n                        \"ec2:UpdateSecurityGroupRuleDescriptionsIngress\"\n                    ],\n                    \"Resource\": \"*\",\n                    \"Effect\": \"Allow\",\n                    \"Sid\": \"AllowNonNetworkrelatedEC2actions\"\n                }\n            ]\n        }\n    }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{permissionSetEndpoint}}postPermissionSetData",
+          "host": ["{{permissionSetEndpoint}}postPermissionSetData"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Permission Set",
+      "request": {
+        "auth": {
+          "type": "awsv4",
+          "awsv4": [
+            {
+              "key": "accessKey",
+              "value": "{{accessKey}}",
+              "type": "string"
+            },
+            {
+              "key": "secretKey",
+              "value": "{{secretAccessKey}}",
+              "type": "string"
+            },
+            {
+              "key": "region",
+              "value": "{{region}}",
+              "type": "string"
+            },
+            {
+              "key": "sessionToken",
+              "value": "{{sessionToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"action\": \"update\",\n    \"permissionSetData\": {\n        \"permissionSetName\": \"permissionset-sample\",        \n        \"sessionDurationInMinutes\": \"200\",\n        \"relayState\": \"https://eu-west-1.console.aws.amazon.com/console/home?region=eu-west-1#\",\n        \"tags\": [                                 \n            {\n                \"Key\": \"versionid\",\n                \"Value\": \"01\"\n            },\n            {\n                \"Key\": \"team\",\n                \"Value\": \"appAteam\"\n            }\n        ],\n        \"managedPoliciesArnList\": [\n            \"arn:aws:iam::aws:policy/job-function/ViewOnlyAccess\"\n        ],\n        \"inlinePolicyDocument\": {\n            \"Version\": \"2012-10-17\",\n            \"Statement\": [\n                {\n                    \"Condition\": {\n                        \"StringLike\": {\n                            \"iam:PermissionsBoundary\": [\n                                \"arn:aws:iam::121111112211:policy/boundaries/ApplicationFullAdmin-PermissionsBoundary\"\n                            ]\n                        }\n                    },\n                    \"Action\": [\n                        \"iam:DetachRolePolicy\",\n                        \"iam:AttachRolePolicy\",\n                        \"iam:DeleteRolePolicy\",\n                        \"iam:PutRolePermissionsBoundary\",\n                        \"iam:CreateRole\",\n                        \"iam:PutRolePolicy\",\n                        \"iam:UpdateAssumeRolePolicy\"\n                    ],\n                    \"Resource\": [\n                        \"arn:aws:iam::*:role/Application_*\"\n                    ],\n                    \"Effect\": \"Allow\",\n                    \"Sid\": \"AllowAttachPermBoundary\"\n                },\n                {\n                    \"Action\": [\n                        \"iam:AddRoleToInstanceProfile\",\n                        \"iam:CreateInstanceProfile\",\n                        \"iam:CreatePolicy\",\n                        \"iam:CreatePolicyVersion\",\n                        \"iam:DeleteInstanceProfile\",\n                        \"iam:DeletePolicy\",\n                        \"iam:DeleteRole\",\n                        \"iam:PassRole\",\n                        \"iam:UpdateRole\",\n                        \"iam:DeleteRolePermissionsBoundary\",\n                        \"iam:UpdateRoleDescription\",\n                        \"iam:RemoveRoleFromInstanceProfile\"\n                    ],\n                    \"Resource\": [\n                        \"arn:aws:iam::*:role/Application_*\",\n                        \"arn:aws:iam::*:policy/Application_*\",\n                        \"arn:aws:iam::*:instance-profile/Application_*\"\n                    ],\n                    \"Effect\": \"Allow\",\n                    \"Sid\": \"AllowOtherIAMActions\"\n                },\n                {\n                    \"Action\": [\n                        \"iam:List*\",\n                        \"iam:Generate*\",\n                        \"iam:Get*\",\n                        \"iam:Simulate*\"\n                    ],\n                    \"Resource\": \"*\",\n                    \"Effect\": \"Allow\",\n                    \"Sid\": \"AllowReadIAMActions\"\n                },\n                {\n                    \"Action\": \"iam:DeleteRolePermissionsBoundary\",\n                    \"Resource\": \"arn:aws:iam::121111112211:policy/boundaries/ApplicationFullAdmin-PermissionsBoundary\",\n                    \"Effect\": \"Deny\",\n                    \"Sid\": \"DenyBoundaryPolicyDelete\"\n                },\n                {\n                    \"Action\": [\n                        \"s3:*\",\n                        \"lambda:*\",\n                        \"appsync:*\",\n                        \"athena:*\",\n                        \"ecr:*\",\n                        \"ecs:*\",\n                        \"elasticache:*\",\n                        \"es:*\",\n                        \"elasticmapreduce:*\",\n                        \"fsx:*\",\n                        \"firehose:*\",\n                        \"glue:*\",\n                        \"sagemaker:*\",\n                        \"states:*\",\n                        \"sns:*\",\n                        \"ses:*\",\n                        \"sqs:*\",\n                        \"cloudwatch:*\",\n                        \"logs:*\",\n                        \"applicationinsights:*\",\n                        \"apigateway:*\",\n                        \"cloudformation:*\",\n                        \"secretsmanager:*\",\n                        \"elasticfilesystem:*\",\n                        \"elasticbeanstalk:*\",\n                        \"elasticloadbalancing:*\",\n                        \"trustedadvisor:*\",\n                        \"cloudtrail:*\",\n                        \"ce:*\",\n                        \"support:*\",\n                        \"codebuild:*\",\n                        \"codedeploy:*\",\n                        \"codepipeline:*\",\n                        \"codecommit:*\",\n                        \"eks:*\",\n                        \"acm:*\"\n                    ],\n                    \"Resource\": \"*\",\n                    \"Effect\": \"Allow\",\n                    \"Sid\": \"AllowFullAccessToApprovedServices\"\n                },\n                {\n                    \"Action\": [\n                        \"compute-optimizer:*\",\n                        \"ec2:AssociateIamInstanceProfile\",\n                        \"ec2:AssociateAddress\",\n                        \"ec2:AcceptReservedInstancesExchangeQuote\",\n                        \"ec2:AllocateAddress\",\n                        \"ec2:AllocateHosts\",\n                        \"ec2:AssignIpv6Addresses\",\n                        \"ec2:AssignPrivateIpAddresses\",\n                        \"ec2:AttachVolume\",\n                        \"ec2:AttachNetworkInterface\",\n                        \"ec2:AuthorizeSecurityGroupEgress\",\n                        \"ec2:AuthorizeSecurityGroupIngress\",\n                        \"ec2:BundleInstance\",\n                        \"ec2:CancelBundleTask\",\n                        \"ec2:CancelCapacityReservation\",\n                        \"ec2:CancelConversionTask\",\n                        \"ec2:CancelExportTask\",\n                        \"ec2:CancelImportTask\",\n                        \"ec2:CancelReservedInstancesListing\",\n                        \"ec2:CancelSpotFleetRequests\",\n                        \"ec2:CancelSpotInstanceRequests\",\n                        \"ec2:ConfirmProductInstance\",\n                        \"ec2:CopyFpgaImage\",\n                        \"ec2:CopyImage\",\n                        \"ec2:CopySnapshot\",\n                        \"ec2:CreateCapacityReservation\",\n                        \"ec2:CreateFleet\",\n                        \"ec2:CreateFpgaImage\",\n                        \"ec2:CreateImage\",\n                        \"ec2:CreateInstanceExportTask\",\n                        \"ec2:CreateKeyPair\",\n                        \"ec2:CreateLaunchTemplate\",\n                        \"ec2:CreateLaunchTemplateVersion\",\n                        \"ec2:CreateManagedPrefixList\",\n                        \"ec2:CreatePlacementGroup\",\n                        \"ec2:CreateSecurityGroup\",\n                        \"ec2:CreateSnapshot\",\n                        \"ec2:CreateSnapshots\",\n                        \"ec2:CreateSpotDatafeedSubscription\",\n                        \"ec2:CreateVolume\",\n                        \"ec2:DeleteFleets\",\n                        \"ec2:DeleteFpgaImage\",\n                        \"ec2:DeleteKeyPair\",\n                        \"ec2:DeleteLaunchTemplate\",\n                        \"ec2:DeleteLaunchTemplateVersions\",\n                        \"ec2:DeleteNetworkInterface\",\n                        \"ec2:DeletePlacementGroup\",\n                        \"ec2:DeleteManagedPrefixList\",\n                        \"ec2:DeleteSecurityGroup\",\n                        \"ec2:DeleteSnapshot\",\n                        \"ec2:DeleteSpotDatafeedSubscription\",\n                        \"ec2:DeleteVolume\",\n                        \"ec2:DeregisterImage\",\n                        \"ec2:DeregisterInstanceEventNotificationAttributes\",\n                        \"ec2:DetachNetworkInterface\",\n                        \"ec2:DetachVolume\",\n                        \"ec2:DisassociateAddress\",\n                        \"ec2:DisassociateIamInstanceProfile\",\n                        \"ec2:EnableVolumeIO\",\n                        \"ec2:ExportImage\",\n                        \"ec2:ImportImage\",\n                        \"ec2:ImportInstance\",\n                        \"ec2:ImportKeyPair\",\n                        \"ec2:ImportSnapshot\",\n                        \"ec2:ImportVolume\",\n                        \"ec2:ModifyCapacityReservation\",\n                        \"ec2:ModifyDefaultCreditSpecification\",\n                        \"ec2:ModifyEbsDefaultKmsKeyId\",\n                        \"ec2:ModifyFleet\",\n                        \"ec2:ModifyFpgaImageAttribute\",\n                        \"ec2:ModifyHosts\",\n                        \"ec2:ModifyIdentityIdFormat\",\n                        \"ec2:ModifyIdFormat\",\n                        \"ec2:ModifyImageAttribute\",\n                        \"ec2:ModifyInstanceAttribute\",\n                        \"ec2:ModifyInstanceCapacityReservationAttributes\",\n                        \"ec2:ModifyInstanceCreditSpecification\",\n                        \"ec2:ModifyInstanceEventStartTime\",\n                        \"ec2:ModifyInstanceMetadataOptions\",\n                        \"ec2:ModifyInstancePlacement\",\n                        \"ec2:ModifyLaunchTemplate\",\n                        \"ec2:ModifyManagedPrefixList\",\n                        \"ec2:ModifyNetworkInterfaceAttribute\",\n                        \"ec2:ModifyReservedInstances\",\n                        \"ec2:ModifySpotFleetRequest\",\n                        \"ec2:ModifyVolume\",\n                        \"ec2:ModifyVolumeAttribute\",\n                        \"ec2:MonitorInstances\",\n                        \"ec2:PurchaseHostReservation\",\n                        \"ec2:PurchaseReservedInstancesOffering\",\n                        \"ec2:PurchaseScheduledInstances\",\n                        \"ec2:RebootInstances\",\n                        \"ec2:RegisterImage\",\n                        \"ec2:RegisterInstanceEventNotificationAttributes\",\n                        \"ec2:ReleaseAddress\",\n                        \"ec2:ReleaseHosts\",\n                        \"ec2:ReplaceIamInstanceProfileAssociation\",\n                        \"ec2:ReportInstanceStatus\",\n                        \"ec2:RequestSpotFleet\",\n                        \"ec2:RequestSpotInstances\",\n                        \"ec2:ResetEbsDefaultKmsKeyId\",\n                        \"ec2:ResetFpgaImageAttribute\",\n                        \"ec2:ResetImageAttribute\",\n                        \"ec2:ResetInstanceAttribute\",\n                        \"ec2:ResetNetworkInterfaceAttribute\",\n                        \"ec2:RestoreAddressToClassic\",\n                        \"ec2:RestoreManagedPrefixListVersion\",\n                        \"ec2:RevokeSecurityGroupEgress\",\n                        \"ec2:RevokeSecurityGroupIngress\",\n                        \"ec2:RunInstances\",\n                        \"ec2:RunScheduledInstances\",\n                        \"ec2:SendDiagnosticInterrupt\",\n                        \"ec2:StartInstances\",\n                        \"ec2:StopInstances\",\n                        \"ec2:TerminateInstances\",\n                        \"ec2:UnassignIpv6Addresses\",\n                        \"ec2:UnassignPrivateIpAddresses\",\n                        \"ec2:UnmonitorInstances\",\n                        \"ec2:UpdateSecurityGroupRuleDescriptionsEgress\",\n                        \"ec2:UpdateSecurityGroupRuleDescriptionsIngress\"\n                    ],\n                    \"Resource\": \"*\",\n                    \"Effect\": \"Allow\",\n                    \"Sid\": \"AllowNonNetworkrelatedEC2actions\"\n                }\n            ]\n        }\n    }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{permissionSetEndpoint}}postPermissionSetData",
+          "host": ["{{permissionSetEndpoint}}postPermissionSetData"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Permission Set",
+      "request": {
+        "auth": {
+          "type": "awsv4",
+          "awsv4": [
+            {
+              "key": "accessKey",
+              "value": "{{accessKey}}",
+              "type": "string"
+            },
+            {
+              "key": "secretKey",
+              "value": "{{secretAccessKey}}",
+              "type": "string"
+            },
+            {
+              "key": "region",
+              "value": "{{region}}",
+              "type": "string"
+            },
+            {
+              "key": "sessionToken",
+              "value": "{{sessionToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"action\": \"delete\",\n    \"permissionSetData\": {\n        \"permissionSetName\": \"permissionset-sample\"\n    }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{permissionSetEndpoint}}postPermissionSetData",
+          "host": ["{{permissionSetEndpoint}}postPermissionSetData"]
+        }
+      },
+      "response": []
+    }
+  ]
+}
