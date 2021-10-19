@@ -5,9 +5,13 @@
 - [AWS CDK](https://github.com/aws/aws-cdk) installed on your local machine
 - [yarn package manager](https://yarnpkg.com/getting-started/install) installed on your local machine
 - This solution requires the use of 3 AWS accounts:
+
   1. A deployment account (DEPLOYMENT) - An account to manage the SSO extentions code, where we will be deploying the source code repository and deployment pipeline.
-  2. A main Organization account (ORGMAIN) - this is required for listening to organization level based event notifications. For the purposes of demonstration, we will also use this as the SSO account, to process SSO admin and identity store operations.
-  3. Target account (TARGET) - Where the solution architecture is deployed.
+  2. ## A main Organization account (ORGMAIN) - this is required for listening to organization level based event notifications. For the purposes of demonstration, we will also use this as the SSO account, to process SSO admin and identity store operations.
+     **NOTE**
+     Currently, AWS SSO service can only be configured in the ORGMAIN account for the entire organization. However, the solution is built with the assumption that AWS SSO service would support a delegated administrator model, similar to GuardDuty and other services. When this feature is supported by the solution at a later time, the only change required is the configuration file update to reflect the new account and region for SSO service and CDK bootstrapping in that new account and region. The solution does not need to be re-deployed
+
+  -- 3. Target account (TARGET) - Where the solution architecture is deployed.
 
 ![High level design](docs/images/aws-sso-extensions-for-enterprise-overview.png)
 
@@ -24,11 +28,10 @@
 
 ### Step 2: Create execution roles
 
-To allow execution of the solution , we need to create two roles in the TARGET account:
+To allow execution of the solution , we need to create two roles in the TARGET account. These roles are assigned the required permissions by the solution, so empty roles with no permissions are sufficient to deploy the solution.
 
-- LinkCallerRoleArn: IAM role arn in the `TARGET account` that should have permissions to perform link provisioning/de-provisioning
-- PermissionSetCallerRoleArn: IAM role arn in the `target account` that should have permissions to perform permission set
-<!-- TODO: Would be good to have example requirements for these for users to copy paste in -->
+- LinkCallerRoleArn: IAM role arn in the `TARGET account` that would be granted permissions by the solution to perform link provisioning/de-provisioning
+- PermissionSetCallerRoleArn: IAM role arn in the `TARGET account` that would be granted permissions by the solution to perform permission set provisioning/de-provisioning
 
 ### Step 3: Update environment-specific configuration
 
@@ -44,7 +47,7 @@ To allow execution of the solution , we need to create two roles in the TARGET a
     - OrgMainAccountId: org main account ID
     - TargetAccountRegion: target account region (eg, eu-west-1)
     - SSOServiceAccountId: SSO service account ID (until the time SSO service supports delegated admin mode deployment, this would be the same as OrgMainAccountId)
-    - SSOServiceAccountRegion: the main region of your SSO service deployment (same as org main region)
+    - SSOServiceAccountRegion: the main region of your SSO service deployment
     - RepoArn: ARN of the code commit repo created in Step1
     - RepoBranchName: branch of the repo where the code would be committed to
     - SynthCommand: This is of the format `yarn cdk-synth-<your-environment-name>`

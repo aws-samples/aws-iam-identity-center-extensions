@@ -1,14 +1,14 @@
 # Enterprise IAM Integration
 
-`SSO For Enterprise` solution is built with the objective to enable enterprise customers to better integrate AWS SSO with their current identity and access management tools.
+`AWS SSO Extensions for Enterprise` solution is built with the objective to enable enterprise customers to better integrate AWS SSO with their current identity and access management tools.
 
-Below is a reference design comparing and contrasting how enterprises handled multi account federation to AWS and how this is enhanced with the introduction of `AWS SSO` along with `SSO For Enterprise` solution. For this example, we consider the scenario where an enterprise customer is using ADFS as the IDP, SailPoint as the enterprise identity and access management tool, ServiceNow as the request interface system and is now moving to AWS SSO along with the SSO for Enterprise solution.
+Below is a reference design comparing and contrasting how enterprises handled multi account federation to AWS and how this is enhanced with the introduction of `AWS SSO` along with `AWS SSO Extensions for Enterprise` solution. For this example, we consider the scenario where an enterprise customer is using ADFS as the IDP, SailPoint as the enterprise identity and access management tool, ServiceNow as the request interface system and is now moving to AWS SSO along with the `AWS SSO Extensions for Enterprise solution`.
 
-While the design is explained refereencing these tools/technologies for easy readability, it is to be noted that the same logical flows and concepts apply to other tools/technologies the customer may use. For ex, if a customer uses RSA Identity as their IAM tool of choice, the implementation of the "Access Scope" life cycle use case would vary , however the design would still remain the same
+While the design is explained referencing these tools/technologies for easy readability, it is to be noted that the same logical flows and concepts apply to other tools/technologies the customer may use. For ex, if a customer uses RSA Identity as their IAM tool of choice, the implementation of the "Access Scope" life cycle use case would vary , however the design would still remain the same
 
 ## Access management - ADFS versus AWS SSO
 
-In the first section, let us take a look at the granularity to which AD groups are created and maintained when using the current model of ADFS and federating into the AWS SAML end point defined by https://signin.aws.amazon.com/static/saml-metadata.xml versus using `AWS SSO` as the SSO provider along with `SSO For Enterprise solution`
+In the first section, let us take a look at the granularity to which AD groups are created and maintained when using the current model of ADFS and federating into the AWS SAML end point defined by `https://signin.aws.amazon.com/static/saml-metadata.xml` versus using `AWS SSO` as the SSO provider along with `AWS SSO Extensions for Enterprise solution`
 
 To better explain and help visualise the differences in the models, we **use the construct “Access scope” to group together related permissions**. And we identity **“Access scope” as the combination of Entity + Permissions**. The Entity and Permissions objects differ in the models and this is explained below
 
@@ -39,6 +39,10 @@ To better explain and help visualise the differences in the models, we **use the
   - For ex, if `CCOE` team needs access to **entity={ root } + permission = { IAM role called `CCOE`-Ops }, and the organisation has a total of 20 AWS accounts,**then the resulting AD groups would be
     - 20 different AD groups with a naming convention of AWS-AccountNo-`CCOE`-Ops
   - As accounts are added and removed, the same group addition / removal constraints apply as described previously
+- In a scenario where a set of users need to be granted **the same permissions (i.e. IAM role) across all the accounts in the organisation that match a certain tag key value combination**, given the “Access scope” is on a per account basis only, you need to **create AD group(s) that match the total no of entities = { no of accounts in the organisation that match the tag key combination}**
+  - For ex, if `CCOE` team needs access to **entity={ accounts matching tagkey value pair } + permission = { IAM role called `CCOE`-Audit }, and the organisation has a total of 5 AWS accounts that match the tagkey value pair,**then the resulting AD groups would be
+    - 5 different AD groups with a naming convention of AWS-AccountNo-`CCOE`-Audit
+  - As accounts have the tagkey pair added and removed/updated, the same group addition / removal constraints apply as described previously
 
 ### AWS SSO + Automation Solution Model
 
@@ -76,6 +80,15 @@ To better explain and help visualise the differences in the models, we **use the
     - SailPoint will call postLinkData API 1 time with the following payload
       - {action: “create”, linkData: “root.all.PermissionSetFullAdmin.AWS-`CCOE`-PermissionSetFullAdmin.ssofile”}
   - In this model, as accounts are created and deleted in the **entity(root)** no further actions are required on the AD group (or) from SailPoint calling API’s. The automation solution handles these changes for you.
+- In a scenario where a set of users need to be granted **the same permissions (i.e. IAM role) across all the accounts in the organisation that match a certain tag key value combination**, given the “Access scope” is on a per account basis only, you need to **create 1 AD group and SailPoint will call the postLinkData API 1 time only**
+  - For ex, if `CCOE` team needs access to **entity={ all accounts matching a tag key value pair } + permission = { permission set called PermissionSetAudit }, and the organisation has a total of 5 AWS accounts that match this tagkey value pair**
+    - one AD group is created with name = AWS-`CCOE`-PermissionSetAudit, and group attributes of
+      - scope = account_tag
+      - entity_list = { tagkey^tagvalue }
+      - additional group attributes as necessary are created
+    - SailPoint will call postLinkData API 1 time with the following payload
+      - {action: “create”, linkData: “account_tag.tagKey^tagValue.PermissionSetAudit.AWS-`CCOE`-PermissionSetAudit.ssofile”}
+  - In this model, as accounts are modified further with the tagkey value pair being added/removed/updated no further actions are required on the AD group (or) from SailPoint calling API’s. The automation solution handles these changes for you.
 
 ## How does this new model and solution work with SailPoint?
 
@@ -104,9 +117,9 @@ To better explain and help visualise the differences in the models, we **use the
 
 - The design of the solution would include SailPoint exposing a “postAccessScopeData” API that would take in the following payload
   - action → should be one of {create, delete, addAccount, removeAccount}
-  - scope → should be empty or one of {account, ou_id, root}
+  - scope → should be empty or one of {account, ou_id, root, account_tag}
   - permissions → should be permission set name
-  - entity_list → should be empty or one of {accountno#,[list of account no’s#], ou_id_value#,all}
+  - entity_list → should be empty or one of {accountno#,[list of account no’s#], ou_id_value#, account_tag_key^account_tag_value, all}
   - team_name → should be target team name for which this access scope is being provisioned
   - approval_type → should be empty or one of {auto,resolver_group}
   - approver_group → should be empty or referencing another AD group name
