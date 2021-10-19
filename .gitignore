@@ -14,9 +14,6 @@ cdk.out
 # Parcel default cache directory
 .parcel-cache
 
-# Draw IO images exclusion
-docs/images/*.drawio
-
 # Lambda code exclusion
 !/lib/lambda/functions/ddb-import-handlers/permissionSetCu.js
 !/lib/lambda/functions/ddb-import-handlers/permissionSetDel.js
