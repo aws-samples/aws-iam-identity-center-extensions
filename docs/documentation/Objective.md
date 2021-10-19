@@ -1,10 +1,4 @@
-# AWS SSO Extensions For Enterprise
-
-**Solution Overview**
-
-![High level design](docs/images/aws-sso-extensions-for-enterprise-overview.png)
-
-## 1. Objective
+## Objective
 
 `AWS SSO Extensions for Enterprise` simplifies the process to manage user
 access to AWS accounts via AWS SSO by extending the AWS SSO API.
@@ -69,15 +63,3 @@ The solution enables enterprise friendly account assignment life cycle through t
   - The solution listens on AWS SSO group creation/deletion events (from any source - SCIM/Console/CLI etc) and handles out of band integration use cases with account assignments and permission sets
   - The solution facilitates creation of user groups, account assignments and permission sets in any order you choose. Irrespective of which sequence these objects are created, the corresponding account assignment creation/deletion operation is handled by the solution
   - The solution translates the group name to GUID translation on your behalf, enabling you to specify your account assignment operations using friendly names
-
-## [2. Solution block diagrams](docs/documentation/Overview-diagrams.md)
-
-## [3. Building blocks](docs/documentation/Building-Blocks.md)
-
-## [4. Use case flows](docs/documentation/Use-Case-Flows.md)
-
-## [5. How to Deploy](docs/documentation/How-To-Deploy.md)
-
-## [6. Start Using](docs/documentation/Start-Using.md)
-
-## [7. Enterprise IAM Integration](docs/documentation/Enterprise-IAM-Integration.md)

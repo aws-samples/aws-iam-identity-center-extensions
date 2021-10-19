@@ -1,0 +1,42 @@
+
+@startuml
+
+title PermissionSet Life cycle with S3 interface
+
+actor admin_user
+admin_user->S3_bucket: place a file with the correct prefix and path
+S3_bucket->event_notification_lambda: trigger S3 event notification with change details
+event_notification_lambda->event_notification_lambda: identity if the change is create/modify/delete
+event_notification_lambda->permissionset_ddb: validate and create/update/delete the record from table
+permissionset_ddb->permissionset_ddb_streams_topic: post change type and change details to SNS topic
+permissionset_ddb_streams_topic->permissionset_ddb_streams_lambda: trigger the lambda with the message payload
+permissionset_ddb_streams_lambda->permissionset_ddb_streams_lambda: calculate delta and inovke create/update/delete PermissionSet API
+permissionset_ddb_streams_lambda->permissionset_ddb_streams_lambda: if the permissionset is already provisioned, then trigger reprovision API with scope set to ALL_PROVISIONED_ACCOUNTS
+permissionset_ddb_streams_lambda->permissionset_ddb_streams_lambda: if the op type is create/update then compute payload for posting to sync topic
+permissionset_ddb_streams_lambda->permissionset_sync_topic: post the permission set sync payload
+permissionset_sync_topic->permissionset_sync_topic: determine if there are related links for the permission set being created/updated
+permissionset_sync_topic->link_manager_topic: if there are related links found, resolve the links to be provisiond and post
+permissionset_ddb_streams_lambda->waiter_topic: if asynchronous operation, post request id and stop
+waiter_topic->waiter_topic_handler: wait for reqeust to move to success/fail/max attempt
+waiter_topic_handler->provisioned_links_ddb: update/delete item as necessary
+
+
+title PermissionSet Life cycle with API interface
+
+actor admin_user
+admin_user->PermissionSet_API: call the API with the required payload
+PermissionSet_API->permissionset_ddb: validate and create/update/delete the record from table and return response to the client
+permissionset_ddb->permissionset_ddb_streams_topic: post change type and change details to SNS topic
+permissionset_ddb_streams_topic->permissionset_ddb_streams_lambda: trigger the lambda with the message payload
+permissionset_ddb_streams_lambda->permissionset_ddb_streams_lambda: calculate delta and inovke create/update/delete PermissionSet API
+permissionset_ddb_streams_lambda->permissionset_ddb_streams_lambda: if the permissionset is already provisioned, then trigger reprovision API with scope set to ALL_PROVISIONED_ACCOUNTS
+permissionset_ddb_streams_lambda->permissionset_ddb_streams_lambda: if the op type is create/update then compute payload for posting to sync topic
+permissionset_ddb_streams_lambda->permissionset_sync_topic: post the permission set sync payload
+permissionset_sync_topic->permissionset_sync_topic: determine if there are related links for the permission set being created/updated
+permissionset_sync_topic->link_manager_topic: if there are related links found, resolve the links to be provisiond and post
+permissionset_ddb_streams_lambda->waiter_topic: if asynchronous operation, post request id and stop
+waiter_topic->waiter_topic_handler: wait for reqeust to move to success/fail/max attempt
+waiter_topic_handler->provisioned_links_ddb: update/delete item as necessary
+
+
+@enduml
