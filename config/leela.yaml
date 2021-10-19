@@ -1,0 +1,27 @@
+---
+App: "aws-sso-extensions-for-enterprise"
+Environment: "leela"
+Version: "0.0.3"
+
+PipelineSettings:
+  BootstrapQualifier: "ssoutility"
+  DeploymentAccountId: "666701501466"
+  DeploymentAccountRegion: "eu-west-1"
+  TargetAccountId: "131604313357"
+  TargetAccountRegion: "eu-west-1"
+  OrgMainAccountId: "559232268828"
+  SSOServiceAccountId: "559232268828"
+  SSOServiceAccountRegion: "eu-west-1"
+  RepoArn: "arn:aws:codecommit:eu-west-1:666701501466:aws-sso-extensions-for-enterprise"
+  RepoBranchName: "main"
+  SynthCommand: "yarn cdk synth leela-aws-sso-extensions-for-enterprise -c config=leela"
+
+Parameters:
+  LinksProvisioningMode: "api"
+  PermissionSetProvisioningMode: "api"
+  LinkCallerRoleArn: "arn:aws:iam::131604313357:role/Admin"
+  PermissionSetCallerRoleArn: "arn:aws:iam::131604313357:role/Admin"
+  ApiCorsOrigin: "'*'"
+  NotificationEmail: "lagudull@amazon.com"
+  IsAdUsed: false
+  DomainName: "corp.example.com"

@@ -1,0 +1,20 @@
+@startuml
+
+title Groups life cycle
+cloudwatcheventrule->cloudwatcheventrule: receive a createGroup/Deletegroup event from sso-directory event source
+cloudwatcheventrule->groups_handler: post the event data to the groups handler
+groups_handler->groups_handler: determine if the event is createGroup/deleteGroup
+groups_handler->groups_ddb: handle the delete/put call to the groups ddb table based on event type
+groups_handler->links_ddb: look up existing links with matching group name
+links_ddb->groups_handler: return look up result
+groups_handler->groups_handler: determine if there are links that match the group name
+groups_handler->permissionset_ddb: look up referenced permissionsets matching permissionset name
+permissionset_ddb->groups_handler: return look up result
+groups_handler->groups_handler: determine if the permission sets are provisioned already
+groups_handler->groups_handler: determine if or expansion is necessary and expand
+groups_handler->links_manager_topic: post the links to be added/deleted to the links_manager_topic
+links_manager_topic->links_manager_topic_handler: trigger the lambda with message payload
+links_manager_topic_handler->links_manager_topic_handler: process createAccountAssignment , or DeleteAccountAssignment based on change type
+links_manager_topic_handler->provisioned_links_ddb: update/delete the item as necessary
+
+@enduml
