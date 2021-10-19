@@ -1,0 +1,41 @@
+{
+  "schema": "http://json-schema.org/draft-07/schema",
+  "id": "http://example.com/example.json",
+  "type": "object",
+  "title": "PostPayload",
+  "description": "Schemea for permission set payload.",
+  "default": {},
+  "required": ["action", "permissionSetData"],
+  "properties": {
+    "action": {
+      "id": "#/properties/action",
+      "type": "string",
+      "title": "Action schema",
+      "description": "Permission set operation type",
+      "default": "",
+      "enum": ["delete"]
+    },
+    "permissionSetData": {
+      "id": "#/properties/permissionSetData",
+      "type": "object",
+      "title": "The permissionSetData schema",
+      "description": "Captures the complete permission set",
+      "default": {},
+      "required": ["permissionSetName"],
+      "properties": {
+        "permissionSetName": {
+          "id": "#/properties/permissionSetData/properties/permissionSetName",
+          "type": "string",
+          "title": "The permissionSetName schema",
+          "description": "Name of the permission set name",
+          "default": "",
+          "minLength": 1,
+          "maxLength": 32,
+          "pattern": "[\\w+=,.@-]+"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
