@@ -1,83 +1,82 @@
 # AWS SSO Extensions For Enterprise
 
-**Solution Overview**
-
 ![High level design](docs/images/aws-sso-extensions-for-enterprise-overview.png)
 
-## 1. Objective
+## Overview
 
 `AWS SSO Extensions for Enterprise` simplifies the process to manage user
-access to AWS accounts via AWS SSO by extending the AWS SSO API.
-Instead of separately managing AWS SSO permission sets and entitlement
-links, you can use this solution to describe permission sets via one API call
-per permission set. Like with permission sets you can also define and
-implement entitlement links at a global, organizational unit or account tag
+access to AWS accounts with [AWS SSO](https://aws.amazon.com/single-sign-on/) by extending the [AWS SSO API](https://docs.aws.amazon.com/singlesignon/latest/APIReference/welcome.html).  
+
+Instead of separately managing [AWS SSO permission sets](https://docs.aws.amazon.com/singlesignon/latest/userguide/permissionsetsconcept.html) and entitlement
+links, you can use this solution to describe permission sets with one API call
+per set. Like with permission sets, you can also define and
+implement entitlement links at a global level, an organizational unit level or an account tag
 level. The solution ensures your defined permissions are rolled out across
-the entire AWS Organization and are updated as you change your
-organization.
+the entire AWS Organization, and that they are updated as you change your
+organization.  
+
 This solution can be used by your IAM management team to simplify user
 access provisioning at scale, either via a RESTFul API or by defining and
 setting objects with your permissions descriptions in an S3 bucket. This
 enables you to integrate with upstream identity management systems you
-have in your organization.
+have in your organization.  
 
-**Composite Permission Set API**
+**[Get started deploying here!](docs/documentation/How-To-Deploy.md)**
 
-_Problem Statement_
+## Features
 
-The current Permission Set API's are a set of individual API's each tackling one element of the permission set. For ex, CreatePermissionSet action allows you to
-create Permission set with name, tag, sessionDuration in ISO8601 format and relay state. This requires additional API calls to attach/remove Managed policies and create/update/delete
-inline policy attached to the permission set. When the requirement is to handle permission set lifecycles at scale, this becomes challenging. Additionally, update and delete operations
-need a permissionSetArn reference (and not the friendly name reference) which needs to be fetched prior to the operation.
+### The Composite Permission Set API
 
-_How is the problem solved ?_
+The current Permission Set API is a set of individual API's which each tackle one element of the permission set. For example, the CreatePermissionSet action allows you to create Permission sets with multiple attributes, such as its name and its tag.
 
-The solution provides a composite API for permission set lifecycle which provides the following:
+This can require additional API calls to attach/remove [Managed IAM policies](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_managed-vs-inline.html) and create/update/delete inline policies attached to the permission set.
+When we want to handle permission set lifecycles at scale, this becomes challenging.
 
-- Create a complete permission set object including the permission set attributes, managed policies, inline policy in a single call
-- Update parts(to any granularity)/complete permission set object in a single call
-- Delete a complete permission set in a single call
-- Update/delete by referring to the friendly name instead of the permissionSetArn value
-- Based on the configuration parameter , use either an S3 based interface/ Rest API interface to upload permission set object as a whole
+_How is this problem solved?_
+
+This solution provides a composite API for managing permission set lifecycles, allowing you to:
+
+- Create a complete permission set object including attributes and policies in a single call
+- Update parts or all of a permission set object in a single call with a friendly name
+- Delete a complete permission set in a single call with a friendly name
+- Based on a configuration parameter, use either an S3 based interface or a RESTful API to upload permission set object as a whole
 - Enforce the "cannot delete" constraint when a permission set is being referenced in an entitlement
 
-**Enterprise friendly account assignment life cycle**
+### Enterprise friendly account assignment life cycle
 
-_Problem Statement_
+The current entitlement API's are only account-level and do not handle organization based entitlement provisioning and de-provisioning. This means at the moment, enterprises need to build their own automation for their SSO provisioning use cases.
 
-The current entitlement API's (createAccountAssignment, deleteAccountAssignment) use SSO generated Arn's for referencing the principalId , instanceArn, permissionSetArn. Additionally, the
-current entitlement API's are account-level only and do not handle organisation based entitlement provisioning/de-provisioning. This requires enterprises to maintain a mapping reference between
-the SSO generated GUID's and the enterprise identity store object names. Additionally, enterprises will need to build logic that would help automate their SSO provisioining use cases for organizational use cases.
+_How is the problem solved?_
 
-_How is the problem solved ?_
+This solution enables enterprise friendly account assignment lifecycles through the following features:
 
-The solution enables enterprise friendly account assignment life cycle through the following features:
-
-- Use groups as the mechanism for principal type instead of an individual user
-- Reference, friendly names for groups, permission sets when creating account assignments instead of Arn values
-- Based on the configuration parameter, use either an S3 baased interface/ Rest API interface to create/delete account assignments
-- Organisational feature support including:
-  - Create/Delete account assignments with scope set to one of account, root, ou_id or account_tag
-  - Using the entity value passed in the payload, the solution calculates the account list and processes the create/delete account assignment operation for you
-  - The solution also deploys in us-east-1 to handle future organizational changes.
-    - For ex, if an account assignment has been created through the solution with scope set to root, and if a new account has been created at a later time, this account assignment is automatically created for the new
-      account by the solution
-    - Also, if an account assignment has been created through the solution with scope set to ou_id, and an existing account moves out of this ou, this account assignment is automatically deleted from the
-      account by the solution. If a new account is moved in to the ou, this account assignment is automatically created for the account by the solution
-    - Also, if an account assignment has been created through the solution with scope set to account_tag, and an account is udpated with this tag key value at a later time, this account assignment is automatically created for the new account by the solution. Additionally, when this tag key value is removed from the account/when this tag key is updated to a different value on the account at a later time, this account assignment is automatically deleted from the account by the solution.
-- Enable out of band integration between group life cycles and account assignment life cycles
+- Using groups as the mechanism for the principal type, instead of an individual user
+- Friendly names for groups and permission sets when creating account assignments
+- Based on the configuration parameter, use either an S3 based interface/ Rest API interface to create/delete account assignments
+- Create & delete account assignments with scope set to account, root, ou_id or account_tag at the organizational level
+- Using the entity value passed in the payload, the solution calculates the account list and processes the update operations for you
+- Enable out of band integration between group life cycles and account assignment life cycles:
   - The solution listens on AWS SSO group creation/deletion events (from any source - SCIM/Console/CLI etc) and handles out of band integration use cases with account assignments and permission sets
-  - The solution facilitates creation of user groups, account assignments and permission sets in any order you choose. Irrespective of which sequence these objects are created, the corresponding account assignment creation/deletion operation is handled by the solution
+  - The solution facilitates operations of user groups, account assignments and permission sets in any order you choose.
   - The solution translates the group name to GUID translation on your behalf, enabling you to specify your account assignment operations using friendly names
 
-## [2. Solution block diagrams](docs/documentation/Overview-diagrams.md)
+The solution also deploys in us-east-1 to handle future organizational changes.
 
-## [3. Building blocks](docs/documentation/Building-Blocks.md)
+_Use Cases_
 
-## [4. Use case flows](docs/documentation/Use-Case-Flows.md)
+- If an account assignment has been created through the solution with scope set to root, and if a new account has been created at a later time, this account assignment is automatically created for the new account by the solution.
+- If an account assignment has been created through the solution with scope set to ou_id, and an existing account moves out of this ou, this account assignment is automatically deleted from the account by the solution. If a new account is moved in to the ou, this account assignment is automatically created for the account by the solution.
+- If an account assignment has been created through the solution with scope set to account_tag, and an account is updated with this tag key value at a later time, this account assignment is automatically created for the new account by the solution. Additionally, when this tag key value is removed from the account/when this tag key is updated to a different value on the account at a later time, this account assignment is automatically deleted from the account by the solution.
 
-## [5. How to Deploy](docs/documentation/How-To-Deploy.md)
+## [How to Deploy](docs/documentation/How-To-Deploy.md)
 
-## [6. Start Using](docs/documentation/Start-Using.md)
+<!-- TODO update link to public workshop -->
+## [Start Using](https://studio.us-east-1.prod.workshops.aws/preview/67ce7a7b-48aa-4b83-b9d4-98c3babbef8d/builds/67a01a15-d723-48bb-8412-5123efad201a/en-US/)
 
-## [7. Enterprise IAM Integration](docs/documentation/Enterprise-IAM-Integration.md)
+## [Detailed Building Blocks Overview](docs/documentation/Building-Blocks.md)
+
+## [Solution Overview diagrams](docs/documentation/Overview-diagrams.md)
+
+## [Use case Logical State Flows](docs/documentation/Use-Case-Logical-State-Flows.md)
+
+## [Enterprise IAM Integration](docs/documentation/Enterprise-IAM-Integration.md)
