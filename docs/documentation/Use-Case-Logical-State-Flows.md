@@ -1,10 +1,10 @@
 # Use Case Logical State Diagrams
 
 <!-- TODO Update to public link -->
+
 For more information on going through the use cases for this solution, see the workshop [here](https://studio.us-east-1.prod.workshops.aws/preview/67ce7a7b-48aa-4b83-b9d4-98c3babbef8d/builds/67a01a15-d723-48bb-8412-5123efad201a/en-US/03-usecases)
 
 ## 1. Permission Set Life Cycle
-
 
 ### Permission Set with API Interface
 

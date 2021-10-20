@@ -72,11 +72,11 @@ First we want to set environment variables for our deployments. Make sure the bo
 
 ```bash
 cd cdk-bootstrap
-export BOOTSTRAP_QUALIFIER="znb859fds" 
+export BOOTSTRAP_QUALIFIER="znb859fds"
 export DEPLOYMENT_ACCOUNT_NUMBER="<Your Deployment account ID>"
 ```
 
-Ensure you have [AWS CLI credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) loaded on your machine to the DEPLOYMENT, ORGMAIN and the TARGET accounts,  with Admin rights to each.
+Ensure you have [AWS CLI credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) loaded on your machine to the DEPLOYMENT, ORGMAIN and the TARGET accounts, with Admin rights to each.
 
 Using the DEPLOYMENT account credentials and DEPLOYMENT account region, run the following:
 
@@ -113,7 +113,7 @@ ParameterKey=TrustedAccounts,ParameterValue=$DEPLOYMENT_ACCOUNT_NUMBER
 ### Step 5: Run CDK Synth
 
 At the root of the project, run
-  
+
 ```bash
 yarn cdk-synth-env
 ```
