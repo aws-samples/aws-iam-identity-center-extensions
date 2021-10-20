@@ -1,6 +1,6 @@
-# Use Case Flows
-
+# Use Case logical state diagrams
 ## 1. Permission Set Life Cycle
+
 
 ### Permission Set with API Interface
 
