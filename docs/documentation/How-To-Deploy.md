@@ -140,4 +140,4 @@ You can follow the status of the deployment of the pipeline stack in the [CloudF
 
 After the pipeline has been successfully deployed, you will get an email asking to subscribe to the SNS topic at the address you provided in your config file. You need to subscribe to this topic to be able to receive error notifications.
 
-### NEXT: [3. Start Using](docs/documentation/Start-Using.md)
+### NEXT: [Start Using](https://studio.us-east-1.prod.workshops.aws/preview/67ce7a7b-48aa-4b83-b9d4-98c3babbef8d/builds/67a01a15-d723-48bb-8412-5123efad201a/en-US/)
