@@ -70,7 +70,8 @@ _Use Cases_
 
 ## [How to Deploy](docs/documentation/How-To-Deploy.md)
 
-## [Start Using [LINK TO PUBLIC WORKSHOP WHEN LIVE]]([/](https://studio.us-east-1.prod.workshops.aws/preview/67ce7a7b-48aa-4b83-b9d4-98c3babbef8d/builds/67a01a15-d723-48bb-8412-5123efad201a/en-US/))
+<!-- TODO update link to public workshop -->
+## [Start Using](https://studio.us-east-1.prod.workshops.aws/preview/67ce7a7b-48aa-4b83-b9d4-98c3babbef8d/builds/67a01a15-d723-48bb-8412-5123efad201a/en-US/)
 
 ## [Detailed Building Blocks Overview](docs/documentation/Building-Blocks.md)
 
