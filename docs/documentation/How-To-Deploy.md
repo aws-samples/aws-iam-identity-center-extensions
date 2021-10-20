@@ -9,10 +9,10 @@
   1. A deployment account (DEPLOYMENT) - An account to manage the SSO extensions code, where we will be deploying the source code repository and deployment pipeline.
   2. A main Organization account (ORGMAIN) - this is required for listening to organization level based event notifications. For the purposes of demonstration, we will also use this as the SSO account, to process SSO admin and identity store operations.
      **NOTE**
-     Currently, AWS SSO service can only be configured in the ORGMAIN account for the entire organization. However, the solution is built with the assumption that AWS SSO service would support a delegated administrator model, similar to GuardDuty and other services. When this feature is supported by the solution at a later time, the only change required is the configuration file update to reflect the new account and region for SSO service and CDK bootstrapping in that new account and region. The solution does not need to be re-deployed 
+     Currently, AWS SSO service can only be configured in the ORGMAIN account for the entire organization. However, the solution is built with the assumption that AWS SSO service would support a delegated administrator model, similar to GuardDuty and other services. When this feature is supported by the solution at a later time, the only change required is the configuration file update to reflect the new account and region for SSO service and CDK bootstrapping in that new account and region. The solution does not need to be re-deployed
   3. Target account (TARGET) - Where the solution architecture is deployed.
 
-![High level design](docs/images/aws-sso-extensions-for-enterprise-overview.png)
+See the [High level design](../images/aws-sso-extensions-for-enterprise-overview.png) of the whole solution before deployment.
 
 ## Deployment Steps
 

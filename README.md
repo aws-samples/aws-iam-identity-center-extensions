@@ -27,7 +27,7 @@ have in your organization.
 
 ### The Composite Permission Set API
 
-The current Permission Set API  is a set of individual API's which each tackle one element of the permission set. For example, the CreatePermissionSet action allows you to create Permission sets with multiple attributes, such as its name and its tag.
+The current Permission Set API is a set of individual API's which each tackle one element of the permission set. For example, the CreatePermissionSet action allows you to create Permission sets with multiple attributes, such as its name and its tag.
 
 This can require additional API calls to attach/remove [Managed IAM policies](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_managed-vs-inline.html) and create/update/delete inline policies attached to the permission set.
 When we want to handle permission set lifecycles at scale, this becomes challenging.
@@ -43,8 +43,6 @@ This solution provides a composite API for managing permission set lifecycles, a
 - Enforce the "cannot delete" constraint when a permission set is being referenced in an entitlement
 
 ### Enterprise friendly account assignment life cycle
-
-The current entitlement API calls (createAccountAssignment, deleteAccountAssignment) use SSO generated ARNs for referencing the principalId, instanceArn and permissionSetArn.
 
 The current entitlement API's are only account-level and do not handle organization based entitlement provisioning and de-provisioning. This means at the moment, enterprises need to build their own automation for their SSO provisioning use cases.
 
