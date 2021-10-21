@@ -21,7 +21,7 @@ setting objects with your permissions descriptions in an S3 bucket. This
 enables you to integrate with upstream identity management systems you
 have in your organization.
 
-**[Get started with deployment!](docs/documentation/How-To-Deploy.md)**
+**[Get started with the deployment!](docs/documentation/How-To-Deploy.md)**
 
 ## Features
 
@@ -29,7 +29,7 @@ have in your organization.
 
 This solution provides a composite API for managing permission set lifecycles, allowing you to:
 
-- Create a complete permission set object including attributes and policies in a single call
+- Create a permission set object including attributes and policies in a single call
 - Update parts or all of a permission set object in a single call with a friendly name
 - Delete a complete permission set in a single call with a friendly name
 - Based on a configuration parameter, use either an S3 based interface or a RESTful API to upload permission set object as a whole
@@ -194,12 +194,12 @@ This solution enables enterprise friendly account assignment lifecycles through 
 
 - Using groups as the mechanism for the principal type, instead of an individual user
 - Friendly names for groups and permission sets when creating account assignments
-- Based on the configuration parameter, use either an S3 based interface/ Rest API interface to create/delete account assignments
+- Based on the configuration parameter, you can use either an S3 based interface/ Rest API interface to create/delete account assignments
 - Create & delete account assignments with scope set to **account, root, ou_id or account_tag**
 - Using the entity value passed in the payload, the solution calculates the account list and processes the account assignment operations on all the accounts automatically
 
 <details>
-<summary>Example paylod to provision permission set <b>teamA-permissionSet</b> for <b>all accounts in your organization</b> and provide access to <b>teamA user group</b></summary>
+<summary>Example payload to provision permission set <b>teamA-permissionSet</b> for <b>all accounts in your organization</b> and provide access to <b>teamA user group</b></summary>
 <p>
 
 ```json
@@ -213,7 +213,7 @@ This solution enables enterprise friendly account assignment lifecycles through 
 </details>
 
 <details>
-<summary>Example paylod to provision permission set <b>teamA-permissionSet</b> for <b>all accounts in your organization unit with ID ou-id12345</b> and provide access to <b>teamA user group</b></summary>
+<summary>Example payload to provision permission set <b>teamA-permissionSet</b> for <b>all accounts in your organization unit with ID ou-id12345</b> and provide access to <b>teamA user group</b></summary>
 <p>
 
 ```json
@@ -227,7 +227,7 @@ This solution enables enterprise friendly account assignment lifecycles through 
 </details>
 
 <details>
-<summary>Example paylod to provision permission set <b>teamA-permissionSet</b> for <b>all accounts that have tagkey team set to value teamA</b> and provide access to <b>teamA user group</b></summary>
+<summary>Example payload to provision permission set <b>teamA-permissionSet</b> for <b>all accounts that have tagkey team set to value teamA</b> and provide access to <b>teamA user group</b></summary>
 <p>
 
 ```json
@@ -241,7 +241,7 @@ This solution enables enterprise friendly account assignment lifecycles through 
 </details>
 
 <details>
-<summary>Example paylod to provision permission set <b>teamA-permissionSet</b> for <b>account 123456789012</b> and provide access to <b>teamA user group</b></summary>
+<summary>Example payload to provision permission set <b>teamA-permissionSet</b> for <b>account 123456789012</b> and provide access to <b>teamA user group</b></summary>
 <p>
 
 ```json
@@ -254,11 +254,13 @@ This solution enables enterprise friendly account assignment lifecycles through 
 </p>
 </details>
 
-### Automated access change management for account_tag,ou_id and root scopes
+[Start using](https://studio.us-east-1.prod.workshops.aws/preview/67ce7a7b-48aa-4b83-b9d4-98c3babbef8d/builds/67a01a15-d723-48bb-8412-5123efad201a/en-US/)
+
+### Automated access change management for root, ou_id and account_tag scopes
 
 The solution provides automated change access management through the following features:
 
-- If an account assignment has been created through the solution with scope set to root, and if a new account has been created at a later time, this new account is automatically provisioned with the account assignemnt.
+- If an account assignment has been created through the solution with scope set to root, and if a new account has been created at a later time, this new account is automatically provisioned with the account assignment.
 - If an account assignment has been created through the solution with scope set to ou_id, and an existing account moves out of this ou, this account assignment is automatically deleted from the account by the solution. If a new account is moved in to the ou, this account assignment is automatically created for the account by the solution.
 - If an account assignment has been created through the solution with scope set to account_tag, and an account is updated with this tag key value at a later time, this account assignment is automatically created for the new account by the solution. Additionally, when this tag key value is removed from the account/when this tag key is updated to a different value on the account at a later time, this account assignment is automatically deleted from the account by the solution.
 
@@ -281,7 +283,7 @@ The solution provides automated change access management through the following f
 
 ## [Use case Logical State Flows](docs/documentation/Use-Case-Logical-State-Flows.md)
 
-## [Example Use case: Using aws-sso-extensions-for-enterprise with SailPoint and ADFS](docs/documentation/Example-Use-case.md)
+## [Example: aws-sso-extensions-for-enterprise with SailPoint and ADFS](docs/documentation/Example-Use-case.md)
 
 ## Security
 
