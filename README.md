@@ -36,7 +36,7 @@ This solution provides a composite API for managing permission set lifecycles, a
 - Enforce the "cannot delete" constraint when a permission set is being referenced in an entitlement
 
 <details>
-<summary>Example payload to create a permission set</summary>
+<summary>Example payload to <b>create a permission set</b></summary>
 <p>
 
 ```json
@@ -104,7 +104,7 @@ This solution provides a composite API for managing permission set lifecycles, a
 </details>
 
 <details>
-<summary>Example payload to update a permission set</summary>
+<summary>Example payload to <b>update a permission set</b></summary>
 <p>
 
 ```json
@@ -173,7 +173,7 @@ This solution provides a composite API for managing permission set lifecycles, a
 </details>
 
 <details>
-<summary>Example payload to delete a permission set</summary>
+<summary>Example payload to <b>delete a permission set</b></summary>
 <p>
 
 ```json
@@ -199,7 +199,7 @@ This solution enables enterprise friendly account assignment lifecycles through 
 - Using the entity value passed in the payload, the solution calculates the account list and processes the account assignment operations on all the accounts automatically
 
 <details>
-<summary>Example paylod to provision permission set `teamA-permissionSet` for all accounts in your organization and provide access to `teamA` user group</summary>
+<summary>Example paylod to provision permission set <b>teamA-permissionSet</b> for <b>all accounts in your organization</b> and provide access to <b>teamA user group</b></summary>
 <p>
 
 ```json
@@ -213,7 +213,7 @@ This solution enables enterprise friendly account assignment lifecycles through 
 </details>
 
 <details>
-<summary>Example paylod to provision permission set `teamA-permissionSet` for all accounts in your organization unit with ID `ou-id12345` and provide access to `teamA` user group</summary>
+<summary>Example paylod to provision permission set <b>teamA-permissionSet</b> for <b>all accounts in your organization unit with ID ou-id12345</b> and provide access to <b>teamA user group</b></summary>
 <p>
 
 ```json
@@ -227,7 +227,7 @@ This solution enables enterprise friendly account assignment lifecycles through 
 </details>
 
 <details>
-<summary>Example paylod to provision permission set `teamA-permissionSet` for all accounts that have tagkey `team` set to value 'teamA' and provide access to `teamA` user group</summary>
+<summary>Example paylod to provision permission set <b>teamA-permissionSet</b> for <b>all accounts that have tagkey team set to value teamA</b> and provide access to <b>teamA user group</b></summary>
 <p>
 
 ```json
@@ -241,7 +241,7 @@ This solution enables enterprise friendly account assignment lifecycles through 
 </details>
 
 <details>
-<summary>Example paylod to provision permission set `teamA-permissionSet` for account 123456789012 and provide access to `teamA` user group</summary>
+<summary>Example paylod to provision permission set <b>teamA-permissionSet</b> for <b>account 123456789012</b> and provide access to <b>teamA user group</b></summary>
 <p>
 
 ```json
