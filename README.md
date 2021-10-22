@@ -2,6 +2,23 @@
 
 ![High level design](docs/images/aws-sso-extensions-for-enterprise-overview.png)
 
+## Table of Contents
+
+- [Overview](#Overview)
+- [Features](#Features)
+  - [The Composite Permission Set API](#the-composite-permission-set-api)
+  - [Enterprise friendly account assignment life cycle](#enterprise-friendly-account-assignment-life-cycle)
+  - [Automated access change management for root, ou_id and account_tag scopes](#automated-access-change-management-for-root-ou_id-and-account_tag-scopes)
+  - [De-couple life cycle management of different SSO objects and other features](de-couple-life-cycle-management-of-different-sso-objects-and-other-features)
+- [How to Deploy](docs/documentation/How-To-Deploy.md)
+- [Start Using](https://studio.us-east-1.prod.workshops.aws/preview/67ce7a7b-48aa-4b83-b9d4-98c3babbef8d/builds/67a01a15-d723-48bb-8412-5123efad201a/en-US/)
+- [Detailed Building Blocks Overview](docs/documentation/Building-Blocks.md)
+- [Solution Overview diagrams](docs/documentation/Overview-diagrams.md)
+- [Use case Logical State Flows](docs/documentation/Use-Case-Logical-State-Flows.md)
+- [Example: aws-sso-extensions-for-enterprise with SailPoint and ADFS](docs/documentation/Example-Use-case.md)
+- [Security](#security)
+- [License](#license)
+
 ## Overview
 
 `AWS SSO Extensions for Enterprise` simplifies the process to manage user
@@ -270,20 +287,6 @@ The solution provides automated change access management through the following f
 - The solution enables usage of friendly names in managing permission set, account assignment life cycles and would handle the translation of friendly names into internal AWS SSO GUID's automatically
 - The solution enables deployment in a distributed model i.e. orgmain, deployment and target account (or) in a single account model i.e. orgmain only. It's recommended that single account model of deployment be used only for demonstration purposes
 - The solution assumes that AWS SSO is enabled in a different account other than orgmain account and has the required cross-account permissions setup to enable the functionalities. This future-proofs the solution to support the scenario when AWS SSO service releases delegated admin support similar to other services such as GuardDuty
-
-## [How to Deploy](docs/documentation/How-To-Deploy.md)
-
-<!-- TODO update link to public workshop -->
-
-## [Start Using](https://studio.us-east-1.prod.workshops.aws/preview/67ce7a7b-48aa-4b83-b9d4-98c3babbef8d/builds/67a01a15-d723-48bb-8412-5123efad201a/en-US/)
-
-## [Detailed Building Blocks Overview](docs/documentation/Building-Blocks.md)
-
-## [Solution Overview diagrams](docs/documentation/Overview-diagrams.md)
-
-## [Use case Logical State Flows](docs/documentation/Use-Case-Logical-State-Flows.md)
-
-## [Example: aws-sso-extensions-for-enterprise with SailPoint and ADFS](docs/documentation/Example-Use-case.md)
 
 ## Security
 
