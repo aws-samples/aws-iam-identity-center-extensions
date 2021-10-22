@@ -42,12 +42,12 @@ export class AwsSsoExtensionsForEnterprise extends Stack {
           buildConfig.PipelineSettings.RepoBranchName
         ),
         commands: [
-          "yarn --cwd ./lib/lambda/layers/nodejs-layer/nodejs install --frozen-lockfile",
+          "yarn --cwd ./lib/lambda/layers/nodejs-layer/nodejs install --frozen-lockfile --silent",
           "yarn --cwd ./lib/lambda/layers/nodejs-layer/nodes audit --production",
-          "pip3 install safety",
+          "pip3 install safety --quiet",
           "safety check -r ./lib/lambda/layers/python-layer/requirements.txt",
-          "pip3 install --target ./lib/lambda/layers/python-layer/python -r ./lib/lambda/layers/python-layer/requirements.txt",
-          "yarn install --frozen-lockfile",
+          "pip3 install --target ./lib/lambda/layers/python-layer/python -r ./lib/lambda/layers/python-layer/requirements.txt --quiet",
+          "yarn install --frozen-lockfile --silent",
           "yarn audit --production",
           "yarn build",
           buildConfig.PipelineSettings.SynthCommand,
