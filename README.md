@@ -9,7 +9,7 @@
   - [The Composite Permission Set API](#the-composite-permission-set-api)
   - [Enterprise friendly account assignment life cycle](#enterprise-friendly-account-assignment-life-cycle)
   - [Automated access change management for root, ou_id and account_tag scopes](#automated-access-change-management-for-root-ou_id-and-account_tag-scopes)
-  - [De-couple life cycle management of different SSO objects and other features](de-couple-life-cycle-management-of-different-sso-objects-and-other-features)
+  - [De-couple life cycle management of different SSO objects and other features](#de-couple-life-cycle-management-of-different-sso-objects-and-other-features)
 - [How to Deploy](docs/documentation/How-To-Deploy.md)
 - [Start Using](https://studio.us-east-1.prod.workshops.aws/preview/67ce7a7b-48aa-4b83-b9d4-98c3babbef8d/builds/67a01a15-d723-48bb-8412-5123efad201a/en-US/)
 - [Detailed Building Blocks Overview](docs/documentation/Building-Blocks.md)
