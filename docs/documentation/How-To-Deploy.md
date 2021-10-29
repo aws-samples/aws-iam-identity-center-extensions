@@ -8,9 +8,13 @@
 
   1. A deployment account (DEPLOYMENT) - An account to manage the SSO extensions code, where we will be deploying the source code repository and deployment pipeline.
   2. A main Organization account (ORGMAIN) - this is required for listening to organization level based event notifications. For the purposes of demonstration, we will also use this as the SSO account, to process SSO admin and identity store operations.
+
      **NOTE**
-     Currently, AWS SSO service can only be configured in the ORGMAIN account for the entire organization. However, the solution is built with the assumption that AWS SSO service would support a delegated administrator model, similar to GuardDuty and other services. When this feature is supported by the solution at a later time, the only change required is the configuration file update to reflect the new account and region for SSO service and CDK bootstrapping in that new account and region. The solution does not need to be re-deployed
+
+     Currently, AWS SSO service can only be configured in the ORGMAIN account for the entire organization. However, the solution is built with the assumption that AWS SSO service would support a delegated administrator model, similar to GuardDuty and other services. When this feature is supported by the solution at a later time, the only change required is the configuration file update to reflect the new account and region for SSO service and CDK bootstrapping in that new account and region. The solution does not need to be re-deployed.
+
   3. Target account (TARGET) - Where the solution architecture is deployed.
+  4. The solution assumes that CloudTrail is enabled in ORGMAIN account and SSO account as this would be required by the solution.
 
 See the [High level design](../images/aws-sso-extensions-for-enterprise-overview.png) of the whole solution before deployment.
 
@@ -18,7 +22,7 @@ See the [High level design](../images/aws-sso-extensions-for-enterprise-overview
 
 ### Step 0: Setup solution code
 
-- Clone the solution code from the repository to your local machine.
+- Clone the solution code from this repository to your local machine.
 - Create a new [AWS codecommit](https://aws.amazon.com/codecommit/) repository where the solution code would be maintained in your DEPLOYMENT account.
 
 ### Step 1: Install the dependencies
@@ -50,7 +54,7 @@ To allow execution of the solution, we need to create two roles in the TARGET ac
     - OrgMainAccountId: org main account ID
     - TargetAccountRegion: target account region (eg, eu-west-1)
     - SSOServiceAccountId: SSO service account ID (until the time SSO service supports delegated admin mode deployment, this would be the same as OrgMainAccountId)
-    - SSOServiceAccountRegion: the main region of your SSO service deployment (same as org main region)
+    - SSOServiceAccountRegion: the main region of your SSO service deployment
     - RepoArn: ARN of the code commit repo created in Step 1
     - RepoBranchName: Branch of the repo where the code will be committed to
     - SynthCommand: The CDK synth command, of the format `yarn cdk-synth-<your-environment-name>`
@@ -72,11 +76,11 @@ First we want to set environment variables for our deployments. Make sure the bo
 
 ```bash
 cd cdk-bootstrap
-export BOOTSTRAP_QUALIFIER="znb859fds" 
+export BOOTSTRAP_QUALIFIER="znb859fds"
 export DEPLOYMENT_ACCOUNT_NUMBER="<Your Deployment account ID>"
 ```
 
-Ensure you have [AWS CLI credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) loaded on your machine to the DEPLOYMENT, ORGMAIN and the TARGET accounts,  with Admin rights to each.
+Ensure you have [AWS CLI credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) loaded on your machine to the DEPLOYMENT, ORGMAIN and the TARGET accounts, with Admin rights to each.
 
 Using the DEPLOYMENT account credentials and DEPLOYMENT account region, run the following:
 
@@ -113,7 +117,7 @@ ParameterKey=TrustedAccounts,ParameterValue=$DEPLOYMENT_ACCOUNT_NUMBER
 ### Step 5: Run CDK Synth
 
 At the root of the project, run
-  
+
 ```bash
 yarn cdk-synth-env
 ```

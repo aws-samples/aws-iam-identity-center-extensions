@@ -105,6 +105,8 @@ export class Utility extends Construct {
             utilityProps.errorNotificationsTopic.topicArn,
           provisionedLinksTable: utilityProps.provisionedLinksTable.tableName,
           SSOAPIRoleArn: utilityProps.waiterHandlerSSOAPIRoleArn,
+          SSOServiceAccountRegion:
+            buildConfig.PipelineSettings.SSOServiceAccountRegion,
         },
       }
     );

@@ -1,4 +1,4 @@
-# Enterprise IAM Integration
+# aws-sso-extensions-for-enterprise with SailPoint and ADFS
 
 `AWS SSO Extensions for Enterprise` solution is built with the objective to enable enterprise customers to better integrate AWS SSO with their current identity and access management tools.
 
