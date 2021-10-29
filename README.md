@@ -24,10 +24,10 @@
 `AWS SSO Extensions for Enterprise` simplifies the process to manage user
 access to AWS accounts with [AWS SSO](https://aws.amazon.com/single-sign-on/) by extending the [AWS SSO API](https://docs.aws.amazon.com/singlesignon/latest/APIReference/welcome.html).
 
-Instead of separately managing [AWS SSO permission sets](https://docs.aws.amazon.com/singlesignon/latest/userguide/permissionsetsconcept.html) and entitlement
-links, you can use this solution to describe permission sets with one API call
+Instead of separately managing [AWS SSO permission sets](https://docs.aws.amazon.com/singlesignon/latest/userguide/permissionsetsconcept.html) and account
+assignments, you can use this solution to describe permission sets with one API call
 per set. Like with permission sets, you can also define and
-implement entitlement links at a global level, an organizational unit level or an account tag
+implement account assignments at a global level, an organizational unit level or an account tag
 level. The solution ensures your defined permissions are rolled out across
 the entire AWS Organization, and that they are updated as you change your
 organization.
@@ -50,7 +50,7 @@ This solution provides a composite API for managing permission set lifecycles, a
 - Update parts or all of a permission set object in a single call with a friendly name
 - Delete a complete permission set in a single call with a friendly name
 - Based on a configuration parameter, use either an S3 based interface or a RESTful API to upload permission set object as a whole
-- Enforce the "cannot delete" constraint when a permission set is being referenced in an entitlement
+- Enforce the "cannot delete" constraint when a permission set is being referenced in an account assignment
 
 <details>
 <summary>Example payload to <b>create a permission set</b></summary>
