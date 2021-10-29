@@ -5,13 +5,15 @@
 ## Table of Contents
 
 - [Overview](#Overview)
+- [How to Deploy](docs/documentation/How-To-Deploy.md)
+- [Self-paced Workshop](__PLACEHOLDER__)
 - [Features](#Features)
+
   - [The Composite Permission Set API](#the-composite-permission-set-api)
   - [Enterprise friendly account assignment life cycle](#enterprise-friendly-account-assignment-life-cycle)
   - [Automated access change management for root, ou_id and account_tag scopes](#automated-access-change-management-for-root-ou_id-and-account_tag-scopes)
   - [De-couple life cycle management of different SSO objects and other features](#de-couple-life-cycle-management-of-different-sso-objects-and-other-features)
-- [How to Deploy](docs/documentation/How-To-Deploy.md)
-- [Start Using](https://studio.us-east-1.prod.workshops.aws/preview/67ce7a7b-48aa-4b83-b9d4-98c3babbef8d/builds/67a01a15-d723-48bb-8412-5123efad201a/en-US/)
+
 - [Detailed Building Blocks Overview](docs/documentation/Building-Blocks.md)
 - [Solution Overview diagrams](docs/documentation/Overview-diagrams.md)
 - [Use case Logical State Flows](docs/documentation/Use-Case-Logical-State-Flows.md)
@@ -21,13 +23,13 @@
 
 ## Overview
 
-`AWS SSO Extensions for Enterprise` simplifies the process to manage user
+**AWS SSO Extensions for Enterprise** simplifies the process to manage user
 access to AWS accounts with [AWS SSO](https://aws.amazon.com/single-sign-on/) by extending the [AWS SSO API](https://docs.aws.amazon.com/singlesignon/latest/APIReference/welcome.html).
 
-Instead of separately managing [AWS SSO permission sets](https://docs.aws.amazon.com/singlesignon/latest/userguide/permissionsetsconcept.html) and entitlement
-links, you can use this solution to describe permission sets with one API call
+Instead of separately managing [AWS SSO permission sets](https://docs.aws.amazon.com/singlesignon/latest/userguide/permissionsetsconcept.html) and account
+assignments, you can use this solution to describe permission sets with one API call
 per set. Like with permission sets, you can also define and
-implement entitlement links at a global level, an organizational unit level or an account tag
+implement account assignments at a global level, an organizational unit level or an account tag
 level. The solution ensures your defined permissions are rolled out across
 the entire AWS Organization, and that they are updated as you change your
 organization.
@@ -40,6 +42,10 @@ have in your organization.
 
 **[Get started with the deployment!](docs/documentation/How-To-Deploy.md)**
 
+or
+
+**[Follow along with this self-paced workshop!](__PLACEHOLDER__)**
+
 ## Features
 
 ### The Composite Permission Set API
@@ -50,7 +56,7 @@ This solution provides a composite API for managing permission set lifecycles, a
 - Update parts or all of a permission set object in a single call with a friendly name
 - Delete a complete permission set in a single call with a friendly name
 - Based on a configuration parameter, use either an S3 based interface or a RESTful API to upload permission set object as a whole
-- Enforce the "cannot delete" constraint when a permission set is being referenced in an entitlement
+- Enforce the "cannot delete" constraint when a permission set is being referenced in an account assignment
 
 <details>
 <summary>Example payload to <b>create a permission set</b></summary>
@@ -270,8 +276,6 @@ This solution enables enterprise friendly account assignment lifecycles through 
 
 </p>
 </details>
-
-[Start using](https://studio.us-east-1.prod.workshops.aws/preview/67ce7a7b-48aa-4b83-b9d4-98c3babbef8d/builds/67a01a15-d723-48bb-8412-5123efad201a/en-US/)
 
 ### Automated access change management for root, ou_id and account_tag scopes
 
