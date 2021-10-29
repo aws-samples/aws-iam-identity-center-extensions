@@ -17,20 +17,24 @@ from botocore.waiter import WaiterModel, create_waiter_with_client
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-errorNotificationsTopicArn = os.environ['errorNotificationsTopicArn']
+error_notifications_topic_arn = os.environ['errorNotificationsTopicArn']
 sso_api_rolearn = os.environ['SSOAPIRoleArn']
+sso_service_region = os.environ['SSOServiceAccountRegion']
+
 sts_client = boto3.client('sts')
 assumed_role_object = sts_client.assume_role(
     RoleArn=sso_api_rolearn,
     RoleSessionName='waiterHandler'
 )
 assumed_role_credentials = assumed_role_object['Credentials']
-sso_admin_client = boto3.client(
-    'sso-admin',
+assumed_role_session = boto3.session.Session(
     aws_access_key_id=assumed_role_credentials['AccessKeyId'],
     aws_secret_access_key=assumed_role_credentials['SecretAccessKey'],
     aws_session_token=assumed_role_credentials['SessionToken'],
+    region_name=sso_service_region
 )
+sso_admin_client = assumed_role_session.client('sso-admin')
+
 dynamodb_resource = boto3.resource('dynamodb')
 provisionedLinksTable = dynamodb_resource.Table(
     os.environ['provisionedLinksTable'])
@@ -163,7 +167,7 @@ def lambda_handler(event, context):
                 'PermissionSetArn': e.last_response['AccountAssignmentCreationStatus']['PermissionSetArn'],
             }
             sns_client.publish(
-                TopicArn=errorNotificationsTopicArn,
+                TopicArn=error_notifications_topic_arn,
                 Message=json.dumps(errorMessage)
             )
     elif (message['waiter_name'] == 'AccountAssignmentCreated'):
@@ -188,7 +192,7 @@ def lambda_handler(event, context):
                 'PermissionSetArn': e.last_response['AccountAssignmentCreationStatus']['PermissionSetArn'],
             }
             sns_client.publish(
-                TopicArn=errorNotificationsTopicArn,
+                TopicArn=error_notifications_topic_arn,
                 Message=json.dumps(errorMessage)
             )
         except ClientError as e:
@@ -199,7 +203,7 @@ def lambda_handler(event, context):
                 'FailureReason': (e.response['Error']['Message'])
             }
             sns_client.publish(
-                TopicArn=errorNotificationsTopicArn,
+                TopicArn=error_notifications_topic_arn,
                 Message=json.dumps(errorMessage)
             )
     elif (message['waiter_name'] == 'AccountAssignmentDeleted'):
@@ -223,7 +227,7 @@ def lambda_handler(event, context):
                 'PermissionSetArn': e.last_response['AccountAssignmentDeletionStatus']['PermissionSetArn'],
             }
             sns_client.publish(
-                TopicArn=errorNotificationsTopicArn,
+                TopicArn=error_notifications_topic_arn,
                 Message=json.dumps(errorMessage)
             )
         except ClientError as e:
@@ -234,6 +238,6 @@ def lambda_handler(event, context):
                 'FailureReason': (e.response['Error']['Message'])
             }
             sns_client.publish(
-                TopicArn=errorNotificationsTopicArn,
+                TopicArn=error_notifications_topic_arn,
                 Message=json.dumps(errorMessage)
             )
