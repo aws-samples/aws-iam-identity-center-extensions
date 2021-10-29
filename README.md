@@ -6,8 +6,9 @@
 
 - [Overview](#Overview)
 - [How to Deploy](docs/documentation/How-To-Deploy.md)
-- [Self-paced Workshop](https://studio.us-east-1.prod.workshops.aws/preview/640b0bab-1f5e-494a-973e-4ed7919d397b/builds/7bbf4a5c-0095-461b-9f27-f8de7e125937/en-US)
+- [Self-paced Workshop](__PLACEHOLDER__)
 - [Features](#Features)
+
   - [The Composite Permission Set API](#the-composite-permission-set-api)
   - [Enterprise friendly account assignment life cycle](#enterprise-friendly-account-assignment-life-cycle)
   - [Automated access change management for root, ou_id and account_tag scopes](#automated-access-change-management-for-root-ou_id-and-account_tag-scopes)
@@ -43,7 +44,7 @@ have in your organization.
 
 or
 
-**[Follow along with this self-paced workshop!](https://studio.us-east-1.prod.workshops.aws/preview/640b0bab-1f5e-494a-973e-4ed7919d397b/builds/7bbf4a5c-0095-461b-9f27-f8de7e125937/en-US)**
+**[Follow along with this self-paced workshop!](__PLACEHOLDER__)**
 
 ## Features
 
