@@ -1,2 +1,5 @@
 # Ignore cdk.out
 cdk.out
+
+# Ignore Lambda layers
+lib/lambda/layers/**

@@ -126,6 +126,12 @@ Ensure that the [synth](https://docs.aws.amazon.com/cdk/latest/guide/hello_world
 
 ### Step 7: Push source code to CodeCommit
 
+Run cleanup, prior to committing the changes by running the below without any errors
+
+```bash
+yarn prettier && yarn eslint . --fix
+```
+
 [Push the changes](https://docs.aws.amazon.com/codecommit/latest/userguide/getting-started.html#getting-started-init-repo) to the codecommit repo in the DEPLOYMENT account created in Step 0.
 
 ### Step 8: Deploy the Pipeline stack
