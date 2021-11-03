@@ -135,7 +135,6 @@ function getConfig() {
         unparsedEnv["Parameters"],
         "PermissionSetCallerRoleArn"
       ),
-      ApiCorsOrigin: ensureString(unparsedEnv["Parameters"], "ApiCorsOrigin"),
       NotificationEmail: ensureString(
         unparsedEnv["Parameters"],
         "NotificationEmail"
