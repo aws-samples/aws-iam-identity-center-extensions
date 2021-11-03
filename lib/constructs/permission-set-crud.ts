@@ -110,7 +110,7 @@ export class PermissionSetCRUD extends Construct {
           environment: {
             DdbTable: this.permissionSetTable.tableName,
             AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
-            corsOrigin: buildConfig.Parameters.ApiCorsOrigin,
+            corsOrigin: "'*'",
             linksTable: PermissionSetCRUDProps.linksTableName,
             artefactsBucketName:
               PermissionSetCRUDProps.ssoArtefactsBucket.bucketName,

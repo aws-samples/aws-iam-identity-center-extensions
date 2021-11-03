@@ -63,7 +63,6 @@ To allow execution of the solution, we need to create two roles in the TARGET ac
     - PermissionSetProvisioningMode: Choose either `api` or `s3` as the provisioning interface for the permission sets.
     - LinkCallerRoleArn: the ARN of the LinkCallerRoleArn role we created in step 2
     - PermissionSetCallerRoleArn: the ARN of the PermissionSetCallerRoleArn role we created in step 2
-    - ApiCorsOrigin: You can update this to your requirements, or leave as is.
     - NotificationEmail: The email address that should receive failure/error notifications
     - IsAdUsed: set this to `true` or `false` depending on whether your SSO configuration uses Active Directory as the identity store. For the purposes of the walk through demo, we can leave this as false.
     - DomainName: set this to the FQDN of your AD
