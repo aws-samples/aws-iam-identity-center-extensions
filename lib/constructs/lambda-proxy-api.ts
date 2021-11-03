@@ -143,8 +143,7 @@ export class LambdaProxyAPI extends Construct {
               responseParameters: {
                 "method.response.header.Access-Control-Allow-Headers":
                   "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
-                "method.response.header.Access-Control-Allow-Origin":
-                  buildConfig.Parameters.ApiCorsOrigin,
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
                 "method.response.header.Access-Control-Allow-Credentials":
                   "'false'",
                 "method.response.header.Access-Control-Allow-Methods":
