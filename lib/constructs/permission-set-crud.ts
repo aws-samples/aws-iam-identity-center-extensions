@@ -101,9 +101,9 @@ export class PermissionSetCRUD extends Construct {
             Path.join(
               __dirname,
               "../",
-              "lambda",
-              "functions",
-              "ddb-import-handlers"
+              "lambda-functions",
+              "ddb-import-handlers",
+              "src"
             )
           ),
           layers: [PermissionSetCRUDProps.nodeJsLayer],
@@ -144,9 +144,9 @@ export class PermissionSetCRUD extends Construct {
             Path.join(
               __dirname,
               "../",
-              "lambda",
-              "functions",
-              "ddb-import-handlers"
+              "lambda-functions",
+              "ddb-import-handlers",
+              "src"
             )
           ),
           layers: [PermissionSetCRUDProps.nodeJsLayer],
@@ -193,9 +193,9 @@ export class PermissionSetCRUD extends Construct {
             Path.join(
               __dirname,
               "../",
-              "lambda",
-              "functions",
-              "ddb-import-handlers"
+              "lambda-functions",
+              "ddb-import-handlers",
+              "src"
             )
           ),
           layers: [PermissionSetCRUDProps.nodeJsLayer],

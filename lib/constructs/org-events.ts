@@ -46,7 +46,7 @@ export class OrgEvents extends Construct {
         handler: "orgEvents.handler",
         functionName: name(buildConfig, "orgEventsHandler"),
         code: lambda.Code.fromAsset(
-          Path.join(__dirname, "../", "lambda", "functions", "sso-handlers")
+          Path.join(__dirname, "../", "lambda-functions", "sso-handlers", "src")
         ),
         layers: [orgEventsProps.nodeJsLayer],
         environment: {

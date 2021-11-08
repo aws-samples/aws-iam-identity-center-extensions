@@ -8,13 +8,9 @@ gracefully handled by the proxy API
 import {
   AccessLogFormat,
   AuthorizationType,
-  IResource,
   LambdaIntegration,
   LambdaRestApi,
   LogGroupLogDestination,
-  MockIntegration,
-  PassthroughBehavior,
-  ResponseType,
 } from "@aws-cdk/aws-apigateway";
 import { Effect, IRole, PolicyStatement, Role } from "@aws-cdk/aws-iam";
 import { Function } from "@aws-cdk/aws-lambda";
@@ -88,24 +84,9 @@ export class LambdaProxyAPI extends Construct {
       }
     );
 
-    this.lambdaProxyAPI.addGatewayResponse("not_authorized", {
-      type: ResponseType.DEFAULT_4XX,
-      responseHeaders: {
-        "Access-Control-Allow-Origin": "'*'",
-        "Access-Control-Allow-Headers": "'*'",
-        "Access-Control-Allow-Credentials": "'true'",
-      },
-      templates: {
-        "application/json":
-          '{ "message": $context.error.messageString, "type": "$context.error.responseType", "code": "$context.error.responseType" }',
-      },
-    });
-
     const lambdaproxyAPIResource = this.lambdaProxyAPI.root.addResource(
       lambdaProxyAPIProps.apiResourceName
     );
-
-    addCorsOptions(lambdaproxyAPIResource);
 
     this.lambdaProxyAPIRole = Role.fromRoleArn(
       this,
@@ -132,44 +113,5 @@ export class LambdaProxyAPI extends Construct {
         resources: [lambdaProxyAPIMethod.methodArn],
       })
     );
-
-    function addCorsOptions(apiResource: IResource) {
-      apiResource.addMethod(
-        "OPTIONS",
-        new MockIntegration({
-          integrationResponses: [
-            {
-              statusCode: "200",
-              responseParameters: {
-                "method.response.header.Access-Control-Allow-Headers":
-                  "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
-                "method.response.header.Access-Control-Allow-Origin": "'*'",
-                "method.response.header.Access-Control-Allow-Credentials":
-                  "'false'",
-                "method.response.header.Access-Control-Allow-Methods":
-                  "'POST,OPTIONS'",
-              },
-            },
-          ],
-          passthroughBehavior: PassthroughBehavior.WHEN_NO_MATCH,
-          requestTemplates: {
-            "application/json": '{"statusCode": 200}',
-          },
-        }),
-        {
-          methodResponses: [
-            {
-              statusCode: "200",
-              responseParameters: {
-                "method.response.header.Access-Control-Allow-Headers": true,
-                "method.response.header.Access-Control-Allow-Methods": true,
-                "method.response.header.Access-Control-Allow-Credentials": true,
-                "method.response.header.Access-Control-Allow-Origin": true,
-              },
-            },
-          ],
-        }
-      );
-    }
   }
 }

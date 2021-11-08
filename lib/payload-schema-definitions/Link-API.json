@@ -1,6 +1,6 @@
 {
-  "schema": "http://json-schema.org/draft-07/schema",
-  "id": "Link-API",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "Link-API",
   "type": "object",
   "title": "Link-API",
   "description": "Schemea for link create/delete.",
@@ -8,7 +8,7 @@
   "required": ["action", "linkData"],
   "properties": {
     "action": {
-      "id": "#/properties/action",
+      "$id": "#/properties/action",
       "type": "string",
       "title": "Link operation type",
       "description": "Link operation type",
@@ -16,7 +16,7 @@
       "enum": ["create", "delete"]
     },
     "linkData": {
-      "id": "#/properties/linkData",
+      "$id": "#/properties/linkData",
       "type": "string",
       "title": "Link ojbect",
       "description": "Link object",
@@ -26,7 +26,7 @@
           "pattern": "root\\.all\\.[a-zA-Z0-9-@=,\\s]+\\.[a-zA-Z0-9-_\\s]+\\.ssofile"
         },
         {
-          "pattern": "ou_id\\.ou-[a-z0-9]{4}-[a-z0-9]{8}\\.[a-zA-Z0-9-@=,\\s]{1,32}\\.[a-zA-Z0-9-_\\s]+\\.ssofile"
+          "pattern": "ou_$id\\.ou-[a-z0-9]{4}-[a-z0-9]{8}\\.[a-zA-Z0-9-@=,\\s]{1,32}\\.[a-zA-Z0-9-_\\s]+\\.ssofile"
         },
         {
           "pattern": "account\\.[0-9]{12}\\.[a-zA-Z0-9-@=,\\s]{1,32}\\.[a-zA-Z0-9-_\\s]+\\.ssofile"

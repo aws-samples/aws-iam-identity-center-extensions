@@ -45,7 +45,7 @@ export class SSOGroupProcessor extends Construct {
         handler: "groupsCud.handler",
         functionName: name(buildConfig, "ssoGroupHandler"),
         code: lambda.Code.fromAsset(
-          Path.join(__dirname, "../", "lambda", "functions", "sso-handlers")
+          Path.join(__dirname, "../", "lambda-functions", "sso-handlers", "src")
         ),
         layers: [ssoGroupProcessorProps.nodeJsLayer],
         environment: {

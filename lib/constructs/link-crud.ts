@@ -15,6 +15,7 @@ import {
 import { Role } from "@aws-cdk/aws-iam";
 import { Key } from "@aws-cdk/aws-kms";
 import * as lambda from "@aws-cdk/aws-lambda"; //Needed to avoid semgrep throwing up https://cwe.mitre.org/data/definitions/95.html
+import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
 import { Bucket, EventType } from "@aws-cdk/aws-s3";
 import { LambdaDestination } from "@aws-cdk/aws-s3-notifications";
 import { CfnOutput, Construct, RemovalPolicy } from "@aws-cdk/core";
@@ -114,22 +115,30 @@ export class LinkCRUD extends Construct {
     });
 
     if (buildConfig.Parameters.LinksProvisioningMode.toLowerCase() === "api") {
-      this.linkAPIHandler = new lambda.Function(
+      this.linkAPIHandler = new NodejsFunction(
         this,
         name(buildConfig, "linkApiHandler"),
         {
           runtime: lambda.Runtime.NODEJS_14_X,
-          handler: "linkApi.handler",
           functionName: name(buildConfig, "linkApiHandler"),
-          code: lambda.Code.fromAsset(
-            Path.join(
-              __dirname,
-              "../",
-              "lambda",
-              "functions",
-              "ddb-import-handlers"
-            )
+          entry: Path.join(
+            __dirname,
+            "../",
+            "lambda-functions",
+            "ddb-import-handlers",
+            "src",
+            "linkApi.ts"
           ),
+          bundling: {
+            externalModules: [
+              "@aws-sdk/client-dynamodb",
+              "@aws-sdk/client-s3",
+              "@aws-sdk/lib-dynamodb",
+              "jsonschema",
+              "ajv",
+            ],
+            minify: true,
+          },
           layers: [linkCRUDProps.nodeJsLayer],
           environment: {
             DdbTable: this.linksTable.tableName,
@@ -166,9 +175,9 @@ export class LinkCRUD extends Construct {
             Path.join(
               __dirname,
               "../",
-              "lambda",
-              "functions",
-              "ddb-import-handlers"
+              "lambda-functions",
+              "ddb-import-handlers",
+              "src"
             )
           ),
           layers: [linkCRUDProps.nodeJsLayer],
@@ -201,9 +210,9 @@ export class LinkCRUD extends Construct {
             Path.join(
               __dirname,
               "../",
-              "lambda",
-              "functions",
-              "ddb-import-handlers"
+              "lambda-functions",
+              "ddb-import-handlers",
+              "src"
             )
           ),
           layers: [linkCRUDProps.nodeJsLayer],

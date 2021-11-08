@@ -23,7 +23,7 @@ export class LambdaLayers extends Construct {
       name(buildConfig, "nodeJsLayer"),
       {
         code: Code.fromAsset(
-          Path.join(__dirname, "../", "lambda", "layers", "nodejs-layer")
+          Path.join(__dirname, "../", "lambda-layers", "nodejs-layer")
         ),
         compatibleRuntimes: [Runtime.NODEJS_14_X],
       }
@@ -34,7 +34,7 @@ export class LambdaLayers extends Construct {
       name(buildConfig, "pythonLayer"),
       {
         code: Code.fromAsset(
-          Path.join(__dirname, "../", "lambda", "layers", "python-layer")
+          Path.join(__dirname, "../", "lambda-layers", "python-layer")
         ),
         compatibleRuntimes: [Runtime.PYTHON_3_8],
       }

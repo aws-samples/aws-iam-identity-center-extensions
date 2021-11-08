@@ -1,6 +1,6 @@
 {
-  "schema": "http://json-schema.org/draft-07/schema",
-  "id": "permissionSetData",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "permissionSetData",
   "type": "object",
   "title": "Permission Set Object",
   "description": "Permission Set Object",
@@ -15,7 +15,7 @@
   ],
   "properties": {
     "permissionSetName": {
-      "id": "#/properties/permissionSetName",
+      "$id": "#/properties/permissionSetName",
       "type": "string",
       "title": "Permission Set Name",
       "description": "Permission Set Nam",
@@ -25,7 +25,7 @@
       "pattern": "^[a-zA-Z0-9-@=,\\s]*$"
     },
     "sessionDurationInMinutes": {
-      "id": "#/properties/sessionDurationInMinutes",
+      "$id": "#/properties/sessionDurationInMinutes",
       "type": "string",
       "title": "sessionDurationInMinutes",
       "description": "sessionDurationInMinutes",
@@ -34,7 +34,7 @@
       "pattern": "^(720|7[0-1][0-9]|[1-6][0-9][0-9]|[6-9][0-9])$"
     },
     "relayState": {
-      "id": "#/properties/relayState",
+      "$id": "#/properties/relayState",
       "type": "string",
       "title": "relayState",
       "description": "relayState",
@@ -43,17 +43,17 @@
       "maxLength": 240
     },
     "tags": {
-      "id": "#/properties/tags",
+      "$id": "#/properties/tags",
       "type": "array",
       "title": "tags",
       "description": "tags",
       "default": [],
       "additionalItems": true,
       "items": {
-        "id": "#/properties/tags/items",
+        "$id": "#/properties/tags/items",
         "anyOf": [
           {
-            "id": "#/properties/tags/items/anyOf/0",
+            "$id": "#/properties/tags/items/anyOf/0",
             "type": "object",
             "title": "tag object",
             "description": "tag object",
@@ -61,7 +61,7 @@
             "required": ["Key", "Value"],
             "properties": {
               "Key": {
-                "id": "#/properties/tags/items/anyOf/0/properties/Key",
+                "$id": "#/properties/tags/items/anyOf/0/properties/Key",
                 "type": "string",
                 "title": "tag object key",
                 "description": "tag object key",
@@ -71,7 +71,7 @@
                 "pattern": "^[A-Za-z0-9_:/=\\+\\-@]*$"
               },
               "Value": {
-                "id": "#/properties/tags/items/anyOf/0/properties/Value",
+                "$id": "#/properties/tags/items/anyOf/0/properties/Value",
                 "type": "string",
                 "title": "tag object value",
                 "description": "tag object value",
@@ -87,20 +87,20 @@
       }
     },
     "managedPoliciesArnList": {
-      "id": "#/properties/managedPoliciesArnList",
+      "$id": "#/properties/managedPoliciesArnList",
       "type": "array",
-      "title": "The managedPoliciesArnList schema",
+      "title": "The managedPoliciesArnList $schema",
       "description": "An explanation about the purpose of this instance.",
       "default": [],
       "additionalItems": true,
       "items": {
-        "id": "#/properties/managedPoliciesArnList/items",
+        "$id": "#/properties/managedPoliciesArnList/items",
         "anyOf": [
           {
-            "id": "#/properties/managedPoliciesArnList/items/anyOf/0",
+            "$id": "#/properties/managedPoliciesArnList/items/anyOf/0",
             "type": "string",
-            "title": "Managed Policies schema",
-            "description": "Managed Policies schema",
+            "title": "Managed Policies $schema",
+            "description": "Managed Policies $schema",
             "default": "",
             "pattern": "arn:aws:iam::aws:policy/[A-Za-z]+"
           }
@@ -108,24 +108,24 @@
       }
     },
     "inlinePolicyDocument": {
-      "id": "#/properties/inlinePolicyDocument",
+      "$id": "#/properties/inlinePolicyDocument",
       "type": "object",
-      "title": "The inlinePolicyDocument schema",
+      "title": "The inlinePolicyDocument $schema",
       "description": "Inline Policy Document",
       "default": {},
 
       "properties": {
         "Version": {
-          "id": "#/properties/inlinePolicyDocument/properties/Version",
+          "$id": "#/properties/inlinePolicyDocument/properties/Version",
           "type": "string",
-          "title": "The Version schema",
+          "title": "The Version $schema",
           "description": "An explanation about the purpose of this instance.",
           "default": ""
         },
         "Statement": {
-          "id": "#/properties/inlinePolicyDocument/properties/Statement",
+          "$id": "#/properties/inlinePolicyDocument/properties/Statement",
           "type": "array",
-          "title": "The Statement schema",
+          "title": "The Statement $schema",
           "description": "An explanation about the purpose of this instance.",
           "default": [],
           "additionalItems": true

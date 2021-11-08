@@ -58,7 +58,7 @@ export class LinkProcessor extends Construct {
         handler: "linkManager.handler",
         functionName: name(buildConfig, "linkManagerHandler"),
         code: lambda.Code.fromAsset(
-          Path.join(__dirname, "../", "lambda", "functions", "sso-handlers")
+          Path.join(__dirname, "../", "lambda-functions", "sso-handlers", "src")
         ),
         layers: [linkprocessProps.nodeJsLayer],
         environment: {
@@ -98,7 +98,7 @@ export class LinkProcessor extends Construct {
           "processTargetAccountSMListenerHandler"
         ),
         code: lambda.Code.fromAsset(
-          Path.join(__dirname, "../", "lambda", "functions", "sso-handlers")
+          Path.join(__dirname, "../", "lambda-functions", "sso-handlers", "src")
         ),
         layers: [linkprocessProps.nodeJsLayer],
         environment: {
@@ -124,9 +124,9 @@ export class LinkProcessor extends Construct {
           Path.join(
             __dirname,
             "../",
-            "lambda",
-            "functions",
-            "ddb-stream-handlers"
+            "lambda-functions",
+            "ddb-stream-handlers",
+            "src"
           )
         ),
         layers: [linkprocessProps.nodeJsLayer],

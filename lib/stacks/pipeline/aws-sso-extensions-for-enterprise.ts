@@ -42,11 +42,14 @@ export class AwsSsoExtensionsForEnterprise extends Stack {
           buildConfig.PipelineSettings.RepoBranchName
         ),
         commands: [
-          "yarn --cwd ./lib/lambda/layers/nodejs-layer/nodejs install --frozen-lockfile --silent",
-          "yarn --cwd ./lib/lambda/layers/nodejs-layer/nodes audit --production",
+          "mkdir ./lib/lambda-layers/nodejs-layer/nodejs/payload-schema-definitions",
+          "cp -R ./lib/payload-schema-definitions/* ./lib/lambda-layers/nodejs-layer/nodejs/payload-schema-definitions/",
+          "yarn --cwd ./lib/lambda-layers/nodejs-layer/nodejs install --frozen-lockfile --silent",
+          "yarn --cwd ./lib/lambda-functions install --frozen-lockfile --silent",
+          "yarn --cwd ./lib/lambda-layers/nodejs-layer/nodes audit --production",
           "pip3 install safety --quiet",
-          "safety check -r ./lib/lambda/layers/python-layer/requirements.txt",
-          "pip3 install --target ./lib/lambda/layers/python-layer/python -r ./lib/lambda/layers/python-layer/requirements.txt --quiet",
+          "safety check -r ./lib/lambda-layers/python-layer/requirements.txt",
+          "pip3 install --target ./lib/lambda-layers/python-layer/python -r ./lib/lambda-layers/python-layer/requirements.txt --quiet",
           "yarn install --frozen-lockfile --silent",
           "yarn audit --production",
           "yarn build",

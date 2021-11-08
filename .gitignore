@@ -1,5 +1,4 @@
 *.js
-!.eslintrc.js
 !jest.config.js
 *.d.ts
 node_modules
@@ -15,32 +14,36 @@ cdk.out
 # Parcel default cache directory
 .parcel-cache
 
-# Draw IO images exclusion
-docs/images/*.drawio
+# Eslint config
+!.eslintrc.js
+
+# Drawio diagrams
+*.drawio
+
 
 # Lambda code exclusion
-!/lib/lambda/functions/ddb-import-handlers/permissionSetCu.js
-!/lib/lambda/functions/ddb-import-handlers/permissionSetDel.js
-!/lib/lambda/functions/ddb-import-handlers/permissionSetApi.js
-!/lib/lambda/functions/ddb-import-handlers/linkCu.js
-!/lib/lambda/functions/ddb-import-handlers/linkDel.js
-!/lib/lambda/functions/ddb-import-handlers/linkApi.js
+!/lib/lambda-functions/ddb-import-handlers/src/permissionSetCu.js
+!/lib/lambda-functions/ddb-import-handlers/src/permissionSetDel.js
+!/lib/lambda-functions/ddb-import-handlers/src/permissionSetApi.js
+!/lib/lambda-functions/ddb-import-handlers/src/linkCu.js
+!/lib/lambda-functions/ddb-import-handlers/src/linkDel.js
 
-!/lib/lambda/functions/ddb-stream-handlers/permissionSet.js
-!/lib/lambda/functions/ddb-stream-handlers/link.js
 
-!/lib/lambda/functions/sso-handlers/groupsCud.js
-!/lib/lambda/functions/sso-handlers/permissionSetTopic.js
-!/lib/lambda/functions/sso-handlers/linkManager.js
-!/lib/lambda/functions/sso-handlers/orgEvents.js
-!/lib/lambda/functions/sso-handlers/tagsInventory.js
-!/lib/lambda/functions/sso-handlers/permissionSetSync.js
-!/lib/lambda/functions/sso-handlers/processTargetAccountSMListener.js
+!/lib/lambda-functions/ddb-stream-handlers/src/permissionSet.js
+!/lib/lambda-functions/ddb-stream-handlers/src/link.js
 
-!/lib/lambda/functions/helpers/ssmParamReader.js
+!/lib/lambda-functions/sso-handlers/src/groupsCud.js
+!/lib/lambda-functions/sso-handlers/src/permissionSetTopic.js
+!/lib/lambda-functions/sso-handlers/src/linkManager.js
+!/lib/lambda-functions/sso-handlers/src/orgEvents.js
+!/lib/lambda-functions/sso-handlers/src/tagsInventory.js
+!/lib/lambda-functions/sso-handlers/src/permissionSetSync.js
+!/lib/lambda-functions/sso-handlers/src/processTargetAccountSMListener.js
+
+
 
 # Ignore Python lambda layers except requirements.txt
-/lib/lambda/layers/python-layer/*
-!/lib/lambda/layers/python-layer/requirements.txt
+/lib/lambda-layers/python-layer/*
+!/lib/lambda-layers/python-layer/requirements.txt
 
 

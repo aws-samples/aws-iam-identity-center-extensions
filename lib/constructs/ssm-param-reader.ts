@@ -6,6 +6,7 @@ allows cross account read of SSM parameter value
 import { PolicyStatement } from "@aws-cdk/aws-iam";
 import * as lambda from "@aws-cdk/aws-lambda"; //Needed to avoid semgrep throwing up https://cwe.mitre.org/data/definitions/95.html
 import { LayerVersion } from "@aws-cdk/aws-lambda";
+import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
 import { Construct, CustomResource } from "@aws-cdk/core";
 import { Provider } from "@aws-cdk/custom-resources";
 import * as Path from "path";
@@ -49,7 +50,7 @@ export class SSMParamReader extends Construct {
       actions: ["sts:AssumeRole"],
     });
 
-    const paramReaderFn = new lambda.Function(
+    const paramReaderFn = new NodejsFunction(
       this,
       name(buildConfig, `paramReader-${ssmParamReaderprops.ParamNameKey}`),
       {
@@ -59,10 +60,21 @@ export class SSMParamReader extends Construct {
           `paramReader-${ssmParamReaderprops.ParamNameKey}`
         ),
         layers: [ssmParamReaderprops.LambdaLayers],
-        code: lambda.Code.fromAsset(
-          Path.join(__dirname, "../", "lambda", "functions", "helpers")
+        entry: Path.join(
+          __dirname,
+          "../",
+          "lambda-functions",
+          "helpers",
+          "src",
+          "ssmParamReader.ts"
         ),
-        handler: "ssmParamReader.handler",
+        bundling: {
+          externalModules: [
+            "@aws-sdk/client-ssm",
+            "@aws-sdk/credential-providers",
+          ],
+          minify: true,
+        },
       }
     );
 

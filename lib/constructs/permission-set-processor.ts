@@ -81,9 +81,9 @@ export class PermissionSetProcessor extends Construct {
           Path.join(
             __dirname,
             "../",
-            "lambda",
-            "functions",
-            "ddb-stream-handlers"
+            "lambda-functions",
+            "ddb-stream-handlers",
+            "src"
           )
         ),
         layers: [permissionSetProcessorProps.nodeJsLayer],
@@ -115,7 +115,7 @@ export class PermissionSetProcessor extends Construct {
         handler: "permissionSetTopic.handler",
         functionName: name(buildConfig, "permissionSetHandler"),
         code: lambda.Code.fromAsset(
-          Path.join(__dirname, "../", "lambda", "functions", "sso-handlers")
+          Path.join(__dirname, "../", "lambda-functions", "sso-handlers", "src")
         ),
         layers: [permissionSetProcessorProps.nodeJsLayer],
         environment: {
@@ -146,7 +146,7 @@ export class PermissionSetProcessor extends Construct {
         handler: "permissionSetSync.handler",
         functionName: name(buildConfig, "permissionSetSyncHandler"),
         code: lambda.Code.fromAsset(
-          Path.join(__dirname, "../", "lambda", "functions", "sso-handlers")
+          Path.join(__dirname, "../", "lambda-functions", "sso-handlers", "src")
         ),
         layers: [permissionSetProcessorProps.nodeJsLayer],
         environment: {

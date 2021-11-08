@@ -97,7 +97,13 @@ export class Utility extends Construct {
         handler: "ssoAdminAPIWaiters.lambda_handler",
         functionName: name(buildConfig, "waiterHandler"),
         code: lambda.Code.fromAsset(
-          Path.join(__dirname, "../", "lambda", "functions", "custom-waiters")
+          Path.join(
+            __dirname,
+            "../",
+            "lambda-functions",
+            "custom-waiters",
+            "src"
+          )
         ),
         layers: [utilityProps.pythonLayer],
         environment: {
