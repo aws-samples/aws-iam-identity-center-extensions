@@ -4,6 +4,7 @@ for SSO group life cycle notifications
 */
 import * as lambda from "@aws-cdk/aws-lambda"; //Needed to avoid semgrep throwing up https://cwe.mitre.org/data/definitions/95.html
 import { SnsEventSource } from "@aws-cdk/aws-lambda-event-sources";
+import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
 import { ITopic } from "@aws-cdk/aws-sns";
 import { Construct } from "@aws-cdk/core";
 import * as Path from "path";
@@ -37,16 +38,31 @@ export class SSOGroupProcessor extends Construct {
   ) {
     super(scope, id);
 
-    this.ssoGroupHandler = new lambda.Function(
+    this.ssoGroupHandler = new NodejsFunction(
       this,
       name(buildConfig, "ssoGroupHandler"),
       {
         runtime: lambda.Runtime.NODEJS_14_X,
-        handler: "groupsCud.handler",
         functionName: name(buildConfig, "ssoGroupHandler"),
-        code: lambda.Code.fromAsset(
-          Path.join(__dirname, "../", "lambda-functions", "sso-handlers", "src")
+        entry: Path.join(
+          __dirname,
+          "../",
+          "lambda-functions",
+          "sso-handlers",
+          "src",
+          "groupsCud.ts"
         ),
+        bundling: {
+          externalModules: [
+            "@aws-sdk/client-dynamodb",
+            "@aws-sdk/lib-dynamodb",
+            "@aws-sdk/client-sns",
+            "@aws-sdk/client-sfn",
+            "@aws-sdk/client-sso-admin",
+            "@aws-sdk/credential-providers",
+          ],
+          minify: true,
+        },
         layers: [ssoGroupProcessorProps.nodeJsLayer],
         environment: {
           DdbTable: ssoGroupProcessorProps.groupsTableName,

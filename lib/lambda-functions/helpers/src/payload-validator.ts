@@ -30,8 +30,3 @@ export const imperativeParseJSON = <T = object>(
     }))
   );
 };
-
-export interface LinkPayload {
-  readonly linkData: string;
-  readonly action: string;
-}

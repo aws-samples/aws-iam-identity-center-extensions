@@ -11,6 +11,7 @@ import {
   SnsDlq,
   SnsEventSource,
 } from "@aws-cdk/aws-lambda-event-sources";
+import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
 import { ITopic, Topic } from "@aws-cdk/aws-sns";
 import { Construct } from "@aws-cdk/core";
 import * as Path from "path";
@@ -70,22 +71,24 @@ export class PermissionSetProcessor extends Construct {
       }
     );
 
-    this.permissionSetStreamHandler = new lambda.Function(
+    this.permissionSetStreamHandler = new NodejsFunction(
       this,
       name(buildConfig, "permissionSetStreamHandler"),
       {
         runtime: lambda.Runtime.NODEJS_14_X,
-        handler: "permissionSet.handler",
         functionName: name(buildConfig, "permissionSetStreamHandler"),
-        code: lambda.Code.fromAsset(
-          Path.join(
-            __dirname,
-            "../",
-            "lambda-functions",
-            "ddb-stream-handlers",
-            "src"
-          )
+        entry: Path.join(
+          __dirname,
+          "../",
+          "lambda-functions",
+          "ddb-import-handlers",
+          "src",
+          "permissionSetApi.ts"
         ),
+        bundling: {
+          minify: true,
+          externalModules: ["@aws-sdk/client-sns", "dynamo-stream-diff"],
+        },
         layers: [permissionSetProcessorProps.nodeJsLayer],
         environment: {
           topicArn: this.permissionSetTopic.topicArn,

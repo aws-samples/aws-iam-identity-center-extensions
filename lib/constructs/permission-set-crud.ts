@@ -15,6 +15,7 @@ import {
 import { Role } from "@aws-cdk/aws-iam";
 import { Key } from "@aws-cdk/aws-kms";
 import * as lambda from "@aws-cdk/aws-lambda"; //Needed to avoid semgrep throwing up https://cwe.mitre.org/data/definitions/95.html
+import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
 import { Bucket, EventType } from "@aws-cdk/aws-s3";
 import { LambdaDestination } from "@aws-cdk/aws-s3-notifications";
 import { CfnOutput, Construct, RemovalPolicy } from "@aws-cdk/core";
@@ -90,22 +91,29 @@ export class PermissionSetCRUD extends Construct {
       buildConfig.Parameters.PermissionSetProvisioningMode.toLowerCase() ===
       "api"
     ) {
-      this.permissionSetAPIHandler = new lambda.Function(
+      this.permissionSetAPIHandler = new NodejsFunction(
         this,
         name(buildConfig, "psApiHandler"),
         {
           runtime: lambda.Runtime.NODEJS_14_X,
-          handler: "permissionSetApi.handler",
           functionName: name(buildConfig, "psApiHandler"),
-          code: lambda.Code.fromAsset(
-            Path.join(
-              __dirname,
-              "../",
-              "lambda-functions",
-              "ddb-import-handlers",
-              "src"
-            )
+          entry: Path.join(
+            __dirname,
+            "../",
+            "lambda-functions",
+            "ddb-import-handlers",
+            "src",
+            "permissionSetApi.ts"
           ),
+          bundling: {
+            minify: true,
+            externalModules: [
+              "@aws-sdk/client-dynamodb",
+              "@aws-sdk/client-s3",
+              "@aws-sdk/lib-dynamodb",
+              "ajv",
+            ],
+          },
           layers: [PermissionSetCRUDProps.nodeJsLayer],
           environment: {
             DdbTable: this.permissionSetTable.tableName,
@@ -133,22 +141,30 @@ export class PermissionSetCRUD extends Construct {
         }
       ).lambdaProxyAPI;
     } else {
-      this.permissionSetCuHandler = new lambda.Function(
+      this.permissionSetCuHandler = new NodejsFunction(
         this,
         name(buildConfig, "psCuHandler"),
         {
           runtime: lambda.Runtime.NODEJS_14_X,
-          handler: "permissionSetCu.handler",
           functionName: name(buildConfig, "psCuHandler"),
-          code: lambda.Code.fromAsset(
-            Path.join(
-              __dirname,
-              "../",
-              "lambda-functions",
-              "ddb-import-handlers",
-              "src"
-            )
+          entry: Path.join(
+            __dirname,
+            "../",
+            "lambda-functions",
+            "ddb-import-handlers",
+            "src",
+            "permissionSetCu.ts"
           ),
+          bundling: {
+            minify: true,
+            externalModules: [
+              "@aws-sdk/client-dynamodb",
+              "@aws-sdk/client-s3",
+              "@aws-sdk/client-sns",
+              "@aws-sdk/lib-dynamodb",
+              "ajv",
+            ],
+          },
           layers: [PermissionSetCRUDProps.nodeJsLayer],
           environment: {
             DdbTable: this.permissionSetTable.tableName,
@@ -182,22 +198,29 @@ export class PermissionSetCRUD extends Construct {
         permissionSetCallerRole
       );
 
-      this.permissionSetDelHandler = new lambda.Function(
+      this.permissionSetDelHandler = new NodejsFunction(
         this,
         name(buildConfig, "psDelHandler"),
         {
           runtime: lambda.Runtime.NODEJS_14_X,
-          handler: "permissionSetDel.handler",
           functionName: name(buildConfig, "psDelHandler"),
-          code: lambda.Code.fromAsset(
-            Path.join(
-              __dirname,
-              "../",
-              "lambda-functions",
-              "ddb-import-handlers",
-              "src"
-            )
+          entry: Path.join(
+            __dirname,
+            "../",
+            "lambda-functions",
+            "ddb-import-handlers",
+            "src",
+            "permissionSetDel.ts"
           ),
+          bundling: {
+            minify: true,
+            externalModules: [
+              "@aws-sdk/client-dynamodb",
+              "@aws-sdk/client-sns",
+              "@aws-sdk/lib-dynamodb",
+              "ajv",
+            ],
+          },
           layers: [PermissionSetCRUDProps.nodeJsLayer],
           environment: {
             DdbTable: this.permissionSetTable.tableName,

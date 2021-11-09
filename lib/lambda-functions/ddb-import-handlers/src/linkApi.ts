@@ -26,16 +26,18 @@ import Ajv from "ajv";
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { LinkPayload } from "../../helpers/src/interfaces";
 import {
   imperativeParseJSON,
   JSONParserError,
-  LinkPayload,
 } from "../../helpers/src/payload-validator";
 
 // SDK and third party client object initialistaion
 const ddbClientObject = new DynamoDBClient({ region: AWS_REGION });
 const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
 const s3clientObject = new S3Client({ region: AWS_REGION });
+
+// Validator object initialisation
 const ajv = new Ajv({ allErrors: true });
 const schemaDefinition = JSON.parse(
   readFileSync(
@@ -46,16 +48,12 @@ const schemaDefinition = JSON.parse(
 );
 const validate = ajv.compile(schemaDefinition);
 
-// Response payload
-const response = {};
-
 export const handler = async (
   event: APIGatewayProxyEventV2
 ): Promise<APIGatewayProxyResultV2> => {
   if (event.body !== null && event.body !== undefined) {
     try {
       const payload = <LinkPayload>imperativeParseJSON(event.body, validate);
-
       const delimeter = ".";
       const { linkData } = payload;
       if (payload.action === "create") {
@@ -86,14 +84,13 @@ export const handler = async (
         console.log(
           `Procssed upsert of link data through API interface successfully: ${linkData}`
         );
-        Object.assign(response, {
-          statusCode: "200",
+        return {
+          statusCode: 200,
           body: JSON.stringify({
             message: "Successfully processed create link call",
           }),
-        });
-      }
-      if (payload.action === "delete") {
+        };
+      } else if (payload.action === "delete") {
         await s3clientObject.send(
           new DeleteObjectCommand({
             Bucket: artefactsBucketName,
@@ -111,36 +108,51 @@ export const handler = async (
         console.log(
           `Procssed deletion of link data through API interface successfully: ${linkData}`
         );
-        Object.assign(response, {
-          statusCode: "200",
+        return {
+          statusCode: 200,
           body: JSON.stringify({
             message: "Successfully processed delete link call",
           }),
-        });
+        };
+      } else {
+        //TS flow path completion
+        return {
+          statusCode: 400,
+          body: JSON.stringify({
+            message: "Invalid action provided",
+          }),
+        };
       }
     } catch (err) {
       if (err instanceof JSONParserError) {
-        Object.assign(response, {
+        console.error(
+          `Error processing link operation through API interface due to schema errors for: ${JSON.stringify(
+            err.errors
+          )}`
+        );
+        return {
           statusCode: 400,
           body: JSON.stringify({ errors: err.errors }),
-        });
+        };
       } else {
-        Object.assign(response, {
+        console.error(
+          `Exception when processing linkAPI operation : ${JSON.stringify(err)}`
+        );
+        return {
           statusCode: 400,
           body: JSON.stringify({
             message: `Exception while processing the call ${err}`,
           }),
-        });
+        };
       }
-      return response;
     }
   } else {
-    Object.assign(response, {
+    console.error("Invalid message body provided");
+    return {
       statusCode: 400,
       body: JSON.stringify({
         message: "Invalid message body provided",
       }),
-    });
+    };
   }
-  return response;
 };

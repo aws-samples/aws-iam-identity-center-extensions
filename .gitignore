@@ -1,11 +1,9 @@
+# Ignore transpiled files
 *.js
-!jest.config.js
 *.d.ts
-node_modules
-.vscode
-~$*.docx
 
-.DS_Store
+# Node modules
+node_modules
 
 # CDK asset staging directory
 .cdk.staging
@@ -14,36 +12,34 @@ cdk.out
 # Parcel default cache directory
 .parcel-cache
 
+# DrawIO Image definitions
+*.drawio
+
+# Jest config
+!jest.config.js
+
 # Eslint config
 !.eslintrc.js
 
-# Drawio diagrams
-*.drawio
 
 
 # Lambda code exclusion
-!/lib/lambda-functions/ddb-import-handlers/src/permissionSetCu.js
-!/lib/lambda-functions/ddb-import-handlers/src/permissionSetDel.js
-!/lib/lambda-functions/ddb-import-handlers/src/permissionSetApi.js
-!/lib/lambda-functions/ddb-import-handlers/src/linkCu.js
-!/lib/lambda-functions/ddb-import-handlers/src/linkDel.js
 
+# No type definitions available for dynamo-stream-diff library used by permission set stream handler
+!decs.d.ts
 
-!/lib/lambda-functions/ddb-stream-handlers/src/permissionSet.js
-!/lib/lambda-functions/ddb-stream-handlers/src/link.js
-
-!/lib/lambda-functions/sso-handlers/src/groupsCud.js
 !/lib/lambda-functions/sso-handlers/src/permissionSetTopic.js
-!/lib/lambda-functions/sso-handlers/src/linkManager.js
 !/lib/lambda-functions/sso-handlers/src/orgEvents.js
 !/lib/lambda-functions/sso-handlers/src/tagsInventory.js
 !/lib/lambda-functions/sso-handlers/src/permissionSetSync.js
 !/lib/lambda-functions/sso-handlers/src/processTargetAccountSMListener.js
 
 
-
 # Ignore Python lambda layers except requirements.txt
 /lib/lambda-layers/python-layer/*
 !/lib/lambda-layers/python-layer/requirements.txt
 
-
+# VS code specific ignores
+.vscode
+~$*.docx
+.DS_Store

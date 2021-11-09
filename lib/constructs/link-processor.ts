@@ -11,6 +11,7 @@ import {
   SnsDlq,
   SnsEventSource,
 } from "@aws-cdk/aws-lambda-event-sources";
+import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
 import { ITopic, Topic } from "@aws-cdk/aws-sns";
 import { Construct } from "@aws-cdk/core";
 import * as Path from "path";
@@ -50,16 +51,30 @@ export class LinkProcessor extends Construct {
   ) {
     super(scope, id);
 
-    this.linkManagerHandler = new lambda.Function(
+    this.linkManagerHandler = new NodejsFunction(
       this,
       name(buildConfig, "linkManagerHandler"),
       {
         runtime: lambda.Runtime.NODEJS_14_X,
-        handler: "linkManager.handler",
         functionName: name(buildConfig, "linkManagerHandler"),
-        code: lambda.Code.fromAsset(
-          Path.join(__dirname, "../", "lambda-functions", "sso-handlers", "src")
+        entry: Path.join(
+          __dirname,
+          "../",
+          "lambda-functions",
+          "sso-handlers",
+          "src",
+          "linkManager.ts"
         ),
+        bundling: {
+          externalModules: [
+            "@aws-sdk/client-dynamodb",
+            "@aws-sdk/lib-dynamodb",
+            "@aws-sdk/client-sns",
+            "@aws-sdk/client-sso-admin",
+            "@aws-sdk/credential-providers",
+          ],
+          minify: true,
+        },
         layers: [linkprocessProps.nodeJsLayer],
         environment: {
           provisionedLinksTable: linkprocessProps.provisionedLinksTableName,
@@ -113,22 +128,32 @@ export class LinkProcessor extends Construct {
       new SnsEventSource(linkprocessProps.processTargetAccountSMTopic)
     );
 
-    this.linkStreamHandler = new lambda.Function(
+    this.linkStreamHandler = new NodejsFunction(
       this,
       name(buildConfig, "linkStreamHandler"),
       {
         runtime: lambda.Runtime.NODEJS_14_X,
-        handler: "link.handler",
         functionName: name(buildConfig, "linkStreamHandler"),
-        code: lambda.Code.fromAsset(
-          Path.join(
-            __dirname,
-            "../",
-            "lambda-functions",
-            "ddb-stream-handlers",
-            "src"
-          )
+        entry: Path.join(
+          __dirname,
+          "../",
+          "lambda-functions",
+          "ddb-stream-handlers",
+          "src",
+          "link.ts"
         ),
+        bundling: {
+          externalModules: [
+            "@aws-sdk/client-dynamodb",
+            "@aws-sdk/lib-dynamodb",
+            "@aws-sdk/client-sns",
+            "@aws-sdk/client-sfn",
+            "@aws-sdk/client-sso-admin",
+            "@aws-sdk/credential-providers",
+            "@aws-sdk/client-identitystore",
+          ],
+          minify: true,
+        },
         layers: [linkprocessProps.nodeJsLayer],
         environment: {
           topicArn: this.linkManagerTopic.topicArn,

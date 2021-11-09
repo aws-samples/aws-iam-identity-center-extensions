@@ -134,7 +134,6 @@ export class LinkCRUD extends Construct {
               "@aws-sdk/client-dynamodb",
               "@aws-sdk/client-s3",
               "@aws-sdk/lib-dynamodb",
-              "jsonschema",
               "ajv",
             ],
             minify: true,
@@ -164,22 +163,28 @@ export class LinkCRUD extends Construct {
         }
       ).lambdaProxyAPI;
     } else {
-      this.linkCuHandler = new lambda.Function(
+      this.linkCuHandler = new NodejsFunction(
         this,
         name(buildConfig, "linkCuHandler"),
         {
           runtime: lambda.Runtime.NODEJS_14_X,
-          handler: "linkCu.handler",
           functionName: name(buildConfig, "linkCuHandler"),
-          code: lambda.Code.fromAsset(
-            Path.join(
-              __dirname,
-              "../",
-              "lambda-functions",
-              "ddb-import-handlers",
-              "src"
-            )
+          entry: Path.join(
+            __dirname,
+            "../",
+            "lambda-functions",
+            "ddb-import-handlers",
+            "src",
+            "linkCu.ts"
           ),
+          bundling: {
+            externalModules: [
+              "@aws-sdk/client-dynamodb",
+              "@aws-sdk/lib-dynamodb",
+              "@aws-sdk/client-sns",
+            ],
+            minify: true,
+          },
           layers: [linkCRUDProps.nodeJsLayer],
           environment: {
             DdbTable: this.linksTable.tableName,
@@ -199,22 +204,28 @@ export class LinkCRUD extends Construct {
         }
       );
 
-      this.linkDelHandler = new lambda.Function(
+      this.linkDelHandler = new NodejsFunction(
         this,
         name(buildConfig, "linkDelHandler"),
         {
           runtime: lambda.Runtime.NODEJS_14_X,
-          handler: "permissionSetDel.handler",
           functionName: name(buildConfig, "linkDelHandler"),
-          code: lambda.Code.fromAsset(
-            Path.join(
-              __dirname,
-              "../",
-              "lambda-functions",
-              "ddb-import-handlers",
-              "src"
-            )
+          entry: Path.join(
+            __dirname,
+            "../",
+            "lambda-functions",
+            "ddb-import-handlers",
+            "src",
+            "linkDel.ts"
           ),
+          bundling: {
+            externalModules: [
+              "@aws-sdk/client-dynamodb",
+              "@aws-sdk/lib-dynamodb",
+              "@aws-sdk/client-sns",
+            ],
+            minify: true,
+          },
           layers: [linkCRUDProps.nodeJsLayer],
           environment: {
             DdbTable: this.linksTable.tableName,
