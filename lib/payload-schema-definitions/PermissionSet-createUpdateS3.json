@@ -48,7 +48,6 @@
       "title": "tags",
       "description": "tags",
       "default": [],
-      "additionalItems": true,
       "items": {
         "$id": "#/properties/tags/items",
         "anyOf": [
@@ -92,7 +91,6 @@
       "title": "The managedPoliciesArnList $schema",
       "description": "An explanation about the purpose of this instance.",
       "default": [],
-      "additionalItems": true,
       "items": {
         "$id": "#/properties/managedPoliciesArnList/items",
         "anyOf": [
@@ -127,8 +125,7 @@
           "type": "array",
           "title": "The Statement $schema",
           "description": "An explanation about the purpose of this instance.",
-          "default": [],
-          "additionalItems": true
+          "default": []
         }
       },
       "additionalProperties": false

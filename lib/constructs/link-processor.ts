@@ -106,7 +106,6 @@ export class LinkProcessor extends Construct {
       this,
       name(buildConfig, "processTargetAccountSMListenerHandler"),
       {
-        handler: "processTargetAccountSMListener.handler",
         runtime: Runtime.NODEJS_14_X,
         functionName: name(
           buildConfig,

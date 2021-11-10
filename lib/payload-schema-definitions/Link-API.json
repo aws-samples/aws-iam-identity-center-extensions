@@ -26,7 +26,7 @@
           "pattern": "root\\.all\\.[a-zA-Z0-9-@=,\\s]+\\.[a-zA-Z0-9-_\\s]+\\.ssofile"
         },
         {
-          "pattern": "ou_$id\\.ou-[a-z0-9]{4}-[a-z0-9]{8}\\.[a-zA-Z0-9-@=,\\s]{1,32}\\.[a-zA-Z0-9-_\\s]+\\.ssofile"
+          "pattern": "ou_id\\.ou-[a-z0-9]{4}-[a-z0-9]{8}\\.[a-zA-Z0-9-@=,\\s]{1,32}\\.[a-zA-Z0-9-_\\s]+\\.ssofile"
         },
         {
           "pattern": "account\\.[0-9]{12}\\.[a-zA-Z0-9-@=,\\s]{1,32}\\.[a-zA-Z0-9-_\\s]+\\.ssofile"

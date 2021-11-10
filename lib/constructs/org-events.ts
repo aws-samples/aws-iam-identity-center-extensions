@@ -43,7 +43,6 @@ export class OrgEvents extends Construct {
       this,
       name(buildConfig, "orgEventsHandler"),
       {
-        handler: "orgEvents.handler",
         runtime: Runtime.NODEJS_14_X,
         functionName: name(buildConfig, "orgEventsHandler"),
         entry: join(
