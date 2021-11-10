@@ -21,7 +21,6 @@ import { S3Event, S3EventRecord } from "aws-lambda";
 import {
   DeletePermissionSetDataProps,
   ErrorMessage,
-  ErrorNotificationPayload,
 } from "../../helpers/src/interfaces";
 import { JSONParserError } from "../../helpers/src/payload-validator";
 

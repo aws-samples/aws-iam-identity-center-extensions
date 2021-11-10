@@ -14,12 +14,12 @@ import {
 } from "@aws-cdk/aws-dynamodb";
 import { Role } from "@aws-cdk/aws-iam";
 import { Key } from "@aws-cdk/aws-kms";
-import * as lambda from "@aws-cdk/aws-lambda"; //Needed to avoid semgrep throwing up https://cwe.mitre.org/data/definitions/95.html
+import { LayerVersion, Runtime } from "@aws-cdk/aws-lambda";
 import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
 import { Bucket, EventType } from "@aws-cdk/aws-s3";
 import { LambdaDestination } from "@aws-cdk/aws-s3-notifications";
 import { CfnOutput, Construct, RemovalPolicy } from "@aws-cdk/core";
-import * as Path from "path";
+import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 import { LambdaProxyAPI } from "./lambda-proxy-api";
 
@@ -28,7 +28,7 @@ function name(buildConfig: BuildConfig, resourcename: string): string {
 }
 
 export interface PermissionSetCRUDProps {
-  readonly nodeJsLayer: lambda.LayerVersion;
+  readonly nodeJsLayer: LayerVersion;
   readonly linksTableName: string;
   readonly errorNotificationsTopicArn: string;
   readonly ssoArtefactsBucket: Bucket;
@@ -39,10 +39,10 @@ export interface PermissionSetCRUDProps {
 export class PermissionSetCRUD extends Construct {
   public readonly permissionSetTable: Table;
   public readonly permissionSetArnTable: Table;
-  public readonly permissionSetAPIHandler: lambda.Function;
+  public readonly permissionSetAPIHandler: NodejsFunction;
   public readonly permissionSetAPI: LambdaRestApi;
-  public readonly permissionSetCuHandler: lambda.Function;
-  public readonly permissionSetDelHandler: lambda.Function;
+  public readonly permissionSetCuHandler: NodejsFunction;
+  public readonly permissionSetDelHandler: NodejsFunction;
 
   constructor(
     scope: Construct,
@@ -95,9 +95,9 @@ export class PermissionSetCRUD extends Construct {
         this,
         name(buildConfig, "psApiHandler"),
         {
-          runtime: lambda.Runtime.NODEJS_14_X,
           functionName: name(buildConfig, "psApiHandler"),
-          entry: Path.join(
+          runtime: Runtime.NODEJS_14_X,
+          entry: join(
             __dirname,
             "../",
             "lambda-functions",
@@ -145,9 +145,9 @@ export class PermissionSetCRUD extends Construct {
         this,
         name(buildConfig, "psCuHandler"),
         {
-          runtime: lambda.Runtime.NODEJS_14_X,
           functionName: name(buildConfig, "psCuHandler"),
-          entry: Path.join(
+          runtime: Runtime.NODEJS_14_X,
+          entry: join(
             __dirname,
             "../",
             "lambda-functions",
@@ -202,9 +202,9 @@ export class PermissionSetCRUD extends Construct {
         this,
         name(buildConfig, "psDelHandler"),
         {
-          runtime: lambda.Runtime.NODEJS_14_X,
           functionName: name(buildConfig, "psDelHandler"),
-          entry: Path.join(
+          runtime: Runtime.NODEJS_14_X,
+          entry: join(
             __dirname,
             "../",
             "lambda-functions",

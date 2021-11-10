@@ -5,11 +5,11 @@ that allows shareable resources
 
 import { Table } from "@aws-cdk/aws-dynamodb";
 import { Key } from "@aws-cdk/aws-kms";
-import * as lambda from "@aws-cdk/aws-lambda"; //Needed to avoid semgrep throwing up https://cwe.mitre.org/data/definitions/95.html
+import { Code, Function, LayerVersion, Runtime } from "@aws-cdk/aws-lambda";
 import { SnsEventSource } from "@aws-cdk/aws-lambda-event-sources";
 import { ITopic, Topic } from "@aws-cdk/aws-sns";
 import { Construct } from "@aws-cdk/core";
-import * as Path from "path";
+import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 import { SSMParamReader } from "./ssm-param-reader";
 
@@ -19,8 +19,8 @@ function name(buildConfig: BuildConfig, resourcename: string): string {
 
 export interface UtilityProps {
   readonly errorNotificationsTopic: Topic;
-  readonly pythonLayer: lambda.LayerVersion;
-  readonly nodeJsLayer: lambda.LayerVersion;
+  readonly pythonLayer: LayerVersion;
+  readonly nodeJsLayer: LayerVersion;
   readonly provisionedLinksTable: Table;
   readonly waiterHandlerSSOAPIRoleArn: string;
   readonly snsTopicsKey: Key;
@@ -30,7 +30,7 @@ export class Utility extends Construct {
   public readonly orgEventsNotificationsTopic: ITopic;
   public readonly ssoGroupEventsNotificationsTopic: ITopic;
   public readonly processTargetAccountSMTopic: ITopic;
-  public readonly waiterHandler: lambda.Function;
+  public readonly waiterHandler: Function;
   public readonly waiterHandlerNotificationsTopic: Topic;
 
   constructor(
@@ -89,21 +89,15 @@ export class Utility extends Construct {
       ).paramValue
     );
 
-    this.waiterHandler = new lambda.Function(
+    this.waiterHandler = new Function(
       this,
       name(buildConfig, "waiterHandler"),
       {
-        runtime: lambda.Runtime.PYTHON_3_8,
+        runtime: Runtime.PYTHON_3_8,
         handler: "ssoAdminAPIWaiters.lambda_handler",
         functionName: name(buildConfig, "waiterHandler"),
-        code: lambda.Code.fromAsset(
-          Path.join(
-            __dirname,
-            "../",
-            "lambda-functions",
-            "custom-waiters",
-            "src"
-          )
+        code: Code.fromAsset(
+          join(__dirname, "../", "lambda-functions", "custom-waiters", "src")
         ),
         layers: [utilityProps.pythonLayer],
         environment: {

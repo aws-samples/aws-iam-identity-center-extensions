@@ -13,7 +13,7 @@ import {
   LogGroupLogDestination,
 } from "@aws-cdk/aws-apigateway";
 import { Effect, IRole, PolicyStatement, Role } from "@aws-cdk/aws-iam";
-import { Function } from "@aws-cdk/aws-lambda";
+import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
 import { LogGroup, RetentionDays } from "@aws-cdk/aws-logs";
 import { CfnOutput, Construct } from "@aws-cdk/core";
 import { BuildConfig } from "../build/buildConfig";
@@ -25,7 +25,7 @@ function name(buildConfig: BuildConfig, resourcename: string): string {
 export interface LambdaProxyAPIProps {
   apiNameKey: string;
   apiResourceName: string;
-  proxyfunction: Function;
+  proxyfunction: NodejsFunction;
   apiCallerRoleArn: string;
   methodtype: string;
   apiEndPointReaderAccountID: string;

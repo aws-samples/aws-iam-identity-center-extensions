@@ -4,8 +4,8 @@ import {
   matchTemplate,
 } from "@aws-cdk/assert";
 import { App, DefaultStackSynthesizer } from "@aws-cdk/core";
-import * as fs from "fs";
-import * as path from "path";
+import { readFileSync } from "fs";
+import { resolve } from "path";
 import { BuildConfig } from "../lib/build/buildConfig";
 import { AwsSsoExtensionsForEnterprise } from "../lib/stacks/pipeline/aws-sso-extensions-for-enterprise";
 const yaml = require("js-yaml");
@@ -68,7 +68,7 @@ test("Empty Stack", () => {
       );
 
     let unparsedEnv = yaml.load(
-      fs.readFileSync(path.resolve("./config/" + env + ".yaml"), "utf8")
+      readFileSync(resolve("./config/" + env + ".yaml"), "utf8")
     );
 
     return {

@@ -21,19 +21,9 @@ cdk.out
 # Eslint config
 !.eslintrc.js
 
-
-
 # Lambda code exclusion
-
 # No type definitions available for dynamo-stream-diff library used by permission set stream handler
-!decs.d.ts
-
-!/lib/lambda-functions/sso-handlers/src/permissionSetTopic.js
-!/lib/lambda-functions/sso-handlers/src/orgEvents.js
-!/lib/lambda-functions/sso-handlers/src/tagsInventory.js
-!/lib/lambda-functions/sso-handlers/src/permissionSetSync.js
-!/lib/lambda-functions/sso-handlers/src/processTargetAccountSMListener.js
-
+!/lib/lambda-functions/ddb-stream-handlers/src/permissionSet.js
 
 # Ignore Python lambda layers except requirements.txt
 /lib/lambda-layers/python-layer/*

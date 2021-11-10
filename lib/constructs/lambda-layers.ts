@@ -4,7 +4,7 @@ Lambda layers construct
 
 import { Code, LayerVersion, Runtime } from "@aws-cdk/aws-lambda";
 import { Construct } from "@aws-cdk/core";
-import * as Path from "path";
+import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {
@@ -23,7 +23,7 @@ export class LambdaLayers extends Construct {
       name(buildConfig, "nodeJsLayer"),
       {
         code: Code.fromAsset(
-          Path.join(__dirname, "../", "lambda-layers", "nodejs-layer")
+          join(__dirname, "../", "lambda-layers", "nodejs-layer")
         ),
         compatibleRuntimes: [Runtime.NODEJS_14_X],
       }
@@ -34,7 +34,7 @@ export class LambdaLayers extends Construct {
       name(buildConfig, "pythonLayer"),
       {
         code: Code.fromAsset(
-          Path.join(__dirname, "../", "lambda-layers", "python-layer")
+          join(__dirname, "../", "lambda-layers", "python-layer")
         ),
         compatibleRuntimes: [Runtime.PYTHON_3_8],
       }

@@ -5,7 +5,7 @@ for links life cycle provisionings
 
 import { Table } from "@aws-cdk/aws-dynamodb";
 import { Key } from "@aws-cdk/aws-kms";
-import * as lambda from "@aws-cdk/aws-lambda"; //Needed to avoid semgrep throwing up https://cwe.mitre.org/data/definitions/95.html
+import { LayerVersion, Runtime, StartingPosition } from "@aws-cdk/aws-lambda";
 import {
   DynamoEventSource,
   SnsDlq,
@@ -14,7 +14,7 @@ import {
 import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
 import { ITopic, Topic } from "@aws-cdk/aws-sns";
 import { Construct } from "@aws-cdk/core";
-import * as Path from "path";
+import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {
@@ -33,15 +33,15 @@ export interface LinkProcessProps {
   readonly listGroupsIdentityStoreAPIRoleArn: string;
   readonly processTargetAccountSMInvokeRoleArn: string;
   readonly processTargetAccountSMTopic: ITopic;
-  readonly nodeJsLayer: lambda.LayerVersion;
+  readonly nodeJsLayer: LayerVersion;
   readonly snsTopicsKey: Key;
 }
 
 export class LinkProcessor extends Construct {
   public readonly linkManagerTopic: Topic;
-  public readonly linkManagerHandler: lambda.Function;
-  public readonly linkStreamHandler: lambda.Function;
-  public readonly processTargetAccountSMListenerHandler: lambda.Function;
+  public readonly linkManagerHandler: NodejsFunction;
+  public readonly linkStreamHandler: NodejsFunction;
+  public readonly processTargetAccountSMListenerHandler: NodejsFunction;
 
   constructor(
     scope: Construct,
@@ -55,9 +55,9 @@ export class LinkProcessor extends Construct {
       this,
       name(buildConfig, "linkManagerHandler"),
       {
-        runtime: lambda.Runtime.NODEJS_14_X,
         functionName: name(buildConfig, "linkManagerHandler"),
-        entry: Path.join(
+        runtime: Runtime.NODEJS_14_X,
+        entry: join(
           __dirname,
           "../",
           "lambda-functions",
@@ -102,19 +102,28 @@ export class LinkProcessor extends Construct {
       new SnsEventSource(this.linkManagerTopic)
     );
 
-    this.processTargetAccountSMListenerHandler = new lambda.Function(
+    this.processTargetAccountSMListenerHandler = new NodejsFunction(
       this,
       name(buildConfig, "processTargetAccountSMListenerHandler"),
       {
-        runtime: lambda.Runtime.NODEJS_14_X,
         handler: "processTargetAccountSMListener.handler",
+        runtime: Runtime.NODEJS_14_X,
         functionName: name(
           buildConfig,
           "processTargetAccountSMListenerHandler"
         ),
-        code: lambda.Code.fromAsset(
-          Path.join(__dirname, "../", "lambda-functions", "sso-handlers", "src")
+        entry: join(
+          __dirname,
+          "../",
+          "lambda-functions",
+          "sso-handlers",
+          "src",
+          "processTargetAccountSMListener.ts"
         ),
+        bundling: {
+          externalModules: ["@aws-sdk/client-sns"],
+          minify: true,
+        },
         layers: [linkprocessProps.nodeJsLayer],
         environment: {
           linkManagertopicArn: this.linkManagerTopic.topicArn,
@@ -132,9 +141,9 @@ export class LinkProcessor extends Construct {
       this,
       name(buildConfig, "linkStreamHandler"),
       {
-        runtime: lambda.Runtime.NODEJS_14_X,
         functionName: name(buildConfig, "linkStreamHandler"),
-        entry: Path.join(
+        runtime: Runtime.NODEJS_14_X,
+        entry: join(
           __dirname,
           "../",
           "lambda-functions",
@@ -177,7 +186,7 @@ export class LinkProcessor extends Construct {
 
     this.linkStreamHandler.addEventSource(
       new DynamoEventSource(linkprocessProps.linksTable, {
-        startingPosition: lambda.StartingPosition.TRIM_HORIZON,
+        startingPosition: StartingPosition.TRIM_HORIZON,
         batchSize: 5,
         bisectBatchOnError: true,
         onFailure: new SnsDlq(linkprocessProps.errorNotificationsTopic),

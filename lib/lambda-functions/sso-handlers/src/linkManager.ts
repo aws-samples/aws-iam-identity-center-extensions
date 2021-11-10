@@ -33,23 +33,23 @@ const {
 } = process.env;
 
 // SDK and third party client imports
-import { fromTemporaryCredentials } from "@aws-sdk/credential-providers";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
+import {
+  CreateAccountAssignmentCommand,
+  CreateAccountAssignmentCommandOutput,
+  DeleteAccountAssignmentCommand,
+  DeleteAccountAssignmentCommandOutput,
+  SSOAdminClient,
+} from "@aws-sdk/client-sso-admin";
+import { fromTemporaryCredentials } from "@aws-sdk/credential-providers";
 import {
   DynamoDBDocumentClient,
   GetCommand,
   GetCommandOutput,
 } from "@aws-sdk/lib-dynamodb";
-import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
-import {
-  SSOAdminClient,
-  CreateAccountAssignmentCommand,
-  DeleteAccountAssignmentCommand,
-  CreateAccountAssignmentCommandOutput,
-  DeleteAccountAssignmentCommandOutput,
-} from "@aws-sdk/client-sso-admin";
-import { ErrorMessage } from "../../helpers/src/interfaces";
 import { SNSEvent } from "aws-lambda";
+import { ErrorMessage } from "../../helpers/src/interfaces";
 
 // SDK and third party client object initialistaion
 const ddbClientObject = new DynamoDBClient({ region: AWS_REGION });

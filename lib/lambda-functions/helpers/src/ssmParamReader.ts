@@ -13,14 +13,14 @@ Trigger source: Cloudformation custom resource provider
 */
 
 // Lambda types import
+// SDK and third party client imports
+import { GetParameterCommand, SSMClient } from "@aws-sdk/client-ssm";
+import { fromTemporaryCredentials } from "@aws-sdk/credential-providers";
 import {
   CloudFormationCustomResourceEvent,
   CloudFormationCustomResourceResponse,
 } from "aws-lambda";
 
-// SDK and third party client imports
-import { SSMClient, GetParameterCommand } from "@aws-sdk/client-ssm";
-import { fromTemporaryCredentials } from "@aws-sdk/credential-providers";
 export const handler = async (
   event: CloudFormationCustomResourceEvent
 ): Promise<CloudFormationCustomResourceResponse> => {

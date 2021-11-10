@@ -4,12 +4,11 @@ allows cross account read of SSM parameter value
 */
 
 import { PolicyStatement } from "@aws-cdk/aws-iam";
-import * as lambda from "@aws-cdk/aws-lambda"; //Needed to avoid semgrep throwing up https://cwe.mitre.org/data/definitions/95.html
-import { LayerVersion } from "@aws-cdk/aws-lambda";
+import { LayerVersion, Runtime } from "@aws-cdk/aws-lambda";
 import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
 import { Construct, CustomResource } from "@aws-cdk/core";
 import { Provider } from "@aws-cdk/custom-resources";
-import * as Path from "path";
+import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {
@@ -54,13 +53,13 @@ export class SSMParamReader extends Construct {
       this,
       name(buildConfig, `paramReader-${ssmParamReaderprops.ParamNameKey}`),
       {
-        runtime: lambda.Runtime.NODEJS_14_X,
+        runtime: Runtime.NODEJS_14_X,
         functionName: name(
           buildConfig,
           `paramReader-${ssmParamReaderprops.ParamNameKey}`
         ),
         layers: [ssmParamReaderprops.LambdaLayers],
-        entry: Path.join(
+        entry: join(
           __dirname,
           "../",
           "lambda-functions",
