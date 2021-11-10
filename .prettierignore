@@ -1,5 +1,16 @@
 # Ignore cdk.out
 cdk.out
 
-# Ignore Lambda layers
-lib/lambda/layers/**
+# Ignore all transpiled files
+**/*.js
+**/*.d.ts
+
+# Jest config
+!jest.config.js
+
+# Eslint config
+!.eslintrc.js
+
+# Lambda code exclusion
+# No type definitions available for dynamo-stream-diff library used by permission set stream handler
+!/lib/lambda-functions/ddb-stream-handlers/src/permissionSet.js
