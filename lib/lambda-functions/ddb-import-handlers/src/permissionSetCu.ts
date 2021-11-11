@@ -59,7 +59,7 @@ const createUpdateSchemaDefinition = JSON.parse(
 const createUpdateValidate = ajv.compile(createUpdateSchemaDefinition);
 
 //Error notification
-let errorMessage: ErrorMessage = {
+const errorMessage: ErrorMessage = {
   Subject: "Error Processing Permission Set create/update via S3 Interface",
 };
 

@@ -142,7 +142,6 @@ export class LinkCRUD extends Construct {
           environment: {
             DdbTable: this.linksTable.tableName,
             AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
-            corsOrigin: "'*'",
             artefactsBucketName: linkCRUDProps.ssoArtefactsBucket.bucketName,
           },
         }

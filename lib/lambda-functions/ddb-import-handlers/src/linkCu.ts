@@ -21,7 +21,7 @@ const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
 const snsClientObject = new SNSClient({ region: AWS_REGION });
 
 //Error notification
-let errorMessage: ErrorMessage = {
+const errorMessage: ErrorMessage = {
   Subject: "Error Processing Link create/update via S3 Interface",
 };
 
@@ -31,16 +31,16 @@ export const handler = async (event: S3Event) => {
       try {
         const fileName = decodeURIComponent(record.s3.object.key.split("/")[1]);
         if (
-          /root\.all\.[\w+=,.@-]{1,32}\.[a-zA-Z0-9-_@\.\s]+\.ssofile/gm.test(
+          /root\.all\.[\w+=,.@-]{1,32}\.[a-zA-Z0-9-_@.\s]+\.ssofile/gm.test(
             fileName
           ) ||
-          /ou_id\.ou-[a-z0-9]{4}-[a-z0-9]{8}\.[\w+=,.@-]{1,32}\.[a-zA-Z0-9-_@\.\s]+\.ssofile/gm.test(
+          /ou_id\.ou-[a-z0-9]{4}-[a-z0-9]{8}\.[\w+=,.@-]{1,32}\.[a-zA-Z0-9-_@.\s]+\.ssofile/gm.test(
             fileName
           ) ||
-          /account\.\d{12}\.[\w+=,.@-]{1,32}\.[a-zA-Z0-9-_@\.\s]+\.ssofile/gm.test(
+          /account\.\d{12}\.[\w+=,.@-]{1,32}\.[a-zA-Z0-9-_@.\s]+\.ssofile/gm.test(
             fileName
           ) ||
-          /account_tag\.[\w+=,.@-]{1,128}\^[\w+=,.@-]{1,256}\.[\w+=,.@-]{1,32}\.[a-zA-Z0-9-_@\.\s]+\.ssofile/gm.test(
+          /account_tag\.[\w+=,.@-]{1,128}\^[\w+=,.@-]{1,256}\.[\w+=,.@-]{1,32}\.[a-zA-Z0-9-_@.\s]+\.ssofile/gm.test(
             fileName
           )
         ) {

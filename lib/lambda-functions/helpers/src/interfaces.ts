@@ -12,7 +12,7 @@ export interface CreateUpdatePermissionSetDataProps {
   readonly relayState: string;
   readonly tags: Array<Tag>;
   readonly managedPoliciesArnList: Array<string>;
-  readonly inlinePolicyDocument: Object;
+  readonly inlinePolicyDocument: Record<string, unknown>;
 }
 export interface CreateUpdatePermissionSetPayload {
   readonly action: string;

@@ -2,8 +2,8 @@
 cdk.out
 
 # Ignore all transpiled files
-**/*.js
-**/*.d.ts
+*.js
+*.d.ts
 
 # Jest config
 !jest.config.js

@@ -101,7 +101,7 @@ const sfnClientObject = new SFNClient({
 });
 
 //Error notification
-let errorMessage: ErrorMessage = {
+const errorMessage: ErrorMessage = {
   Subject: "Error Processing group trigger based link provisioning operation",
 };
 

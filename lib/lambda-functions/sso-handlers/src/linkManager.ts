@@ -65,7 +65,7 @@ const ssoAdminClientObject = new SSOAdminClient({
 });
 
 //Error notification
-let errorMessage: ErrorMessage = {
+const errorMessage: ErrorMessage = {
   Subject: "Error Processing link provisioning operation",
 };
 

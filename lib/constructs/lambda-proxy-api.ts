@@ -48,10 +48,6 @@ export class LambdaProxyAPI extends Construct {
       this,
       name(buildConfig, `${lambdaProxyAPIProps.apiNameKey}-logGroup`),
       {
-        logGroupName: name(
-          buildConfig,
-          `${lambdaProxyAPIProps.apiNameKey}-logGroup`
-        ),
         retention: RetentionDays.ONE_MONTH,
       }
     );

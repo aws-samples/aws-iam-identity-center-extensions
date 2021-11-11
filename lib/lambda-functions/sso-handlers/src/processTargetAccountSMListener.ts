@@ -20,7 +20,7 @@ import { ErrorMessage } from "../../helpers/src/interfaces";
 const snsClientObject = new SNSClient({ region: AWS_REGION });
 
 //Error notification
-let errorMessage: ErrorMessage = {
+const errorMessage: ErrorMessage = {
   Subject: "Error Processing target account listener handler",
 };
 

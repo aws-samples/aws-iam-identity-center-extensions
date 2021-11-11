@@ -6,8 +6,7 @@ Trigger source: Permission set API
 */
 
 // Environment configuration read
-const { linksTable, corsOrigin, AWS_REGION, artefactsBucketName, DdbTable } =
-  process.env;
+const { linksTable, AWS_REGION, artefactsBucketName, DdbTable } = process.env;
 
 // Lambda types import
 // SDK and third party client imports
@@ -128,7 +127,7 @@ export const handler = async (
           })
         );
 
-        if (relatedLinks.Items?.length != 0) {
+        if (relatedLinks.Items?.length !== 0) {
           console.log(
             `Cannot delete permissionSet as there are existing links referencing the permission set: ${payload.permissionSetData.permissionSetName}`
           );

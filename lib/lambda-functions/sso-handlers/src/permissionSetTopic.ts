@@ -96,7 +96,7 @@ const ssoAdminClientObject = new SSOAdminClient({
 
 let syncPermissionSet = false;
 //Error notification
-let errorMessage: ErrorMessage = {
+const errorMessage: ErrorMessage = {
   Subject: "Error Processing Permission Set Provisioning operation",
 };
 
@@ -252,6 +252,7 @@ export const handler = async (event: SNSEvent) => {
           permissionSetArn = fetchArn.Item.permissionSetArn;
 
           await Promise.all(
+            /* eslint-disable  @typescript-eslint/no-explicit-any */
             message.diff.diffList.map(async (item: any) => {
               if (
                 item.path.toString().includes("managedPoliciesArnList") &&

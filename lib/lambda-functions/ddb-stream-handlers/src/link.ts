@@ -119,7 +119,7 @@ const identityStoreClientObject = new IdentitystoreClient({
 });
 
 //Error notification
-let errorMessage: ErrorMessage = {
+const errorMessage: ErrorMessage = {
   Subject: "Error Processing link stream handler",
 };
 

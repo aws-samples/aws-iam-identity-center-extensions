@@ -1,11 +1,14 @@
 import { SFNClient, StartExecutionCommand } from "@aws-sdk/client-sfn";
 import { Readable } from "stream";
 import { StateMachinePayload } from "./interfaces";
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 export const removeEmpty = (obj: { [x: string]: any }) => {
   Object.keys(obj).forEach(
     (k) =>
-      (obj[k] && typeof obj[k] === "object" && removeEmpty(obj[k])) ||
-      (!obj[k] && obj[k] !== undefined && delete obj[k])
+      (obj[`${k}`] &&
+        typeof obj[`${k}`] === "object" &&
+        removeEmpty(obj[`${k}`])) ||
+      (!obj[`${k}`] && obj[`${k}`] !== undefined && delete obj[`${k}`])
   );
   return obj;
 };

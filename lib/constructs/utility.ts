@@ -5,7 +5,7 @@ that allows shareable resources
 
 import { Table } from "@aws-cdk/aws-dynamodb";
 import { Key } from "@aws-cdk/aws-kms";
-import { Code, Function, LayerVersion, Runtime } from "@aws-cdk/aws-lambda";
+import * as lambda from "@aws-cdk/aws-lambda";
 import { SnsEventSource } from "@aws-cdk/aws-lambda-event-sources";
 import { ITopic, Topic } from "@aws-cdk/aws-sns";
 import { Construct } from "@aws-cdk/core";
@@ -19,8 +19,8 @@ function name(buildConfig: BuildConfig, resourcename: string): string {
 
 export interface UtilityProps {
   readonly errorNotificationsTopic: Topic;
-  readonly pythonLayer: LayerVersion;
-  readonly nodeJsLayer: LayerVersion;
+  readonly pythonLayer: lambda.LayerVersion;
+  readonly nodeJsLayer: lambda.LayerVersion;
   readonly provisionedLinksTable: Table;
   readonly waiterHandlerSSOAPIRoleArn: string;
   readonly snsTopicsKey: Key;
@@ -30,7 +30,7 @@ export class Utility extends Construct {
   public readonly orgEventsNotificationsTopic: ITopic;
   public readonly ssoGroupEventsNotificationsTopic: ITopic;
   public readonly processTargetAccountSMTopic: ITopic;
-  public readonly waiterHandler: Function;
+  public readonly waiterHandler: lambda.Function;
   public readonly waiterHandlerNotificationsTopic: Topic;
 
   constructor(
@@ -89,14 +89,14 @@ export class Utility extends Construct {
       ).paramValue
     );
 
-    this.waiterHandler = new Function(
+    this.waiterHandler = new lambda.Function(
       this,
       name(buildConfig, "waiterHandler"),
       {
-        runtime: Runtime.PYTHON_3_8,
+        runtime: lambda.Runtime.PYTHON_3_8,
         handler: "ssoAdminAPIWaiters.lambda_handler",
         functionName: name(buildConfig, "waiterHandler"),
-        code: Code.fromAsset(
+        code: lambda.Code.fromAsset(
           join(__dirname, "../", "lambda-functions", "custom-waiters", "src")
         ),
         layers: [utilityProps.pythonLayer],

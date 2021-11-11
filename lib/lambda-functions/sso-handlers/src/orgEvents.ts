@@ -100,7 +100,7 @@ const identityStoreClientObject = new IdentitystoreClient({
 });
 
 //Error notification
-let errorMessage: ErrorMessage = {
+const errorMessage: ErrorMessage = {
   Subject: "Error Processing Org event based link provisioning operation",
 };
 
@@ -399,7 +399,7 @@ export const handler = async (event: SNSEvent) => {
               staticSSOPayload,
               resources[0].split("/")[2],
               "create",
-              `${changedTagKey}^${tags[changedTagKey]}`,
+              `${changedTagKey}^${tags[`${changedTagKey}`]}`,
               "account_tag",
               identityStoreId
             );

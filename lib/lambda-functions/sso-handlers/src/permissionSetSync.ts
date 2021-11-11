@@ -105,7 +105,7 @@ const sfnClientObject = new SFNClient({
 });
 
 //Error notification
-let errorMessage: ErrorMessage = {
+const errorMessage: ErrorMessage = {
   Subject: "Error Processing link stream handler",
 };
 
