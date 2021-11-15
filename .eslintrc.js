@@ -17,6 +17,7 @@ module.exports = {
   rules: {
     "linebreak-style": ["error", "unix"],
     "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-var-requires": "off",
     eqeqeq: ["error", "always", { null: "ignore" }],
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": [
