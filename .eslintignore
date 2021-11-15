@@ -1,6 +1,0 @@
-# Ignore cdk.out
-cdk.out
-
-# Ignore all transpiled files
-*.js
-*.d.ts
