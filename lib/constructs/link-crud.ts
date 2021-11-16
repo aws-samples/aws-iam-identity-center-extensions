@@ -14,11 +14,12 @@ import {
 } from "@aws-cdk/aws-dynamodb";
 import { Role } from "@aws-cdk/aws-iam";
 import { Key } from "@aws-cdk/aws-kms";
-import * as lambda from "@aws-cdk/aws-lambda"; //Needed to avoid semgrep throwing up https://cwe.mitre.org/data/definitions/95.html
+import { LayerVersion, Runtime } from "@aws-cdk/aws-lambda";
+import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
 import { Bucket, EventType } from "@aws-cdk/aws-s3";
 import { LambdaDestination } from "@aws-cdk/aws-s3-notifications";
 import { CfnOutput, Construct, RemovalPolicy } from "@aws-cdk/core";
-import * as Path from "path";
+import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 import { LambdaProxyAPI } from "./lambda-proxy-api";
 
@@ -27,7 +28,7 @@ function name(buildConfig: BuildConfig, resourcename: string): string {
 }
 
 export interface LinkCRUDProps {
-  readonly nodeJsLayer: lambda.LayerVersion;
+  readonly nodeJsLayer: LayerVersion;
   readonly errorNotificationsTopicArn: string;
   readonly ssoArtefactsBucket: Bucket;
   readonly ddbTablesKey: Key;
@@ -37,10 +38,10 @@ export interface LinkCRUDProps {
 export class LinkCRUD extends Construct {
   public readonly provisionedLinksTable: Table;
   public readonly linksTable: Table;
-  public readonly linkAPIHandler: lambda.Function;
+  public readonly linkAPIHandler: NodejsFunction;
   public readonly linkAPI: LambdaRestApi;
-  public readonly linkCuHandler: lambda.Function;
-  public readonly linkDelHandler: lambda.Function;
+  public readonly linkCuHandler: NodejsFunction;
+  public readonly linkDelHandler: NodejsFunction;
 
   constructor(
     scope: Construct,
@@ -114,27 +115,33 @@ export class LinkCRUD extends Construct {
     });
 
     if (buildConfig.Parameters.LinksProvisioningMode.toLowerCase() === "api") {
-      this.linkAPIHandler = new lambda.Function(
+      this.linkAPIHandler = new NodejsFunction(
         this,
         name(buildConfig, "linkApiHandler"),
         {
-          runtime: lambda.Runtime.NODEJS_14_X,
-          handler: "linkApi.handler",
           functionName: name(buildConfig, "linkApiHandler"),
-          code: lambda.Code.fromAsset(
-            Path.join(
-              __dirname,
-              "../",
-              "lambda",
-              "functions",
-              "ddb-import-handlers"
-            )
+          runtime: Runtime.NODEJS_14_X,
+          entry: join(
+            __dirname,
+            "../",
+            "lambda-functions",
+            "ddb-import-handlers",
+            "src",
+            "linkApi.ts"
           ),
+          bundling: {
+            externalModules: [
+              "@aws-sdk/client-dynamodb",
+              "@aws-sdk/client-s3",
+              "@aws-sdk/lib-dynamodb",
+              "ajv",
+            ],
+            minify: true,
+          },
           layers: [linkCRUDProps.nodeJsLayer],
           environment: {
             DdbTable: this.linksTable.tableName,
             AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
-            corsOrigin: "'*'",
             artefactsBucketName: linkCRUDProps.ssoArtefactsBucket.bucketName,
           },
         }
@@ -155,22 +162,28 @@ export class LinkCRUD extends Construct {
         }
       ).lambdaProxyAPI;
     } else {
-      this.linkCuHandler = new lambda.Function(
+      this.linkCuHandler = new NodejsFunction(
         this,
         name(buildConfig, "linkCuHandler"),
         {
-          runtime: lambda.Runtime.NODEJS_14_X,
-          handler: "linkCu.handler",
           functionName: name(buildConfig, "linkCuHandler"),
-          code: lambda.Code.fromAsset(
-            Path.join(
-              __dirname,
-              "../",
-              "lambda",
-              "functions",
-              "ddb-import-handlers"
-            )
+          runtime: Runtime.NODEJS_14_X,
+          entry: join(
+            __dirname,
+            "../",
+            "lambda-functions",
+            "ddb-import-handlers",
+            "src",
+            "linkCu.ts"
           ),
+          bundling: {
+            externalModules: [
+              "@aws-sdk/client-dynamodb",
+              "@aws-sdk/lib-dynamodb",
+              "@aws-sdk/client-sns",
+            ],
+            minify: true,
+          },
           layers: [linkCRUDProps.nodeJsLayer],
           environment: {
             DdbTable: this.linksTable.tableName,
@@ -190,22 +203,28 @@ export class LinkCRUD extends Construct {
         }
       );
 
-      this.linkDelHandler = new lambda.Function(
+      this.linkDelHandler = new NodejsFunction(
         this,
         name(buildConfig, "linkDelHandler"),
         {
-          runtime: lambda.Runtime.NODEJS_14_X,
-          handler: "permissionSetDel.handler",
           functionName: name(buildConfig, "linkDelHandler"),
-          code: lambda.Code.fromAsset(
-            Path.join(
-              __dirname,
-              "../",
-              "lambda",
-              "functions",
-              "ddb-import-handlers"
-            )
+          runtime: Runtime.NODEJS_14_X,
+          entry: join(
+            __dirname,
+            "../",
+            "lambda-functions",
+            "ddb-import-handlers",
+            "src",
+            "linkDel.ts"
           ),
+          bundling: {
+            externalModules: [
+              "@aws-sdk/client-dynamodb",
+              "@aws-sdk/lib-dynamodb",
+              "@aws-sdk/client-sns",
+            ],
+            minify: true,
+          },
           layers: [linkCRUDProps.nodeJsLayer],
           environment: {
             DdbTable: this.linksTable.tableName,
