@@ -77,8 +77,9 @@ export const handler = async (event: S3Event) => {
         const jsonData = JSON.parse(
           await streamToString(originalText.Body as Readable)
         );
-        const payload = <CreateUpdatePermissionSetPayload>(
-          imperativeParseJSON(jsonData, createUpdateValidate)
+        const payload: CreateUpdatePermissionSetPayload = imperativeParseJSON(
+          jsonData,
+          createUpdateValidate
         );
         const upsertData = removeEmpty(payload);
         await ddbDocClientObject.send(

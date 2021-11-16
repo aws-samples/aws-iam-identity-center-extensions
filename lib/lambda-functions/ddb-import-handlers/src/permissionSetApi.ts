@@ -79,8 +79,9 @@ export const handler = async (
     try {
       const body = JSON.parse(event.body);
       if (body.action === "create" || body.action === "update") {
-        const payload = <CreateUpdatePermissionSetPayload>(
-          imperativeParseJSON(event.body, createUpdateValidate)
+        const payload: CreateUpdatePermissionSetPayload = imperativeParseJSON(
+          event.body,
+          createUpdateValidate
         );
         await s3clientObject.send(
           new PutObjectCommand({
@@ -108,8 +109,9 @@ export const handler = async (
           }),
         };
       } else if (body.action === "delete") {
-        const payload = <DeletePermissionSetPayload>(
-          imperativeParseJSON(event.body, deleteValidate)
+        const payload: DeletePermissionSetPayload = imperativeParseJSON(
+          event.body,
+          deleteValidate
         );
         const relatedLinks: QueryCommandOutput = await ddbDocClientObject.send(
           // QueryCommand is a pagniated call, however the logic requires

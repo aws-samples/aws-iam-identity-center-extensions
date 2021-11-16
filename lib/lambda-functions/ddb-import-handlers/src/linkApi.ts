@@ -53,7 +53,7 @@ export const handler = async (
 ): Promise<APIGatewayProxyResultV2> => {
   if (event.body !== null && event.body !== undefined) {
     try {
-      const payload = <LinkPayload>imperativeParseJSON(event.body, validate);
+      const payload: LinkPayload = imperativeParseJSON(event.body, validate);
       const delimeter = ".";
       const { linkData } = payload;
       if (payload.action === "create") {
