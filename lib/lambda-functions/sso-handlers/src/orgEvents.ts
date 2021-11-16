@@ -395,11 +395,12 @@ export const handler = async (event: SNSEvent) => {
             console.log(
               `Determined that the tag change delta for ${changedTagKey} is a create/update operation`
             );
+            const tagValue = tags[`${changedTagKey}`];
             await orgEventProvisioning(
               staticSSOPayload,
               resources[0].split("/")[2],
               "create",
-              `${changedTagKey}^${tags[`${changedTagKey}`]}`,
+              `${changedTagKey}^${tagValue}`,
               "account_tag",
               identityStoreId
             );
