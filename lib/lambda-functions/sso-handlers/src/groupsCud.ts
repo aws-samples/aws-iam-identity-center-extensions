@@ -221,6 +221,7 @@ export const handler = async (event: SNSEvent) => {
               }
             } else {
               // Permission set for the group-link does not exist
+              console.log(`Permission set for the group-link does not exist`);
             }
           })
         );
@@ -229,6 +230,7 @@ export const handler = async (event: SNSEvent) => {
         );
       } else {
         // No related links for the group being processed
+        console.log(`No related links for the group being processed`);
       }
     } else if (message.detail.eventName === "DeleteGroup") {
       groupId = message.detail.requestParameters.groupId;
@@ -276,6 +278,7 @@ export const handler = async (event: SNSEvent) => {
           );
         } else {
           // No related links for the group being deleted
+          console.log(` No related links for the group being deleted`);
         }
         await ddbDocClientObject.send(
           new DeleteCommand({
@@ -287,6 +290,7 @@ export const handler = async (event: SNSEvent) => {
         );
       } else {
         // The group does not exist, so not deleting again
+        console.log(`The group does not exist, so not deleting again`);
       }
     }
   } catch (err) {

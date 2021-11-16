@@ -131,7 +131,7 @@ export const handler = async (
           )}`
         );
         return {
-          statusCode: 400,
+          statusCode: 500,
           body: JSON.stringify({ errors: err.errors }),
         };
       } else {
@@ -139,7 +139,7 @@ export const handler = async (
           `Exception when processing linkAPI operation : ${JSON.stringify(err)}`
         );
         return {
-          statusCode: 400,
+          statusCode: 500,
           body: JSON.stringify({
             message: `Exception while processing the call ${err}`,
           }),

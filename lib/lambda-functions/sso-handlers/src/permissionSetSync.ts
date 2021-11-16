@@ -263,15 +263,22 @@ export const handler = async (event: SNSEvent) => {
               }
             } else {
               // No related groups found from AD sync for this link
+              console.log(`No related groups found from AD sync for this link`);
             }
           } else {
             // Ignoring permission set sync for the link as the group is not yet provisioned
+            console.log(
+              `Ignoring permission set sync for the link as the group is not yet provisioned`
+            );
           }
         })
       );
     } else {
       // Ignoring permission set sync as there are no
       // related links already provisioined for this permission set
+      console.log(
+        `Ignoring permission set sync as there are no related links already provisioined for this permission set`
+      );
     }
   } catch (err) {
     await snsClientObject.send(

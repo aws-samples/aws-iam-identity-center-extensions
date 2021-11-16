@@ -247,6 +247,7 @@ export const handler = async (event: DynamoDBStreamEvent) => {
               );
             } else {
               // entityType is unknown, so ignoring the operation
+              console.log(`entityType is unknown, so ignoring the operation`);
             }
           } else if (adUsed === "true" && domainName !== "") {
             // Handling AD sync as the group does not yet exist within DDB',
@@ -320,12 +321,15 @@ export const handler = async (event: DynamoDBStreamEvent) => {
               }
             } else {
               // No related groups found from AD sync for this link
+              console.log(`No related groups found from AD sync for this link`);
             }
           } else {
             // No related groups found for this link
+            console.log(`No related groups found for this link`);
           }
         } else {
           // Permission set does not exist
+          console.log(`Permission set does not exist`);
         }
       })
     );
