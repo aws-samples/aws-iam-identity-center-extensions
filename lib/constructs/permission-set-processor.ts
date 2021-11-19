@@ -6,14 +6,16 @@ for permission set life cycle provisioning
 import { Table } from "@aws-cdk/aws-dynamodb";
 import { Key } from "@aws-cdk/aws-kms";
 import * as lambda from "@aws-cdk/aws-lambda"; //Needed to avoid semgrep throwing up https://cwe.mitre.org/data/definitions/95.html
+import { LayerVersion, Runtime } from "@aws-cdk/aws-lambda";
 import {
   DynamoEventSource,
   SnsDlq,
   SnsEventSource,
 } from "@aws-cdk/aws-lambda-event-sources";
+import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
 import { ITopic, Topic } from "@aws-cdk/aws-sns";
 import { Construct } from "@aws-cdk/core";
-import * as Path from "path";
+import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {
@@ -21,7 +23,7 @@ function name(buildConfig: BuildConfig, resourcename: string): string {
 }
 
 export interface PermissionSetProcessProps {
-  readonly nodeJsLayer: lambda.LayerVersion;
+  readonly nodeJsLayer: LayerVersion;
   readonly permissionSetTable: Table;
   readonly PermissionSetArnTableName: string;
   readonly errorNotificationsTopic: ITopic;
@@ -38,11 +40,11 @@ export interface PermissionSetProcessProps {
 }
 
 export class PermissionSetProcessor extends Construct {
-  public readonly permissionSetHandler: lambda.Function;
+  public readonly permissionSetHandler: NodejsFunction;
   public readonly permissionSetStreamHandler: lambda.Function;
   public readonly permissionSetTopic: Topic;
   public readonly permissionSetSyncTopic: Topic;
-  public readonly permissionSetSyncHandler: lambda.Function;
+  public readonly permissionSetSyncHandler: NodejsFunction;
 
   constructor(
     scope: Construct,
@@ -75,15 +77,15 @@ export class PermissionSetProcessor extends Construct {
       name(buildConfig, "permissionSetStreamHandler"),
       {
         runtime: lambda.Runtime.NODEJS_14_X,
-        handler: "permissionSet.handler",
         functionName: name(buildConfig, "permissionSetStreamHandler"),
+        handler: "permissionSet.handler",
         code: lambda.Code.fromAsset(
-          Path.join(
+          join(
             __dirname,
             "../",
-            "lambda",
-            "functions",
-            "ddb-stream-handlers"
+            "lambda-functions",
+            "ddb-stream-handlers",
+            "src"
           )
         ),
         layers: [permissionSetProcessorProps.nodeJsLayer],
@@ -107,16 +109,30 @@ export class PermissionSetProcessor extends Construct {
       })
     );
 
-    this.permissionSetHandler = new lambda.Function(
+    this.permissionSetHandler = new NodejsFunction(
       this,
       name(buildConfig, "permissionSetHandler"),
       {
-        runtime: lambda.Runtime.NODEJS_14_X,
-        handler: "permissionSetTopic.handler",
         functionName: name(buildConfig, "permissionSetHandler"),
-        code: lambda.Code.fromAsset(
-          Path.join(__dirname, "../", "lambda", "functions", "sso-handlers")
+        runtime: Runtime.NODEJS_14_X,
+        entry: join(
+          __dirname,
+          "../",
+          "lambda-functions",
+          "sso-handlers",
+          "src",
+          "permissionSetTopic.ts"
         ),
+        bundling: {
+          externalModules: [
+            "@aws-sdk/client-sns",
+            "@aws-sdk/client-dynamodb",
+            "@aws-sdk/client-sso-admin",
+            "@aws-sdk/credential-providers",
+            "@aws-sdk/lib-dynamodb",
+          ],
+          minify: true,
+        },
         layers: [permissionSetProcessorProps.nodeJsLayer],
         environment: {
           DdbTable: permissionSetProcessorProps.permissionSetTable.tableName,
@@ -138,16 +154,32 @@ export class PermissionSetProcessor extends Construct {
       new SnsEventSource(this.permissionSetTopic)
     );
 
-    this.permissionSetSyncHandler = new lambda.Function(
+    this.permissionSetSyncHandler = new NodejsFunction(
       this,
       name(buildConfig, "permissionSetSyncHandler"),
       {
-        runtime: lambda.Runtime.NODEJS_14_X,
-        handler: "permissionSetSync.handler",
+        runtime: Runtime.NODEJS_14_X,
         functionName: name(buildConfig, "permissionSetSyncHandler"),
-        code: lambda.Code.fromAsset(
-          Path.join(__dirname, "../", "lambda", "functions", "sso-handlers")
+        entry: join(
+          __dirname,
+          "../",
+          "lambda-functions",
+          "sso-handlers",
+          "src",
+          "permissionSetSync.ts"
         ),
+        bundling: {
+          externalModules: [
+            "@aws-sdk/client-sns",
+            "@aws-sdk/client-sfn",
+            "@aws-sdk/client-dynamodb",
+            "@aws-sdk/client-identitystore",
+            "@aws-sdk/client-sso-admin",
+            "@aws-sdk/credential-providers",
+            "@aws-sdk/lib-dynamodb",
+          ],
+          minify: true,
+        },
         layers: [permissionSetProcessorProps.nodeJsLayer],
         environment: {
           linksTableName: permissionSetProcessorProps.linksTableName,

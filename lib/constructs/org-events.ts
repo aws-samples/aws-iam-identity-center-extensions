@@ -3,11 +3,12 @@ composite construct that sets up all resources
 for org events handling
 */
 
-import * as lambda from "@aws-cdk/aws-lambda"; //Needed to avoid semgrep throwing up https://cwe.mitre.org/data/definitions/95.html
+import { LayerVersion, Runtime } from "@aws-cdk/aws-lambda";
 import { SnsEventSource } from "@aws-cdk/aws-lambda-event-sources";
+import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
 import { ITopic } from "@aws-cdk/aws-sns";
 import { Construct } from "@aws-cdk/core";
-import * as Path from "path";
+import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {
@@ -20,7 +21,7 @@ export interface OrgEventsProps {
   readonly groupsTableName: string;
   readonly linkManagerTopicArn: string;
   readonly errorNotificationsTopicArn: string;
-  readonly nodeJsLayer: lambda.LayerVersion;
+  readonly nodeJsLayer: LayerVersion;
   readonly orgEventsNotificationTopic: ITopic;
   readonly listInstancesSSOAPIRoleArn: string;
   readonly listGroupsIdentityStoreAPIRoleArn: string;
@@ -28,7 +29,7 @@ export interface OrgEventsProps {
 }
 
 export class OrgEvents extends Construct {
-  public readonly orgEventsHandler: lambda.Function;
+  public readonly orgEventsHandler: NodejsFunction;
 
   constructor(
     scope: Construct,
@@ -38,16 +39,31 @@ export class OrgEvents extends Construct {
   ) {
     super(scope, id);
 
-    this.orgEventsHandler = new lambda.Function(
+    this.orgEventsHandler = new NodejsFunction(
       this,
       name(buildConfig, "orgEventsHandler"),
       {
-        runtime: lambda.Runtime.NODEJS_14_X,
-        handler: "orgEvents.handler",
+        runtime: Runtime.NODEJS_14_X,
         functionName: name(buildConfig, "orgEventsHandler"),
-        code: lambda.Code.fromAsset(
-          Path.join(__dirname, "../", "lambda", "functions", "sso-handlers")
+        entry: join(
+          __dirname,
+          "../",
+          "lambda-functions",
+          "sso-handlers",
+          "src",
+          "orgEvents.ts"
         ),
+        bundling: {
+          externalModules: [
+            "@aws-sdk/client-sns",
+            "@aws-sdk/client-dynamodb",
+            "@aws-sdk/client-identitystore",
+            "@aws-sdk/client-sso-admin",
+            "@aws-sdk/credential-providers",
+            "@aws-sdk/lib-dynamodb",
+          ],
+          minify: true,
+        },
         layers: [orgEventsProps.nodeJsLayer],
         environment: {
           topicArn: orgEventsProps.linkManagerTopicArn,

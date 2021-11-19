@@ -1,73 +1,77 @@
 #!/usr/bin/env node
 
 import { App, DefaultStackSynthesizer, Tags } from "@aws-cdk/core";
-import * as fs from "fs";
-import * as path from "path";
+import { readFileSync } from "fs";
+import { resolve } from "path";
 import { BuildConfig } from "../lib/build/buildConfig";
 import { AwsSsoExtensionsForEnterprise } from "../lib/stacks/pipeline/aws-sso-extensions-for-enterprise";
 
-const yaml = require("js-yaml");
+import yaml = require("js-yaml");
 const app = new App();
 
 function ensureString(
+  /* eslint-disable  @typescript-eslint/no-explicit-any */
   object: { [name: string]: any },
   propName: string
 ): string {
-  if (!object[propName] || object[propName].trim().length === 0)
+  if (!object[`${propName}`] || object[`${propName}`].trim().length === 0)
     throw new Error(propName + " does not exist or is empty");
 
-  return object[propName];
+  return object[`${propName}`];
 }
 
 function ensureValidString(
+  /* eslint-disable  @typescript-eslint/no-explicit-any */
   object: { [name: string]: any },
   propName: string,
   validList: Array<string>
 ): string {
   if (
-    !object[propName] ||
-    object[propName].trim().length === 0 ||
-    typeof object[propName] !== "string"
+    !object[`${propName}`] ||
+    object[`${propName}`].trim().length === 0 ||
+    typeof object[`${propName}`] !== "string"
   )
     throw new Error(
       propName +
         " does not exist or is empty or is of not the correct data type"
     );
 
-  const value = ("" + object[propName]).toUpperCase();
+  const value = ("" + object[`${propName}`]).toUpperCase();
   if (!validList.includes(value)) {
     throw new Error(
       `${propName} is not one of the valid values - ${validList.toString()}`
     );
   }
 
-  return object[propName];
+  return object[`${propName}`];
 }
 
 function ensureBoolean(
+  /* eslint-disable  @typescript-eslint/no-explicit-any */
   object: { [name: string]: any },
   propName: string
 ): boolean {
-  if (typeof object[propName] !== "boolean")
+  if (typeof object[`${propName}`] !== "boolean")
     throw new Error(
       propName + " does not exist or is of not the correct data type"
     );
 
-  return object[propName];
+  return object[`${propName}`];
 }
 
 function getConfig() {
-  let env = app.node.tryGetContext("config");
+  const env = app.node.tryGetContext("config");
   if (!env)
     throw new Error(
       "Context variable missing on CDK command. Pass in as `-c config=XXX`"
     );
 
-  let unparsedEnv = yaml.load(
-    fs.readFileSync(path.resolve("./config/" + env + ".yaml"), "utf8")
+  /* eslint-disable  @typescript-eslint/no-explicit-any */
+  const unparsedEnv: any = yaml.load(
+    readFileSync(resolve("./config/" + env + ".yaml"), "utf8")
   );
 
-  return {
+  const buildConfig: BuildConfig = {
     App: ensureString(unparsedEnv, "App"),
     Environment: ensureString(unparsedEnv, "Environment"),
     Version: ensureString(unparsedEnv, "Version"),
@@ -135,7 +139,6 @@ function getConfig() {
         unparsedEnv["Parameters"],
         "PermissionSetCallerRoleArn"
       ),
-      ApiCorsOrigin: ensureString(unparsedEnv["Parameters"], "ApiCorsOrigin"),
       NotificationEmail: ensureString(
         unparsedEnv["Parameters"],
         "NotificationEmail"
@@ -144,12 +147,14 @@ function getConfig() {
       DomainName: ensureString(unparsedEnv["Parameters"], "DomainName"),
     },
   };
+
+  return buildConfig;
 }
 
 async function DeploySSOForEnterprise() {
-  let buildConfig: BuildConfig = getConfig();
+  const buildConfig: BuildConfig = getConfig();
 
-  let AwsSsoExtensionsForEnterpriseAppName =
+  const AwsSsoExtensionsForEnterpriseAppName =
     buildConfig.Environment + "-" + buildConfig.App;
   const AwsSsoExtensionsForEnterpriseStack = new AwsSsoExtensionsForEnterprise(
     app,

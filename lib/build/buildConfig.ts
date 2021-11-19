@@ -32,7 +32,6 @@ export interface Parameters {
   readonly PermissionSetProvisioningMode: string;
   readonly LinkCallerRoleArn: string;
   readonly PermissionSetCallerRoleArn: string;
-  readonly ApiCorsOrigin: string;
   readonly NotificationEmail: string;
   readonly IsAdUsed: boolean;
   readonly DomainName: string;
