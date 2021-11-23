@@ -7,16 +7,16 @@
   },
   "keywords": [],
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.36.0",
-    "@aws-sdk/client-identitystore": "^3.36.0",
-    "@aws-sdk/client-s3": "^3.40.1",
-    "@aws-sdk/client-sfn": "^3.36.0",
-    "@aws-sdk/client-sns": "^3.36.0",
-    "@aws-sdk/client-ssm": "^3.36.0",
-    "@aws-sdk/client-sso-admin": "^3.36.0",
-    "@aws-sdk/credential-providers": "^3.36.0",
-    "@aws-sdk/lib-dynamodb": "^3.36.0",
-    "ajv": "^8.7.1",
+    "@aws-sdk/client-dynamodb": "^3.42.0",
+    "@aws-sdk/client-identitystore": "^3.42.0",
+    "@aws-sdk/client-s3": "^3.42.0",
+    "@aws-sdk/client-sfn": "^3.42.0",
+    "@aws-sdk/client-sns": "^3.42.0",
+    "@aws-sdk/client-ssm": "^3.42.0",
+    "@aws-sdk/client-sso-admin": "^3.42.0",
+    "@aws-sdk/credential-providers": "^3.42.0",
+    "@aws-sdk/lib-dynamodb": "^3.42.0",
+    "ajv": "^8.8.2",
     "dynamo-stream-diff": "^0.1.0"
   }
 }
