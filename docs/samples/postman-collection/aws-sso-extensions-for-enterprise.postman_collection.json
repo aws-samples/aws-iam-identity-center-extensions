@@ -1,525 +1,643 @@
 {
-  "info": {
-    "_postman_id": "e30089d9-5aba-4fab-b253-98c41f8df1bd",
-    "name": "aws-sso-extensions-for-enterprise",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "item": [
-    {
-      "name": "Account Assignment life cycle",
-      "item": [
-        {
-          "name": "Assign-CloudOperator-ps",
-          "request": {
-            "auth": {
-              "type": "awsv4",
-              "awsv4": [
-                {
-                  "key": "sessionToken",
-                  "value": "{{sessionToken}}",
-                  "type": "string"
-                },
-                {
-                  "key": "secretKey",
-                  "value": "{{secretAccessKey}}",
-                  "type": "string"
-                },
-                {
-                  "key": "accessKey",
-                  "value": "{{accessKey}}",
-                  "type": "string"
-                },
-                {
-                  "key": "region",
-                  "value": "{{region}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"root.all.CloudOperator-ps.team-CloudOperators.ssofile\"    \n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{linksEndpoint}}postLinkData",
-              "host": ["{{linksEndpoint}}postLinkData"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Assign-SecurityAuditor-ps",
-          "request": {
-            "auth": {
-              "type": "awsv4",
-              "awsv4": [
-                {
-                  "key": "sessionToken",
-                  "value": "{{sessionToken}}",
-                  "type": "string"
-                },
-                {
-                  "key": "region",
-                  "value": "{{region}}",
-                  "type": "string"
-                },
-                {
-                  "key": "secretKey",
-                  "value": "{{secretAccessKey}}",
-                  "type": "string"
-                },
-                {
-                  "key": "accessKey",
-                  "value": "{{accessKey}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"ou_id.ou_id123435.SecurityAuditor-ps.team-SecurityAuditors.ssofile\"         \n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{linksEndpoint}}postLinkData",
-              "host": ["{{linksEndpoint}}postLinkData"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Assign-Billing-ps",
-          "request": {
-            "auth": {
-              "type": "awsv4",
-              "awsv4": [
-                {
-                  "key": "sessionToken",
-                  "value": "{{sessionToken}}",
-                  "type": "string"
-                },
-                {
-                  "key": "region",
-                  "value": "{{region}}",
-                  "type": "string"
-                },
-                {
-                  "key": "secretKey",
-                  "value": "{{secretAccessKey}}",
-                  "type": "string"
-                },
-                {
-                  "key": "accessKey",
-                  "value": "{{accessKey}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"account.121111112211.Billing-ps.team-Accountants.ssofile\"    \n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{linksEndpoint}}postLinkData",
-              "host": ["{{linksEndpoint}}postLinkData"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Assign-DataScientist-ps",
-          "request": {
-            "auth": {
-              "type": "awsv4",
-              "awsv4": [
-                {
-                  "key": "sessionToken",
-                  "value": "{{sessionToken}}",
-                  "type": "string"
-                },
-                {
-                  "key": "region",
-                  "value": "{{region}}",
-                  "type": "string"
-                },
-                {
-                  "key": "secretKey",
-                  "value": "{{secretAccessKey}}",
-                  "type": "string"
-                },
-                {
-                  "key": "accessKey",
-                  "value": "{{accessKey}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"account_tag.team^DataScientists.DataScientist-ps.team-DataScientists.ssofile\"    \n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{linksEndpoint}}postLinkData",
-              "host": ["{{linksEndpoint}}postLinkData"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Remove-CloudOperator-ps",
-          "request": {
-            "auth": {
-              "type": "awsv4",
-              "awsv4": [
-                {
-                  "key": "sessionToken",
-                  "value": "{{sessionToken}}",
-                  "type": "string"
-                },
-                {
-                  "key": "secretKey",
-                  "value": "{{secretAccessKey}}",
-                  "type": "string"
-                },
-                {
-                  "key": "accessKey",
-                  "value": "{{accessKey}}",
-                  "type": "string"
-                },
-                {
-                  "key": "region",
-                  "value": "{{region}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"root.all.CloudOperator-ps.team-CloudOperators.ssofile\"    \n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{linksEndpoint}}postLinkData",
-              "host": ["{{linksEndpoint}}postLinkData"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Permission Set life cycle",
-      "item": [
-        {
-          "name": "Create-CloudOperator-ps",
-          "request": {
-            "auth": {
-              "type": "awsv4",
-              "awsv4": [
-                {
-                  "key": "accessKey",
-                  "value": "{{accessKey}}",
-                  "type": "string"
-                },
-                {
-                  "key": "secretKey",
-                  "value": "{{secretAccessKey}}",
-                  "type": "string"
-                },
-                {
-                  "key": "region",
-                  "value": "{{region}}",
-                  "type": "string"
-                },
-                {
-                  "key": "sessionToken",
-                  "value": "{{sessionToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"action\": \"create\",\n    \"permissionSetData\": {\n        \"permissionSetName\": \"CloudOperator-ps\",        \n        \"sessionDurationInMinutes\": \"240\",\n        \"relayState\": \"https://eu-west-1.console.aws.amazon.com/console/home?region=eu-west-1#\",\n        \"tags\": [                                 \n            {\n                \"Key\": \"versionid\",\n                \"Value\": \"01\"\n            },\n            {\n                \"Key\": \"team\",\n                \"Value\": \"CloudOperators\"\n            }\n        ],\n        \"managedPoliciesArnList\": [\n            \"arn:aws:iam::aws:policy/job-function/SystemAdministrator\",\n            \"arn:aws:iam::aws:policy/job-function/NetworkAdministrator\"\n        ],\n        \"inlinePolicyDocument\": {\n            \"Version\": \"2012-10-17\",\n            \"Statement\": [                \n                {\n                    \"Action\": [\n                        \"iam:AddRoleToInstanceProfile\",\n                        \"iam:CreateInstanceProfile\",\n                        \"iam:CreatePolicy\",\n                        \"iam:CreatePolicyVersion\",\n                        \"iam:DeleteInstanceProfile\",\n                        \"iam:DeletePolicy\",\n                        \"iam:DeleteRole\",\n                        \"iam:PassRole\",\n                        \"iam:UpdateRole\",\n                        \"iam:DeleteRolePermissionsBoundary\",\n                        \"iam:UpdateRoleDescription\",\n                        \"iam:RemoveRoleFromInstanceProfile\"\n                    ],\n                    \"Resource\": [\n                        \"arn:aws:iam::*:role/Application_*\",\n                        \"arn:aws:iam::*:policy/Application_*\",\n                        \"arn:aws:iam::*:instance-profile/Application_*\"\n                    ],\n                    \"Effect\": \"Allow\",\n                    \"Sid\": \"AllowOtherIAMActions\"\n                },\n                {\n                    \"Action\": [\n                        \"iam:List*\",\n                        \"iam:Generate*\",\n                        \"iam:Get*\",\n                        \"iam:Simulate*\"\n                    ],\n                    \"Resource\": \"*\",\n                    \"Effect\": \"Allow\",\n                    \"Sid\": \"AllowReadIAMActions\"\n                }\n            ]\n        }\n    }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{permissionSetEndpoint}}postPermissionSetData",
-              "host": ["{{permissionSetEndpoint}}postPermissionSetData"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create-SecurityAuditor-ps",
-          "request": {
-            "auth": {
-              "type": "awsv4",
-              "awsv4": [
-                {
-                  "key": "accessKey",
-                  "value": "{{accessKey}}",
-                  "type": "string"
-                },
-                {
-                  "key": "secretKey",
-                  "value": "{{secretAccessKey}}",
-                  "type": "string"
-                },
-                {
-                  "key": "region",
-                  "value": "{{region}}",
-                  "type": "string"
-                },
-                {
-                  "key": "sessionToken",
-                  "value": "{{sessionToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"action\": \"create\",\n    \"permissionSetData\": {\n        \"permissionSetName\": \"SecurityAuditor-ps\",        \n        \"sessionDurationInMinutes\": \"60\",\n        \"relayState\": \"https://eu-west-1.console.aws.amazon.com/console/home?region=eu-west-1#\",\n        \"tags\": [                                 \n            {\n                \"Key\": \"versionid\",\n                \"Value\": \"01\"\n            },\n            {\n                \"Key\": \"team\",\n                \"Value\": \"SecurityAuditors\"\n            }\n        ],\n        \"managedPoliciesArnList\": [\n            \"arn:aws:iam::aws:policy/SecurityAudit\"\n        ],\n        \"inlinePolicyDocument\": {}\n    }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{permissionSetEndpoint}}postPermissionSetData",
-              "host": ["{{permissionSetEndpoint}}postPermissionSetData"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create-DataScientist-ps",
-          "request": {
-            "auth": {
-              "type": "awsv4",
-              "awsv4": [
-                {
-                  "key": "accessKey",
-                  "value": "{{accessKey}}",
-                  "type": "string"
-                },
-                {
-                  "key": "secretKey",
-                  "value": "{{secretAccessKey}}",
-                  "type": "string"
-                },
-                {
-                  "key": "region",
-                  "value": "{{region}}",
-                  "type": "string"
-                },
-                {
-                  "key": "sessionToken",
-                  "value": "{{sessionToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"action\": \"create\",\n    \"permissionSetData\": {\n        \"permissionSetName\": \"DataScientist-ps\",        \n        \"sessionDurationInMinutes\": \"300\",\n        \"relayState\": \"https://eu-west-1.console.aws.amazon.com/console/home?region=eu-west-1#\",\n        \"tags\": [                                 \n            {\n                \"Key\": \"versionid\",\n                \"Value\": \"01\"\n            },\n            {\n                \"Key\": \"team\",\n                \"Value\": \"DataScientists\"\n            }\n        ],\n        \"managedPoliciesArnList\": [\n            \"arn:aws:iam::aws:policy/job-function/DataScientist\"\n        ],\n        \"inlinePolicyDocument\": {}\n    }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{permissionSetEndpoint}}postPermissionSetData",
-              "host": ["{{permissionSetEndpoint}}postPermissionSetData"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create-Billing-ps",
-          "request": {
-            "auth": {
-              "type": "awsv4",
-              "awsv4": [
-                {
-                  "key": "accessKey",
-                  "value": "{{accessKey}}",
-                  "type": "string"
-                },
-                {
-                  "key": "secretKey",
-                  "value": "{{secretAccessKey}}",
-                  "type": "string"
-                },
-                {
-                  "key": "region",
-                  "value": "{{region}}",
-                  "type": "string"
-                },
-                {
-                  "key": "sessionToken",
-                  "value": "{{sessionToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"action\": \"create\",\n    \"permissionSetData\": {\n        \"permissionSetName\": \"Billing-ps\",        \n        \"sessionDurationInMinutes\": \"60\",\n        \"relayState\": \"https://eu-west-1.console.aws.amazon.com/console/home?region=eu-west-1#\",\n        \"tags\": [                                 \n            {\n                \"Key\": \"versionid\",\n                \"Value\": \"01\"\n            },\n            {\n                \"Key\": \"team\",\n                \"Value\": \"Accountants\"\n            }\n        ],\n        \"managedPoliciesArnList\": [\n            \"arn:aws:iam::aws:policy/job-function/Billing\"\n        ],\n        \"inlinePolicyDocument\": {}\n    }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{permissionSetEndpoint}}postPermissionSetData",
-              "host": ["{{permissionSetEndpoint}}postPermissionSetData"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update-CloudOperator-ps",
-          "request": {
-            "auth": {
-              "type": "awsv4",
-              "awsv4": [
-                {
-                  "key": "accessKey",
-                  "value": "{{accessKey}}",
-                  "type": "string"
-                },
-                {
-                  "key": "secretKey",
-                  "value": "{{secretAccessKey}}",
-                  "type": "string"
-                },
-                {
-                  "key": "region",
-                  "value": "{{region}}",
-                  "type": "string"
-                },
-                {
-                  "key": "sessionToken",
-                  "value": "{{sessionToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"action\": \"update\",\n    \"permissionSetData\": {\n        \"permissionSetName\": \"CloudOperator-ps\",        \n        \"sessionDurationInMinutes\": \"420\",\n        \"relayState\": \"https://eu-west-1.console.aws.amazon.com/console/home?region=eu-west-1#\",\n        \"tags\": [                                 \n            {\n                \"Key\": \"versionid\",\n                \"Value\": \"02\"\n            },\n            {\n                \"Key\": \"team\",\n                \"Value\": \"CloudOperators\"\n            }\n        ],\n        \"managedPoliciesArnList\": [\n            \"arn:aws:iam::aws:policy/job-function/SystemAdministrator\",\n            \"arn:aws:iam::aws:policy/job-function/NetworkAdministrator\",\n            \"arn:aws:iam::aws:policy/AWSHealthFullAccess\"\n        ],\n        \"inlinePolicyDocument\": {\n            \"Version\": \"2012-10-17\",\n            \"Statement\": [              \n                {\n                    \"Action\": [\n                        \"iam:List*\",\n                        \"iam:Generate*\",\n                        \"iam:Get*\",\n                        \"iam:Simulate*\"\n                    ],\n                    \"Resource\": \"*\",\n                    \"Effect\": \"Allow\",\n                    \"Sid\": \"AllowReadIAMActions\"\n                }\n            ]\n        }\n    }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{permissionSetEndpoint}}postPermissionSetData",
-              "host": ["{{permissionSetEndpoint}}postPermissionSetData"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete-Billing-ps",
-          "request": {
-            "auth": {
-              "type": "awsv4",
-              "awsv4": [
-                {
-                  "key": "accessKey",
-                  "value": "{{accessKey}}",
-                  "type": "string"
-                },
-                {
-                  "key": "secretKey",
-                  "value": "{{secretAccessKey}}",
-                  "type": "string"
-                },
-                {
-                  "key": "region",
-                  "value": "{{region}}",
-                  "type": "string"
-                },
-                {
-                  "key": "sessionToken",
-                  "value": "{{sessionToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"action\": \"delete\",\n    \"permissionSetData\": {\n        \"permissionSetName\": \"Billing-ps\"\n    }\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{permissionSetEndpoint}}postPermissionSetData",
-              "host": ["{{permissionSetEndpoint}}postPermissionSetData"]
-            }
-          },
-          "response": []
-        }
-      ]
-    }
-  ]
+	"info": {
+		"_postman_id": "e30089d9-5aba-4fab-b253-98c41f8df1bd",
+		"name": "aws-sso-extensions-for-enterprise",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Account Assignment life cycle",
+			"item": [
+				{
+					"name": "Assign-CloudOperator-ps",
+					"request": {
+						"auth": {
+							"type": "awsv4",
+							"awsv4": [
+								{
+									"key": "sessionToken",
+									"value": "{{sessionToken}}",
+									"type": "string"
+								},
+								{
+									"key": "secretKey",
+									"value": "{{secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "accessKey",
+									"value": "{{accessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "region",
+									"value": "{{region}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"root.all.CloudOperator-ps.team-CloudOperators.ssofile\"    \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{linksEndpoint}}postLinkData",
+							"host": [
+								"{{linksEndpoint}}postLinkData"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Assign-SysAdmin-ps",
+					"request": {
+						"auth": {
+							"type": "awsv4",
+							"awsv4": [
+								{
+									"key": "sessionToken",
+									"value": "{{sessionToken}}",
+									"type": "string"
+								},
+								{
+									"key": "secretKey",
+									"value": "{{secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "accessKey",
+									"value": "{{accessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "region",
+									"value": "{{region}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"root.all.SysAdmin-ps.team-SysAdmins.ssofile\"    \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{linksEndpoint}}postLinkData",
+							"host": [
+								"{{linksEndpoint}}postLinkData"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Assign-SecurityAuditor-ps",
+					"request": {
+						"auth": {
+							"type": "awsv4",
+							"awsv4": [
+								{
+									"key": "sessionToken",
+									"value": "{{sessionToken}}",
+									"type": "string"
+								},
+								{
+									"key": "region",
+									"value": "{{region}}",
+									"type": "string"
+								},
+								{
+									"key": "secretKey",
+									"value": "{{secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "accessKey",
+									"value": "{{accessKey}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"ou_id.ou_id123435.SecurityAuditor-ps.team-SecurityAuditors.ssofile\"         \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{linksEndpoint}}postLinkData",
+							"host": [
+								"{{linksEndpoint}}postLinkData"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Assign-Billing-ps",
+					"request": {
+						"auth": {
+							"type": "awsv4",
+							"awsv4": [
+								{
+									"key": "sessionToken",
+									"value": "{{sessionToken}}",
+									"type": "string"
+								},
+								{
+									"key": "region",
+									"value": "{{region}}",
+									"type": "string"
+								},
+								{
+									"key": "secretKey",
+									"value": "{{secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "accessKey",
+									"value": "{{accessKey}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"account.121111112211.Billing-ps.team-Accountants.ssofile\"    \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{linksEndpoint}}postLinkData",
+							"host": [
+								"{{linksEndpoint}}postLinkData"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Assign-DataScientist-ps",
+					"request": {
+						"auth": {
+							"type": "awsv4",
+							"awsv4": [
+								{
+									"key": "sessionToken",
+									"value": "{{sessionToken}}",
+									"type": "string"
+								},
+								{
+									"key": "region",
+									"value": "{{region}}",
+									"type": "string"
+								},
+								{
+									"key": "secretKey",
+									"value": "{{secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "accessKey",
+									"value": "{{accessKey}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"account_tag.team^DataScientists.DataScientist-ps.team-DataScientists.ssofile\"    \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{linksEndpoint}}postLinkData",
+							"host": [
+								"{{linksEndpoint}}postLinkData"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove-CloudOperator-ps",
+					"request": {
+						"auth": {
+							"type": "awsv4",
+							"awsv4": [
+								{
+									"key": "sessionToken",
+									"value": "{{sessionToken}}",
+									"type": "string"
+								},
+								{
+									"key": "secretKey",
+									"value": "{{secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "accessKey",
+									"value": "{{accessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "region",
+									"value": "{{region}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"root.all.CloudOperator-ps.team-CloudOperators.ssofile\"    \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{linksEndpoint}}postLinkData",
+							"host": [
+								"{{linksEndpoint}}postLinkData"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Permission Set life cycle",
+			"item": [
+				{
+					"name": "Create-CloudOperator-ps",
+					"request": {
+						"auth": {
+							"type": "awsv4",
+							"awsv4": [
+								{
+									"key": "accessKey",
+									"value": "{{accessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "secretKey",
+									"value": "{{secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "region",
+									"value": "{{region}}",
+									"type": "string"
+								},
+								{
+									"key": "sessionToken",
+									"value": "{{sessionToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"create\",\n    \"permissionSetData\": {\n        \"permissionSetName\": \"CloudOperator-ps\",        \n        \"sessionDurationInMinutes\": \"240\",\n        \"relayState\": \"https://{{region}}.console.aws.amazon.com/console/home?region={{region}}#\",\n        \"tags\": [                                 \n            {\n                \"Key\": \"versionid\",\n                \"Value\": \"01\"\n            },\n            {\n                \"Key\": \"team\",\n                \"Value\": \"CloudOperators\"\n            }\n        ],\n        \"managedPoliciesArnList\": [\n            \"arn:aws:iam::aws:policy/job-function/SystemAdministrator\",\n            \"arn:aws:iam::aws:policy/job-function/NetworkAdministrator\"\n        ],\n        \"inlinePolicyDocument\": {\n            \"Version\": \"2012-10-17\",\n            \"Statement\": [                \n                {\n                    \"Action\": [\n                        \"iam:AddRoleToInstanceProfile\",\n                        \"iam:CreateInstanceProfile\",\n                        \"iam:CreatePolicy\",\n                        \"iam:CreatePolicyVersion\",\n                        \"iam:DeleteInstanceProfile\",\n                        \"iam:DeletePolicy\",\n                        \"iam:DeleteRole\",\n                        \"iam:PassRole\",\n                        \"iam:UpdateRole\",\n                        \"iam:DeleteRolePermissionsBoundary\",\n                        \"iam:UpdateRoleDescription\",\n                        \"iam:RemoveRoleFromInstanceProfile\"\n                    ],\n                    \"Resource\": [\n                        \"arn:aws:iam::*:role/Application_*\",\n                        \"arn:aws:iam::*:policy/Application_*\",\n                        \"arn:aws:iam::*:instance-profile/Application_*\"\n                    ],\n                    \"Effect\": \"Allow\",\n                    \"Sid\": \"AllowOtherIAMActions\"\n                },\n                {\n                    \"Action\": [\n                        \"iam:List*\",\n                        \"iam:Generate*\",\n                        \"iam:Get*\",\n                        \"iam:Simulate*\"\n                    ],\n                    \"Resource\": \"*\",\n                    \"Effect\": \"Allow\",\n                    \"Sid\": \"AllowReadIAMActions\"\n                }\n            ]\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{permissionSetEndpoint}}postPermissionSetData",
+							"host": [
+								"{{permissionSetEndpoint}}postPermissionSetData"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create-SysAdmin-ps",
+					"request": {
+						"auth": {
+							"type": "awsv4",
+							"awsv4": [
+								{
+									"key": "accessKey",
+									"value": "{{accessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "secretKey",
+									"value": "{{secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "region",
+									"value": "{{region}}",
+									"type": "string"
+								},
+								{
+									"key": "sessionToken",
+									"value": "{{sessionToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"create\",\n    \"permissionSetData\": {\n        \"permissionSetName\": \"SysAdmin-ps\",\n        \"sessionDurationInMinutes\": \"240\",\n        \"relayState\": \"https://{{region}}.console.aws.amazon.com/systems-manager/managed-instances?region={{region}}#\",\n        \"tags\": [\n            {\n                \"Key\": \"versionid\",\n                \"Value\": \"01\"\n            },\n            {\n                \"Key\": \"team\",\n                \"Value\": \"SysAdmins\"\n            }\n        ],\n        \"managedPoliciesArnList\": [],\n        \"inlinePolicyDocument\": {\n            \"Version\": \"2012-10-17\",\n            \"Statement\": [\n                {\n                    \"Sid\": \"SSO\",\n                    \"Effect\": \"Allow\",\n                    \"Action\": [\n                        \"sso:ListDirectoryAssociations*\",\n                        \"identitystore:DescribeUser\"\n                    ],\n                    \"Resource\": \"*\"\n                },\n                {\n                    \"Sid\": \"EC2\",\n                    \"Effect\": \"Allow\",\n                    \"Action\": [\n                        \"ec2:DescribeInstances\",\n                        \"ec2:GetPasswordData\"\n                    ],\n                    \"Resource\": \"*\"\n                },\n                {\n                    \"Sid\": \"SSM\",\n                    \"Effect\": \"Allow\",\n                    \"Action\": [\n                        \"ssm:DescribeInstanceProperties\",\n                        \"ssm:GetCommandInvocation\",\n                        \"ssm:GetInventorySchema\"\n                    ],\n                    \"Resource\": \"*\"\n                },\n                {\n                    \"Sid\": \"TerminateSession\",\n                    \"Effect\": \"Allow\",\n                    \"Action\": [\n                        \"ssm:TerminateSession\"\n                    ],\n                    \"Resource\": \"*\",\n                    \"Condition\": {\n                        \"StringLike\": {\n                            \"ssm:resourceTag/aws:ssmmessages:session-id\": [\n                                \"${aws:userName}\"\n                            ]\n                        }\n                    }\n                },\n                {\n                    \"Sid\": \"SSMGetDocument\",\n                    \"Effect\": \"Allow\",\n                    \"Action\": [\n                        \"ssm:GetDocument\"\n                    ],\n                    \"Resource\": [\n                        \"arn:aws:ssm:*:*:document/AWS-StartPortForwardingSession\",\n                        \"arn:aws:ssm:*:*:document/SSM-SessionManagerRunShell\"\n                    ]\n                },\n                {\n                    \"Sid\": \"SSMStartSession\",\n                    \"Effect\": \"Allow\",\n                    \"Action\": [\n                        \"ssm:StartSession\"\n                    ],\n                    \"Resource\": [\n                        \"arn:aws:ec2:*:*:instance/*\",\n                        \"arn:aws:ssm:*:*:managed-instance/*\",\n                        \"arn:aws:ssm:*:*:document/AWS-StartPortForwardingSession\"\n                    ],\n                    \"Condition\": {\n                        \"BoolIfExists\": {\n                            \"ssm:SessionDocumentAccessCheck\": \"true\"\n                        }\n                    }\n                },\n                {\n                    \"Sid\": \"SSMSendCommand\",\n                    \"Effect\": \"Allow\",\n                    \"Action\": [\n                        \"ssm:SendCommand\"\n                    ],\n                    \"Resource\": [\n                        \"arn:aws:ec2:*:*:instance/*\",\n                        \"arn:aws:ssm:*:*:managed-instance/*\",\n                        \"arn:aws:ssm:*:*:document/AWSSSO-CreateSSOUser\"\n                    ],\n                    \"Condition\": {\n                        \"BoolIfExists\": {\n                            \"ssm:SessionDocumentAccessCheck\": \"true\"\n                        }\n                    }\n                },\n                {\n                    \"Sid\": \"GuiConnect\",\n                    \"Effect\": \"Allow\",\n                    \"Action\": [\n                        \"ssm-guiconnect:CancelConnection\",\n                        \"ssm-guiconnect:GetConnection\",\n                        \"ssm-guiconnect:StartConnection\"\n                    ],\n                    \"Resource\": \"*\"\n                }\n            ]\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{permissionSetEndpoint}}postPermissionSetData",
+							"host": [
+								"{{permissionSetEndpoint}}postPermissionSetData"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create-SecurityAuditor-ps",
+					"request": {
+						"auth": {
+							"type": "awsv4",
+							"awsv4": [
+								{
+									"key": "accessKey",
+									"value": "{{accessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "secretKey",
+									"value": "{{secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "region",
+									"value": "{{region}}",
+									"type": "string"
+								},
+								{
+									"key": "sessionToken",
+									"value": "{{sessionToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"create\",\n    \"permissionSetData\": {\n        \"permissionSetName\": \"SecurityAuditor-ps\",        \n        \"sessionDurationInMinutes\": \"60\",\n        \"relayState\": \"https://{{region}}.console.aws.amazon.com/console/home?region={{region}}#\",\n        \"tags\": [                                 \n            {\n                \"Key\": \"versionid\",\n                \"Value\": \"01\"\n            },\n            {\n                \"Key\": \"team\",\n                \"Value\": \"SecurityAuditors\"\n            }\n        ],\n        \"managedPoliciesArnList\": [\n            \"arn:aws:iam::aws:policy/SecurityAudit\"\n        ],\n        \"inlinePolicyDocument\": {}\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{permissionSetEndpoint}}postPermissionSetData",
+							"host": [
+								"{{permissionSetEndpoint}}postPermissionSetData"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create-DataScientist-ps",
+					"request": {
+						"auth": {
+							"type": "awsv4",
+							"awsv4": [
+								{
+									"key": "accessKey",
+									"value": "{{accessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "secretKey",
+									"value": "{{secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "region",
+									"value": "{{region}}",
+									"type": "string"
+								},
+								{
+									"key": "sessionToken",
+									"value": "{{sessionToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"create\",\n    \"permissionSetData\": {\n        \"permissionSetName\": \"DataScientist-ps\",        \n        \"sessionDurationInMinutes\": \"300\",\n        \"relayState\": \"https://{{region}}.console.aws.amazon.com/console/home?region={{region}}#\",\n        \"tags\": [                                 \n            {\n                \"Key\": \"versionid\",\n                \"Value\": \"01\"\n            },\n            {\n                \"Key\": \"team\",\n                \"Value\": \"DataScientists\"\n            }\n        ],\n        \"managedPoliciesArnList\": [\n            \"arn:aws:iam::aws:policy/job-function/DataScientist\"\n        ],\n        \"inlinePolicyDocument\": {}\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{permissionSetEndpoint}}postPermissionSetData",
+							"host": [
+								"{{permissionSetEndpoint}}postPermissionSetData"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create-Billing-ps",
+					"request": {
+						"auth": {
+							"type": "awsv4",
+							"awsv4": [
+								{
+									"key": "accessKey",
+									"value": "{{accessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "secretKey",
+									"value": "{{secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "region",
+									"value": "{{region}}",
+									"type": "string"
+								},
+								{
+									"key": "sessionToken",
+									"value": "{{sessionToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"create\",\n    \"permissionSetData\": {\n        \"permissionSetName\": \"Billing-ps\",        \n        \"sessionDurationInMinutes\": \"60\",\n        \"relayState\": \"https://{{region}}.console.aws.amazon.com/console/home?region={{region}}#\",\n        \"tags\": [                                 \n            {\n                \"Key\": \"versionid\",\n                \"Value\": \"01\"\n            },\n            {\n                \"Key\": \"team\",\n                \"Value\": \"Accountants\"\n            }\n        ],\n        \"managedPoliciesArnList\": [\n            \"arn:aws:iam::aws:policy/job-function/Billing\"\n        ],\n        \"inlinePolicyDocument\": {}\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{permissionSetEndpoint}}postPermissionSetData",
+							"host": [
+								"{{permissionSetEndpoint}}postPermissionSetData"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update-CloudOperator-ps",
+					"request": {
+						"auth": {
+							"type": "awsv4",
+							"awsv4": [
+								{
+									"key": "accessKey",
+									"value": "{{accessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "secretKey",
+									"value": "{{secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "region",
+									"value": "{{region}}",
+									"type": "string"
+								},
+								{
+									"key": "sessionToken",
+									"value": "{{sessionToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"update\",\n    \"permissionSetData\": {\n        \"permissionSetName\": \"CloudOperator-ps\",        \n        \"sessionDurationInMinutes\": \"420\",\n        \"relayState\": \"https://{{region}}.console.aws.amazon.com/console/home?region={{region}}#\",\n        \"tags\": [                                 \n            {\n                \"Key\": \"versionid\",\n                \"Value\": \"02\"\n            },\n            {\n                \"Key\": \"team\",\n                \"Value\": \"CloudOperators\"\n            }\n        ],\n        \"managedPoliciesArnList\": [\n            \"arn:aws:iam::aws:policy/job-function/SystemAdministrator\",\n            \"arn:aws:iam::aws:policy/job-function/NetworkAdministrator\",\n            \"arn:aws:iam::aws:policy/AWSHealthFullAccess\"\n        ],\n        \"inlinePolicyDocument\": {\n            \"Version\": \"2012-10-17\",\n            \"Statement\": [              \n                {\n                    \"Action\": [\n                        \"iam:List*\",\n                        \"iam:Generate*\",\n                        \"iam:Get*\",\n                        \"iam:Simulate*\"\n                    ],\n                    \"Resource\": \"*\",\n                    \"Effect\": \"Allow\",\n                    \"Sid\": \"AllowReadIAMActions\"\n                }\n            ]\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{permissionSetEndpoint}}postPermissionSetData",
+							"host": [
+								"{{permissionSetEndpoint}}postPermissionSetData"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete-Billing-ps",
+					"request": {
+						"auth": {
+							"type": "awsv4",
+							"awsv4": [
+								{
+									"key": "accessKey",
+									"value": "{{accessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "secretKey",
+									"value": "{{secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "region",
+									"value": "{{region}}",
+									"type": "string"
+								},
+								{
+									"key": "sessionToken",
+									"value": "{{sessionToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"delete\",\n    \"permissionSetData\": {\n        \"permissionSetName\": \"Billing-ps\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{permissionSetEndpoint}}postPermissionSetData",
+							"host": [
+								"{{permissionSetEndpoint}}postPermissionSetData"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
 }
