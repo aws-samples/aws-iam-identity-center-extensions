@@ -131,7 +131,7 @@ export const tagBasedDeProvisioning = async (
   ) {
     await Promise.all(
       relatedProvisionedLinks.Items.map(async (Item) => {
-        const parentLinkValue = Item.parentLink.S?.toString() + "";
+        const parentLinkValue = Item.parentLink.toString();
         const parentLinkItems = parentLinkValue.split("@");
         await snsClientObject.send(
           new PublishCommand({
