@@ -16,17 +16,17 @@
 							"awsv4": [
 								{
 									"key": "sessionToken",
-									"value": "{{sessionToken}}",
+									"value": "{{links-sessionToken}}",
 									"type": "string"
 								},
 								{
 									"key": "secretKey",
-									"value": "{{secretAccessKey}}",
+									"value": "{{links-secretAccessKey}}",
 									"type": "string"
 								},
 								{
 									"key": "accessKey",
-									"value": "{{accessKey}}",
+									"value": "{{links-accessKey}}",
 									"type": "string"
 								},
 								{
@@ -64,17 +64,17 @@
 							"awsv4": [
 								{
 									"key": "sessionToken",
-									"value": "{{sessionToken}}",
+									"value": "{{links-sessionToken}}",
 									"type": "string"
 								},
 								{
 									"key": "secretKey",
-									"value": "{{secretAccessKey}}",
+									"value": "{{links-secretAccessKey}}",
 									"type": "string"
 								},
 								{
 									"key": "accessKey",
-									"value": "{{accessKey}}",
+									"value": "{{links-accessKey}}",
 									"type": "string"
 								},
 								{
@@ -112,7 +112,7 @@
 							"awsv4": [
 								{
 									"key": "sessionToken",
-									"value": "{{sessionToken}}",
+									"value": "{{links-sessionToken}}",
 									"type": "string"
 								},
 								{
@@ -122,12 +122,12 @@
 								},
 								{
 									"key": "secretKey",
-									"value": "{{secretAccessKey}}",
+									"value": "{{links-secretAccessKey}}",
 									"type": "string"
 								},
 								{
 									"key": "accessKey",
-									"value": "{{accessKey}}",
+									"value": "{{links-accessKey}}",
 									"type": "string"
 								}
 							]
@@ -160,22 +160,22 @@
 							"awsv4": [
 								{
 									"key": "sessionToken",
-									"value": "{{sessionToken}}",
+									"value": "{{links-sessionToken}}",
+									"type": "string"
+								},
+								{
+									"key": "secretKey",
+									"value": "{{links-secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "accessKey",
+									"value": "{{links-accessKey}}",
 									"type": "string"
 								},
 								{
 									"key": "region",
 									"value": "{{region}}",
-									"type": "string"
-								},
-								{
-									"key": "secretKey",
-									"value": "{{secretAccessKey}}",
-									"type": "string"
-								},
-								{
-									"key": "accessKey",
-									"value": "{{accessKey}}",
 									"type": "string"
 								}
 							]
@@ -208,22 +208,22 @@
 							"awsv4": [
 								{
 									"key": "sessionToken",
-									"value": "{{sessionToken}}",
+									"value": "{{links-sessionToken}}",
+									"type": "string"
+								},
+								{
+									"key": "secretKey",
+									"value": "{{links-secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "accessKey",
+									"value": "{{links-accessKey}}",
 									"type": "string"
 								},
 								{
 									"key": "region",
 									"value": "{{region}}",
-									"type": "string"
-								},
-								{
-									"key": "secretKey",
-									"value": "{{secretAccessKey}}",
-									"type": "string"
-								},
-								{
-									"key": "accessKey",
-									"value": "{{accessKey}}",
 									"type": "string"
 								}
 							]
@@ -256,17 +256,17 @@
 							"awsv4": [
 								{
 									"key": "sessionToken",
-									"value": "{{sessionToken}}",
+									"value": "{{links-sessionToken}}",
 									"type": "string"
 								},
 								{
 									"key": "secretKey",
-									"value": "{{secretAccessKey}}",
+									"value": "{{links-secretAccessKey}}",
 									"type": "string"
 								},
 								{
 									"key": "accessKey",
-									"value": "{{accessKey}}",
+									"value": "{{links-accessKey}}",
 									"type": "string"
 								},
 								{
@@ -308,23 +308,23 @@
 							"type": "awsv4",
 							"awsv4": [
 								{
-									"key": "accessKey",
-									"value": "{{accessKey}}",
+									"key": "sessionToken",
+									"value": "{{ps-sessionToken}}",
 									"type": "string"
 								},
 								{
 									"key": "secretKey",
-									"value": "{{secretAccessKey}}",
+									"value": "{{ps-secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "accessKey",
+									"value": "{{ps-accessKey}}",
 									"type": "string"
 								},
 								{
 									"key": "region",
 									"value": "{{region}}",
-									"type": "string"
-								},
-								{
-									"key": "sessionToken",
-									"value": "{{sessionToken}}",
 									"type": "string"
 								}
 							]
@@ -356,23 +356,23 @@
 							"type": "awsv4",
 							"awsv4": [
 								{
-									"key": "accessKey",
-									"value": "{{accessKey}}",
+									"key": "sessionToken",
+									"value": "{{ps-sessionToken}}",
 									"type": "string"
 								},
 								{
 									"key": "secretKey",
-									"value": "{{secretAccessKey}}",
+									"value": "{{ps-secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "accessKey",
+									"value": "{{ps-accessKey}}",
 									"type": "string"
 								},
 								{
 									"key": "region",
 									"value": "{{region}}",
-									"type": "string"
-								},
-								{
-									"key": "sessionToken",
-									"value": "{{sessionToken}}",
 									"type": "string"
 								}
 							]
@@ -404,23 +404,23 @@
 							"type": "awsv4",
 							"awsv4": [
 								{
-									"key": "accessKey",
-									"value": "{{accessKey}}",
+									"key": "sessionToken",
+									"value": "{{ps-sessionToken}}",
 									"type": "string"
 								},
 								{
 									"key": "secretKey",
-									"value": "{{secretAccessKey}}",
+									"value": "{{ps-secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "accessKey",
+									"value": "{{ps-accessKey}}",
 									"type": "string"
 								},
 								{
 									"key": "region",
 									"value": "{{region}}",
-									"type": "string"
-								},
-								{
-									"key": "sessionToken",
-									"value": "{{sessionToken}}",
 									"type": "string"
 								}
 							]
@@ -452,23 +452,23 @@
 							"type": "awsv4",
 							"awsv4": [
 								{
-									"key": "accessKey",
-									"value": "{{accessKey}}",
+									"key": "sessionToken",
+									"value": "{{ps-sessionToken}}",
 									"type": "string"
 								},
 								{
 									"key": "secretKey",
-									"value": "{{secretAccessKey}}",
+									"value": "{{ps-secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "accessKey",
+									"value": "{{ps-accessKey}}",
 									"type": "string"
 								},
 								{
 									"key": "region",
 									"value": "{{region}}",
-									"type": "string"
-								},
-								{
-									"key": "sessionToken",
-									"value": "{{sessionToken}}",
 									"type": "string"
 								}
 							]
@@ -500,23 +500,23 @@
 							"type": "awsv4",
 							"awsv4": [
 								{
-									"key": "accessKey",
-									"value": "{{accessKey}}",
+									"key": "sessionToken",
+									"value": "{{ps-sessionToken}}",
 									"type": "string"
 								},
 								{
 									"key": "secretKey",
-									"value": "{{secretAccessKey}}",
+									"value": "{{ps-secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "accessKey",
+									"value": "{{ps-accessKey}}",
 									"type": "string"
 								},
 								{
 									"key": "region",
 									"value": "{{region}}",
-									"type": "string"
-								},
-								{
-									"key": "sessionToken",
-									"value": "{{sessionToken}}",
 									"type": "string"
 								}
 							]
@@ -548,23 +548,23 @@
 							"type": "awsv4",
 							"awsv4": [
 								{
-									"key": "accessKey",
-									"value": "{{accessKey}}",
+									"key": "sessionToken",
+									"value": "{{ps-sessionToken}}",
 									"type": "string"
 								},
 								{
 									"key": "secretKey",
-									"value": "{{secretAccessKey}}",
+									"value": "{{ps-secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "accessKey",
+									"value": "{{ps-accessKey}}",
 									"type": "string"
 								},
 								{
 									"key": "region",
 									"value": "{{region}}",
-									"type": "string"
-								},
-								{
-									"key": "sessionToken",
-									"value": "{{sessionToken}}",
 									"type": "string"
 								}
 							]
@@ -596,23 +596,23 @@
 							"type": "awsv4",
 							"awsv4": [
 								{
-									"key": "accessKey",
-									"value": "{{accessKey}}",
+									"key": "sessionToken",
+									"value": "{{ps-sessionToken}}",
 									"type": "string"
 								},
 								{
 									"key": "secretKey",
-									"value": "{{secretAccessKey}}",
+									"value": "{{ps-secretAccessKey}}",
+									"type": "string"
+								},
+								{
+									"key": "accessKey",
+									"value": "{{ps-accessKey}}",
 									"type": "string"
 								},
 								{
 									"key": "region",
 									"value": "{{region}}",
-									"type": "string"
-								},
-								{
-									"key": "sessionToken",
-									"value": "{{sessionToken}}",
 									"type": "string"
 								}
 							]

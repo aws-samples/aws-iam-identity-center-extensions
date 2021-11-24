@@ -5,8 +5,7 @@
 ## Table of Contents
 
 - [Overview](#Overview)
-- [How to Deploy](docs/documentation/How-To-Deploy.md)
-- [Self-paced Workshop](__PLACEHOLDER__)
+- [How to Deploy](https://catalog.us-east-1.prod.workshops.aws/v2/workshops/640b0bab-1f5e-494a-973e-4ed7919d397b/en-US)
 - [Features](#Features)
 
   - [The Composite Permission Set API](#the-composite-permission-set-api)
@@ -40,11 +39,7 @@ setting objects with your permissions descriptions in an S3 bucket. This
 enables you to integrate with upstream identity management systems you
 have in your organization.
 
-**[Get started with the deployment!](docs/documentation/How-To-Deploy.md)**
-
-or
-
-**[Follow along with this self-paced workshop!](__PLACEHOLDER__)**
+**[Get started with the deployment!](https://catalog.us-east-1.prod.workshops.aws/v2/workshops/640b0bab-1f5e-494a-973e-4ed7919d397b/en-US)**
 
 ## Features
 
@@ -64,62 +59,65 @@ This solution provides a composite API for managing permission set lifecycles, a
 
 ```json
 {
-  "action": "create",
-  "permissionSetData": {
-    "permissionSetName": "teamA-permissionSet",
-    "sessionDurationInMinutes": "100",
-    "relayState": "https://eu-west-1.console.aws.amazon.com/console/home?region=eu-central-1#",
-    "tags": [
-      {
-        "Key": "versionid",
-        "Value": "01"
-      },
-      {
-        "Key": "team",
-        "Value": "teamA"
-      }
-    ],
-    "managedPoliciesArnList": [
-      "arn:aws:iam::aws:policy/AmazonGlacierReadOnlyAccess"
-    ],
-    "inlinePolicyDocument": {
-      "Version": "2012-10-17",
-      "Statement": [
-        {
-          "Condition": {
-            "StringLike": {
-              "iam:PermissionsBoundary": [
-                "arn:aws:iam::121111112211:policy/boundaries/ApplicationFullAdmin-PermissionsBoundary"
-              ]
+    "action": "create",
+    "permissionSetData": {
+        "permissionSetName": "CloudOperator-ps",        
+        "sessionDurationInMinutes": "240",
+        "relayState": "https://{{region}}.console.aws.amazon.com/console/home?region={{region}}#",
+        "tags": [                                 
+            {
+                "Key": "versionid",
+                "Value": "01"
+            },
+            {
+                "Key": "team",
+                "Value": "CloudOperators"
             }
-          },
-          "Action": [
-            "iam:PutRolePermissionsBoundary",
-            "iam:CreateRole",
-            "iam:PutRolePolicy",
-            "iam:UpdateAssumeRolePolicy"
-          ],
-          "Resource": ["arn:aws:iam::*:role/Application_*"],
-          "Effect": "Allow",
-          "Sid": "AllowAttachPermBoundary"
-        },
-        {
-          "Action": [
-            "iam:AddRoleToInstanceProfile",
-            "iam:CreateInstanceProfile",
-            "iam:CreatePolicy"
-          ],
-          "Resource": [
-            "arn:aws:iam::*:role/Application_*",
-            "arn:aws:iam::*:policy/Application_*",
-            "arn:aws:iam::*:instance-profile/Application_*"
-          ],
-          "Effect": "Allow",
-          "Sid": "AllowOtherIAMActions"
+        ],
+        "managedPoliciesArnList": [
+            "arn:aws:iam::aws:policy/job-function/SystemAdministrator",
+            "arn:aws:iam::aws:policy/job-function/NetworkAdministrator"
+        ],
+        "inlinePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [                
+                {
+                    "Action": [
+                        "iam:AddRoleToInstanceProfile",
+                        "iam:CreateInstanceProfile",
+                        "iam:CreatePolicy",
+                        "iam:CreatePolicyVersion",
+                        "iam:DeleteInstanceProfile",
+                        "iam:DeletePolicy",
+                        "iam:DeleteRole",
+                        "iam:PassRole",
+                        "iam:UpdateRole",
+                        "iam:DeleteRolePermissionsBoundary",
+                        "iam:UpdateRoleDescription",
+                        "iam:RemoveRoleFromInstanceProfile"
+                    ],
+                    "Resource": [
+                        "arn:aws:iam::*:role/Application_*",
+                        "arn:aws:iam::*:policy/Application_*",
+                        "arn:aws:iam::*:instance-profile/Application_*"
+                    ],
+                    "Effect": "Allow",
+                    "Sid": "AllowOtherIAMActions"
+                },
+                {
+                    "Action": [
+                        "iam:List*",
+                        "iam:Generate*",
+                        "iam:Get*",
+                        "iam:Simulate*"
+                    ],
+                    "Resource": "*",
+                    "Effect": "Allow",
+                    "Sid": "AllowReadIAMActions"
+                }
+            ]
         }
-      ]
     }
-  }
 }
 ```
 
@@ -132,63 +130,43 @@ This solution provides a composite API for managing permission set lifecycles, a
 
 ```json
 {
-  "action": "update",
-  "permissionSetData": {
-    "permissionSetName": "teamA-permissionSet",
-    "sessionDurationInMinutes": "360",
-    "relayState": "https://eu-west-1.console.aws.amazon.com/console/home?region=eu-west-1#",
-    "tags": [
-      {
-        "Key": "versionid",
-        "Value": "02"
-      },
-      {
-        "Key": "team",
-        "Value": "teamA"
-      }
-    ],
-    "managedPoliciesArnList": [
-      "arn:aws:iam::aws:policy/AmazonGlacierReadOnlyAccess",
-      "arn:aws:iam::aws:policy/AmazonRedshiftReadOnlyAccess"
-    ],
-    "inlinePolicyDocument": {
-      "Version": "2012-10-17",
-      "Statement": [
-        {
-          "Condition": {
-            "StringLike": {
-              "iam:PermissionsBoundary": [
-                "arn:aws:iam::121111112211:policy/boundaries/ApplicationFullAdmin-PermissionsBoundary"
-              ]
+    "action": "update",
+    "permissionSetData": {
+        "permissionSetName": "CloudOperator-ps",        
+        "sessionDurationInMinutes": "420",
+        "relayState": "https://{{region}}.console.aws.amazon.com/console/home?region={{region}}#",
+        "tags": [                                 
+            {
+                "Key": "versionid",
+                "Value": "02"
+            },
+            {
+                "Key": "team",
+                "Value": "CloudOperators"
             }
-          },
-          "Action": [
-            "iam:PutRolePermissionsBoundary",
-            "iam:CreateRole",
-            "iam:PutRolePolicy",
-            "iam:UpdateAssumeRolePolicy"
-          ],
-          "Resource": ["arn:aws:iam::*:role/Application_*"],
-          "Effect": "Allow",
-          "Sid": "AllowAttachPermBoundary"
-        },
-        {
-          "Action": [
-            "iam:AddRoleToInstanceProfile",
-            "iam:CreateInstanceProfile",
-            "iam:CreatePolicy"
-          ],
-          "Resource": [
-            "arn:aws:iam::*:role/Application_*",
-            "arn:aws:iam::*:policy/Application_*",
-            "arn:aws:iam::*:instance-profile/Application_*"
-          ],
-          "Effect": "Allow",
-          "Sid": "AllowOtherIAMActions"
+        ],
+        "managedPoliciesArnList": [
+            "arn:aws:iam::aws:policy/job-function/SystemAdministrator",
+            "arn:aws:iam::aws:policy/job-function/NetworkAdministrator",
+            "arn:aws:iam::aws:policy/AWSHealthFullAccess"
+        ],
+        "inlinePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [              
+                {
+                    "Action": [
+                        "iam:List*",
+                        "iam:Generate*",
+                        "iam:Get*",
+                        "iam:Simulate*"
+                    ],
+                    "Resource": "*",
+                    "Effect": "Allow",
+                    "Sid": "AllowReadIAMActions"
+                }
+            ]
         }
-      ]
     }
-  }
 }
 ```
 
@@ -201,10 +179,10 @@ This solution provides a composite API for managing permission set lifecycles, a
 
 ```json
 {
-  "action": "delete",
-  "permissionSetData": {
-    "permissionSetName": "teamA-permissionSet"
-  }
+    "action": "delete",
+    "permissionSetData": {
+        "permissionSetName": "CloudOperator-ps"
+    }
 }
 ```
 
@@ -222,13 +200,13 @@ This solution enables enterprise friendly account assignment lifecycles through 
 - Using the entity value passed in the payload, the solution calculates the account list and processes the account assignment operations on all the accounts automatically
 
 <details>
-<summary>Example payload to provision permission set <b>teamA-permissionSet</b> for <b>all accounts in your organization</b> and provide access to <b>teamA user group</b></summary>
+<summary>Example payload to provision permission set <b>CloudOperator-ps</b> for <b>all accounts in your organization</b> and provide access to <b>team-CloudOperators</b></summary>
 <p>
 
 ```json
 {
-  "action": "create",
-  "linkData": "root.all.teamA-permissionSet.teamA.ssofile"
+    "action": "create",
+    "linkData": "root.all.CloudOperator-ps.team-CloudOperators.ssofile"    
 }
 ```
 
@@ -236,13 +214,13 @@ This solution enables enterprise friendly account assignment lifecycles through 
 </details>
 
 <details>
-<summary>Example payload to provision permission set <b>teamA-permissionSet</b> for <b>all accounts in your organization unit with ID ou-id12345</b> and provide access to <b>teamA user group</b></summary>
+<summary>Example payload to provision permission set <b>SecurityAuditor-ps</b> for <b>all accounts in your organization unit with ID ou-id12345</b> and provide access to <b>team-SecurityAuditors</b></summary>
 <p>
 
 ```json
 {
-  "action": "create",
-  "linkData": "ou_id.ou-id12345.teamA-permissionSet.teamA.ssofile"
+    "action": "create",
+    "linkData": "ou_id.ou-id12345.SecurityAuditor-ps.team-SecurityAuditors.ssofile"         
 }
 ```
 
@@ -250,13 +228,13 @@ This solution enables enterprise friendly account assignment lifecycles through 
 </details>
 
 <details>
-<summary>Example payload to provision permission set <b>teamA-permissionSet</b> for <b>all accounts that have tagkey team set to value teamA</b> and provide access to <b>teamA user group</b></summary>
+<summary>Example payload to provision permission set <b>DataScientist-ps</b> for <b>all accounts that have tagkey team set to value DataScientists</b> and provide access to <b>team-DataScientists</b></summary>
 <p>
 
 ```json
 {
-  "action": "create",
-  "linkData": "account_tag.team^teamA.teamA-permissionSet.teamA.ssofile"
+    "action": "create",
+    "linkData": "account_tag.team^DataScientists.DataScientist-ps.team-DataScientists.ssofile"    
 }
 ```
 
@@ -264,13 +242,13 @@ This solution enables enterprise friendly account assignment lifecycles through 
 </details>
 
 <details>
-<summary>Example payload to provision permission set <b>teamA-permissionSet</b> for <b>account 123456789012</b> and provide access to <b>teamA user group</b></summary>
+<summary>Example payload to provision permission set <b>Billing-ps</b> for <b>account 123456789012</b> and provide access to <b>team-Accountants</b></summary>
 <p>
 
 ```json
 {
-  "action": "create",
-  "linkData": "account.123456789012.teamA-permissionSet.teamA.ssofile"
+    "action": "create",
+    "linkData": "account.123456789012.Billing-ps.team-Accountants.ssofile"    
 }
 ```
 
