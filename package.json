@@ -9,7 +9,6 @@
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
-    "postinstall": "yarn install --cwd ./lib/lambda-functions --frozen-lockfile",
     "prettier:check": "prettier --check .",
     "prettier": "prettier -w .",
     "lint:check": "eslint . --ignore-path .gitignore --max-warnings 0",
