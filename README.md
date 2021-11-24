@@ -59,65 +59,60 @@ This solution provides a composite API for managing permission set lifecycles, a
 
 ```json
 {
-    "action": "create",
-    "permissionSetData": {
-        "permissionSetName": "CloudOperator-ps",        
-        "sessionDurationInMinutes": "240",
-        "relayState": "https://{{region}}.console.aws.amazon.com/console/home?region={{region}}#",
-        "tags": [                                 
-            {
-                "Key": "versionid",
-                "Value": "01"
-            },
-            {
-                "Key": "team",
-                "Value": "CloudOperators"
-            }
-        ],
-        "managedPoliciesArnList": [
-            "arn:aws:iam::aws:policy/job-function/SystemAdministrator",
-            "arn:aws:iam::aws:policy/job-function/NetworkAdministrator"
-        ],
-        "inlinePolicyDocument": {
-            "Version": "2012-10-17",
-            "Statement": [                
-                {
-                    "Action": [
-                        "iam:AddRoleToInstanceProfile",
-                        "iam:CreateInstanceProfile",
-                        "iam:CreatePolicy",
-                        "iam:CreatePolicyVersion",
-                        "iam:DeleteInstanceProfile",
-                        "iam:DeletePolicy",
-                        "iam:DeleteRole",
-                        "iam:PassRole",
-                        "iam:UpdateRole",
-                        "iam:DeleteRolePermissionsBoundary",
-                        "iam:UpdateRoleDescription",
-                        "iam:RemoveRoleFromInstanceProfile"
-                    ],
-                    "Resource": [
-                        "arn:aws:iam::*:role/Application_*",
-                        "arn:aws:iam::*:policy/Application_*",
-                        "arn:aws:iam::*:instance-profile/Application_*"
-                    ],
-                    "Effect": "Allow",
-                    "Sid": "AllowOtherIAMActions"
-                },
-                {
-                    "Action": [
-                        "iam:List*",
-                        "iam:Generate*",
-                        "iam:Get*",
-                        "iam:Simulate*"
-                    ],
-                    "Resource": "*",
-                    "Effect": "Allow",
-                    "Sid": "AllowReadIAMActions"
-                }
-            ]
+  "action": "create",
+  "permissionSetData": {
+    "permissionSetName": "CloudOperator-ps",
+    "sessionDurationInMinutes": "240",
+    "relayState": "https://{{region}}.console.aws.amazon.com/console/home?region={{region}}#",
+    "tags": [
+      {
+        "Key": "versionid",
+        "Value": "01"
+      },
+      {
+        "Key": "team",
+        "Value": "CloudOperators"
+      }
+    ],
+    "managedPoliciesArnList": [
+      "arn:aws:iam::aws:policy/job-function/SystemAdministrator",
+      "arn:aws:iam::aws:policy/job-function/NetworkAdministrator"
+    ],
+    "inlinePolicyDocument": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Action": [
+            "iam:AddRoleToInstanceProfile",
+            "iam:CreateInstanceProfile",
+            "iam:CreatePolicy",
+            "iam:CreatePolicyVersion",
+            "iam:DeleteInstanceProfile",
+            "iam:DeletePolicy",
+            "iam:DeleteRole",
+            "iam:PassRole",
+            "iam:UpdateRole",
+            "iam:DeleteRolePermissionsBoundary",
+            "iam:UpdateRoleDescription",
+            "iam:RemoveRoleFromInstanceProfile"
+          ],
+          "Resource": [
+            "arn:aws:iam::*:role/Application_*",
+            "arn:aws:iam::*:policy/Application_*",
+            "arn:aws:iam::*:instance-profile/Application_*"
+          ],
+          "Effect": "Allow",
+          "Sid": "AllowOtherIAMActions"
+        },
+        {
+          "Action": ["iam:List*", "iam:Generate*", "iam:Get*", "iam:Simulate*"],
+          "Resource": "*",
+          "Effect": "Allow",
+          "Sid": "AllowReadIAMActions"
         }
+      ]
     }
+  }
 }
 ```
 
@@ -130,43 +125,38 @@ This solution provides a composite API for managing permission set lifecycles, a
 
 ```json
 {
-    "action": "update",
-    "permissionSetData": {
-        "permissionSetName": "CloudOperator-ps",        
-        "sessionDurationInMinutes": "420",
-        "relayState": "https://{{region}}.console.aws.amazon.com/console/home?region={{region}}#",
-        "tags": [                                 
-            {
-                "Key": "versionid",
-                "Value": "02"
-            },
-            {
-                "Key": "team",
-                "Value": "CloudOperators"
-            }
-        ],
-        "managedPoliciesArnList": [
-            "arn:aws:iam::aws:policy/job-function/SystemAdministrator",
-            "arn:aws:iam::aws:policy/job-function/NetworkAdministrator",
-            "arn:aws:iam::aws:policy/AWSHealthFullAccess"
-        ],
-        "inlinePolicyDocument": {
-            "Version": "2012-10-17",
-            "Statement": [              
-                {
-                    "Action": [
-                        "iam:List*",
-                        "iam:Generate*",
-                        "iam:Get*",
-                        "iam:Simulate*"
-                    ],
-                    "Resource": "*",
-                    "Effect": "Allow",
-                    "Sid": "AllowReadIAMActions"
-                }
-            ]
+  "action": "update",
+  "permissionSetData": {
+    "permissionSetName": "CloudOperator-ps",
+    "sessionDurationInMinutes": "420",
+    "relayState": "https://{{region}}.console.aws.amazon.com/console/home?region={{region}}#",
+    "tags": [
+      {
+        "Key": "versionid",
+        "Value": "02"
+      },
+      {
+        "Key": "team",
+        "Value": "CloudOperators"
+      }
+    ],
+    "managedPoliciesArnList": [
+      "arn:aws:iam::aws:policy/job-function/SystemAdministrator",
+      "arn:aws:iam::aws:policy/job-function/NetworkAdministrator",
+      "arn:aws:iam::aws:policy/AWSHealthFullAccess"
+    ],
+    "inlinePolicyDocument": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Action": ["iam:List*", "iam:Generate*", "iam:Get*", "iam:Simulate*"],
+          "Resource": "*",
+          "Effect": "Allow",
+          "Sid": "AllowReadIAMActions"
         }
+      ]
     }
+  }
 }
 ```
 
@@ -179,10 +169,10 @@ This solution provides a composite API for managing permission set lifecycles, a
 
 ```json
 {
-    "action": "delete",
-    "permissionSetData": {
-        "permissionSetName": "CloudOperator-ps"
-    }
+  "action": "delete",
+  "permissionSetData": {
+    "permissionSetName": "CloudOperator-ps"
+  }
 }
 ```
 
@@ -205,8 +195,8 @@ This solution enables enterprise friendly account assignment lifecycles through 
 
 ```json
 {
-    "action": "create",
-    "linkData": "root.all.CloudOperator-ps.team-CloudOperators.ssofile"    
+  "action": "create",
+  "linkData": "root.all.CloudOperator-ps.team-CloudOperators.ssofile"
 }
 ```
 
@@ -219,8 +209,8 @@ This solution enables enterprise friendly account assignment lifecycles through 
 
 ```json
 {
-    "action": "create",
-    "linkData": "ou_id.ou-id12345.SecurityAuditor-ps.team-SecurityAuditors.ssofile"         
+  "action": "create",
+  "linkData": "ou_id.ou-id12345.SecurityAuditor-ps.team-SecurityAuditors.ssofile"
 }
 ```
 
@@ -233,8 +223,8 @@ This solution enables enterprise friendly account assignment lifecycles through 
 
 ```json
 {
-    "action": "create",
-    "linkData": "account_tag.team^DataScientists.DataScientist-ps.team-DataScientists.ssofile"    
+  "action": "create",
+  "linkData": "account_tag.team^DataScientists.DataScientist-ps.team-DataScientists.ssofile"
 }
 ```
 
@@ -247,8 +237,8 @@ This solution enables enterprise friendly account assignment lifecycles through 
 
 ```json
 {
-    "action": "create",
-    "linkData": "account.123456789012.Billing-ps.team-Accountants.ssofile"    
+  "action": "create",
+  "linkData": "account.123456789012.Billing-ps.team-Accountants.ssofile"
 }
 ```
 
