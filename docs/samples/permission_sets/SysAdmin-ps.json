@@ -1,0 +1,122 @@
+{
+  "action": "create",
+  "permissionSetData": {
+      "permissionSetName": "SysAdmin-ps",
+      "sessionDurationInMinutes": "240",
+      "relayState": "https://eu-west-1.console.aws.amazon.com/systems-manager/managed-instances?region=eu-west-1#",
+      "tags": [
+          {
+              "Key": "versionid",
+              "Value": "01"
+          },
+          {
+              "Key": "team",
+              "Value": "SysAdmins"
+          }
+      ],
+      "managedPoliciesArnList": [],
+      "inlinePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+              {
+                  "Sid": "SSO",
+                  "Effect": "Allow",
+                  "Action": [
+                      "sso:ListDirectoryAssociations*",
+                      "identitystore:DescribeUser"
+                  ],
+                  "Resource": "*"
+              },
+              {
+                  "Sid": "EC2",
+                  "Effect": "Allow",
+                  "Action": [
+                      "ec2:DescribeInstances",
+                      "ec2:GetPasswordData"
+                  ],
+                  "Resource": "*"
+              },
+              {
+                  "Sid": "SSM",
+                  "Effect": "Allow",
+                  "Action": [
+                      "ssm:DescribeInstanceProperties",
+                      "ssm:GetCommandInvocation",
+                      "ssm:GetInventorySchema"
+                  ],
+                  "Resource": "*"
+              },
+              {
+                  "Sid": "TerminateSession",
+                  "Effect": "Allow",
+                  "Action": [
+                      "ssm:TerminateSession"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                      "StringLike": {
+                          "ssm:resourceTag/aws:ssmmessages:session-id": [
+                              "${aws:userName}"
+                          ]
+                      }
+                  }
+              },
+              {
+                  "Sid": "SSMGetDocument",
+                  "Effect": "Allow",
+                  "Action": [
+                      "ssm:GetDocument"
+                  ],
+                  "Resource": [
+                      "arn:aws:ssm:*:*:document/AWS-StartPortForwardingSession",
+                      "arn:aws:ssm:*:*:document/SSM-SessionManagerRunShell"
+                  ]
+              },
+              {
+                  "Sid": "SSMStartSession",
+                  "Effect": "Allow",
+                  "Action": [
+                      "ssm:StartSession"
+                  ],
+                  "Resource": [
+                      "arn:aws:ec2:*:*:instance/*",
+                      "arn:aws:ssm:*:*:managed-instance/*",
+                      "arn:aws:ssm:*:*:document/AWS-StartPortForwardingSession"
+                  ],
+                  "Condition": {
+                      "BoolIfExists": {
+                          "ssm:SessionDocumentAccessCheck": "true"
+                      }
+                  }
+              },
+              {
+                  "Sid": "SSMSendCommand",
+                  "Effect": "Allow",
+                  "Action": [
+                      "ssm:SendCommand"
+                  ],
+                  "Resource": [
+                      "arn:aws:ec2:*:*:instance/*",
+                      "arn:aws:ssm:*:*:managed-instance/*",
+                      "arn:aws:ssm:*:*:document/AWSSSO-CreateSSOUser"
+                  ],
+                  "Condition": {
+                      "BoolIfExists": {
+                          "ssm:SessionDocumentAccessCheck": "true"
+                      }
+                  }
+              },
+              {
+                  "Sid": "GuiConnect",
+                  "Effect": "Allow",
+                  "Action": [
+                      "ssm-guiconnect:CancelConnection",
+                      "ssm-guiconnect:GetConnection",
+                      "ssm-guiconnect:StartConnection"
+                  ],
+                  "Resource": "*"
+              }
+          ]
+      }
+  }
+}
