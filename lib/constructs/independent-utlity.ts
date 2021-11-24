@@ -5,7 +5,7 @@ on other constructs
 */
 
 import { Key } from "@aws-cdk/aws-kms";
-import * as lambda from "@aws-cdk/aws-lambda"; //Needed to avoid semgrep throwing up https://cwe.mitre.org/data/definitions/95.html
+import { LayerVersion } from "@aws-cdk/aws-lambda";
 import { BlockPublicAccess, Bucket, BucketEncryption } from "@aws-cdk/aws-s3";
 import { Topic } from "@aws-cdk/aws-sns";
 import { EmailSubscription } from "@aws-cdk/aws-sns-subscriptions";
@@ -18,7 +18,7 @@ function name(buildConfig: BuildConfig, resourcename: string): string {
 }
 
 export interface IndependentUtilityProps {
-  readonly nodeJsLayer: lambda.LayerVersion;
+  readonly nodeJsLayer: LayerVersion;
 }
 
 export class IndependentUtility extends Construct {

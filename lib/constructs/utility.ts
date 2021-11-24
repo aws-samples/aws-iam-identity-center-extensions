@@ -5,11 +5,11 @@ that allows shareable resources
 
 import { Table } from "@aws-cdk/aws-dynamodb";
 import { Key } from "@aws-cdk/aws-kms";
-import * as lambda from "@aws-cdk/aws-lambda"; //Needed to avoid semgrep throwing up https://cwe.mitre.org/data/definitions/95.html
+import * as lambda from "@aws-cdk/aws-lambda";
 import { SnsEventSource } from "@aws-cdk/aws-lambda-event-sources";
 import { ITopic, Topic } from "@aws-cdk/aws-sns";
 import { Construct } from "@aws-cdk/core";
-import * as Path from "path";
+import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 import { SSMParamReader } from "./ssm-param-reader";
 
@@ -97,7 +97,7 @@ export class Utility extends Construct {
         handler: "ssoAdminAPIWaiters.lambda_handler",
         functionName: name(buildConfig, "waiterHandler"),
         code: lambda.Code.fromAsset(
-          Path.join(__dirname, "../", "lambda", "functions", "custom-waiters")
+          join(__dirname, "../", "lambda-functions", "custom-waiters", "src")
         ),
         layers: [utilityProps.pythonLayer],
         environment: {

@@ -1,5 +1,35 @@
-# Ignore cdk.out
+# Ignore transpiled files
+*.js
+*.d.ts
+
+# Node modules
+node_modules
+
+# CDK asset staging directory
+.cdk.staging
 cdk.out
 
-# Ignore Lambda layers
-lib/lambda/layers/**
+# Parcel default cache directory
+.parcel-cache
+
+# DrawIO Image definitions
+*.drawio
+
+# Jest config
+!jest.config.js
+
+# Eslint config
+!.eslintrc.js
+
+# Lambda code exclusion
+# No type definitions available for dynamo-stream-diff library used by permission set stream handler
+!/lib/lambda-functions/ddb-stream-handlers/src/permissionSet.js
+
+# Ignore Python lambda layers except requirements.txt
+/lib/lambda-layers/python-layer/*
+!/lib/lambda-layers/python-layer/requirements.txt
+
+# VS code specific ignores
+.vscode
+~$*.docx
+.DS_Store
