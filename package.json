@@ -15,7 +15,8 @@
     "lint": "eslint . --fix --ignore-path .gitignore --max-warnings 0",
     "cdk-synth-env": "cdk synth env-aws-sso-extensions-for-enterprise -c config=env",
     "cdk-deploy-env": "cdk deploy env-aws-sso-extensions-for-enterprise -c config=env",
-    "cdk-destroy-env": "cdk destroy env-aws-sso-extensions-for-enterprise -c config=env"
+    "cdk-destroy-env": "cdk destroy env-aws-sso-extensions-for-enterprise -c config=env",
+    "postinstall": "yarn install --cwd ./lib/lambda-functions --frozen-lockfile"
   },
   "devDependencies": {
     "@aws-cdk/assert": "1.133.0",
