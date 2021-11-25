@@ -9,7 +9,6 @@ import {
   StageProps,
 } from "@aws-cdk/core";
 import { BuildConfig } from "../../build/buildConfig";
-import { watch } from "../../constructs/watch";
 import { OrgEventsProcessor } from "../pipelineStageStacks/org-events-processor";
 import { PreSolutionArtefacts } from "../pipelineStageStacks/pre-solution-artefacts";
 import { SolutionArtefacts } from "../pipelineStageStacks/solution-artefacts";
@@ -99,11 +98,6 @@ export class SolutionArtefactsDeploymentStage extends Stage {
       buildConfig
     );
 
-    watch(
-      preSolutionArtefactsStack,
-      fullname(buildConfig, "preSolutionArtefactsStackDashboard")
-    );
-
     const solutionartefactsStack = new SolutionArtefacts(
       this,
       fullname(buildConfig, "solutionartefactsStack"),
@@ -123,11 +117,6 @@ export class SolutionArtefactsDeploymentStage extends Stage {
         deployPermissionSetCRUD:
           preSolutionArtefactsStack.deployPermissionSetCRUD,
       }
-    );
-
-    watch(
-      solutionartefactsStack,
-      fullname(buildConfig, "solutionartefactsStackDashboard")
     );
 
     solutionartefactsStack.node.addDependency(preSolutionArtefactsStack);
