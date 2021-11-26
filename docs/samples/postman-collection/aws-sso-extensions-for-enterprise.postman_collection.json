@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "e30089d9-5aba-4fab-b253-98c41f8df1bd",
+    "_postman_id": "87a4624a-2ed7-4b24-9e0b-3c4d4b4ac88a",
     "name": "aws-sso-extensions-for-enterprise",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
@@ -239,7 +239,7 @@
           "response": []
         },
         {
-          "name": "Remove-CloudOperator-ps",
+          "name": "Unassign-CloudOperator-ps",
           "request": {
             "auth": {
               "type": "awsv4",
@@ -607,6 +607,425 @@
             "url": {
               "raw": "{{permissionSetEndpoint}}postPermissionSetData",
               "host": ["{{permissionSetEndpoint}}postPermissionSetData"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Cleanup",
+      "item": [
+        {
+          "name": "Delete-CloudOperator-ps",
+          "request": {
+            "auth": {
+              "type": "awsv4",
+              "awsv4": [
+                {
+                  "key": "sessionToken",
+                  "value": "{{ps-sessionToken}}",
+                  "type": "string"
+                },
+                {
+                  "key": "secretKey",
+                  "value": "{{ps-secretAccessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "accessKey",
+                  "value": "{{ps-accessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "region",
+                  "value": "{{region}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"delete\",\n    \"permissionSetData\": {\n        \"permissionSetName\": \"CloudOperator-ps\"\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{permissionSetEndpoint}}postPermissionSetData",
+              "host": ["{{permissionSetEndpoint}}postPermissionSetData"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete-SecurityAuditor-ps",
+          "request": {
+            "auth": {
+              "type": "awsv4",
+              "awsv4": [
+                {
+                  "key": "sessionToken",
+                  "value": "{{ps-sessionToken}}",
+                  "type": "string"
+                },
+                {
+                  "key": "secretKey",
+                  "value": "{{ps-secretAccessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "accessKey",
+                  "value": "{{ps-accessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "region",
+                  "value": "{{region}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"delete\",\n    \"permissionSetData\": {\n        \"permissionSetName\": \"SecurityAuditor-ps\"\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{permissionSetEndpoint}}postPermissionSetData",
+              "host": ["{{permissionSetEndpoint}}postPermissionSetData"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete-SysAdmin-ps",
+          "request": {
+            "auth": {
+              "type": "awsv4",
+              "awsv4": [
+                {
+                  "key": "sessionToken",
+                  "value": "{{ps-sessionToken}}",
+                  "type": "string"
+                },
+                {
+                  "key": "secretKey",
+                  "value": "{{ps-secretAccessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "accessKey",
+                  "value": "{{ps-accessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "region",
+                  "value": "{{region}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"delete\",\n    \"permissionSetData\": {\n        \"permissionSetName\": \"SysAdmin-ps\"\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{permissionSetEndpoint}}postPermissionSetData",
+              "host": ["{{permissionSetEndpoint}}postPermissionSetData"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete-DataScientist-ps",
+          "request": {
+            "auth": {
+              "type": "awsv4",
+              "awsv4": [
+                {
+                  "key": "sessionToken",
+                  "value": "{{ps-sessionToken}}",
+                  "type": "string"
+                },
+                {
+                  "key": "secretKey",
+                  "value": "{{ps-secretAccessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "accessKey",
+                  "value": "{{ps-accessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "region",
+                  "value": "{{region}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"delete\",\n    \"permissionSetData\": {\n        \"permissionSetName\": \"DataScientist-ps\"\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{permissionSetEndpoint}}postPermissionSetData",
+              "host": ["{{permissionSetEndpoint}}postPermissionSetData"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete-Billing-ps",
+          "request": {
+            "auth": {
+              "type": "awsv4",
+              "awsv4": [
+                {
+                  "key": "sessionToken",
+                  "value": "{{ps-sessionToken}}",
+                  "type": "string"
+                },
+                {
+                  "key": "secretKey",
+                  "value": "{{ps-secretAccessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "accessKey",
+                  "value": "{{ps-accessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "region",
+                  "value": "{{region}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"delete\",\n    \"permissionSetData\": {\n        \"permissionSetName\": \"Billing-ps\"\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{permissionSetEndpoint}}postPermissionSetData",
+              "host": ["{{permissionSetEndpoint}}postPermissionSetData"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unassign-SysAdmin-ps",
+          "request": {
+            "auth": {
+              "type": "awsv4",
+              "awsv4": [
+                {
+                  "key": "sessionToken",
+                  "value": "{{links-sessionToken}}",
+                  "type": "string"
+                },
+                {
+                  "key": "secretKey",
+                  "value": "{{links-secretAccessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "accessKey",
+                  "value": "{{links-accessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "region",
+                  "value": "{{region}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"root.all.SysAdmin-ps.team-SysAdmins.ssofile\"    \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{linksEndpoint}}postLinkData",
+              "host": ["{{linksEndpoint}}postLinkData"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unassign-DataScientist-ps",
+          "request": {
+            "auth": {
+              "type": "awsv4",
+              "awsv4": [
+                {
+                  "key": "sessionToken",
+                  "value": "{{links-sessionToken}}",
+                  "type": "string"
+                },
+                {
+                  "key": "secretKey",
+                  "value": "{{links-secretAccessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "accessKey",
+                  "value": "{{links-accessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "region",
+                  "value": "{{region}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"account_tag.team^DataScientists.DataScientist-ps.team-DataScientists.ssofile\"    \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{linksEndpoint}}postLinkData",
+              "host": ["{{linksEndpoint}}postLinkData"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unassign-SecurityAuditor-ps",
+          "request": {
+            "auth": {
+              "type": "awsv4",
+              "awsv4": [
+                {
+                  "key": "sessionToken",
+                  "value": "{{links-sessionToken}}",
+                  "type": "string"
+                },
+                {
+                  "key": "secretKey",
+                  "value": "{{links-secretAccessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "accessKey",
+                  "value": "{{links-accessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "region",
+                  "value": "{{region}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"ou_id.ou_id123435.SecurityAuditor-ps.team-SecurityAuditors.ssofile\"    \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{linksEndpoint}}postLinkData",
+              "host": ["{{linksEndpoint}}postLinkData"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unassign-Billing-ps",
+          "request": {
+            "auth": {
+              "type": "awsv4",
+              "awsv4": [
+                {
+                  "key": "sessionToken",
+                  "value": "{{links-sessionToken}}",
+                  "type": "string"
+                },
+                {
+                  "key": "secretKey",
+                  "value": "{{links-secretAccessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "accessKey",
+                  "value": "{{links-accessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "region",
+                  "value": "{{region}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"account.121111112211.Billing-ps.team-Accountants.ssofile\"    \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{linksEndpoint}}postLinkData",
+              "host": ["{{linksEndpoint}}postLinkData"]
             }
           },
           "response": []
