@@ -3,11 +3,12 @@ Custom cloudformation resource construct that
 allows cross account read of SSM parameter value
 */
 
-import { PolicyStatement } from "@aws-cdk/aws-iam";
-import { LayerVersion, Runtime } from "@aws-cdk/aws-lambda";
-import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
-import { Construct, CustomResource } from "@aws-cdk/core";
-import { Provider } from "@aws-cdk/custom-resources";
+import { PolicyStatement } from "aws-cdk-lib/aws-iam";
+import { LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
+import { CustomResource } from "aws-cdk-lib";
+import { Construct } from "constructs";
+import { Provider } from "aws-cdk-lib/custom-resources";
 import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 

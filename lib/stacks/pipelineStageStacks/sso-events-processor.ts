@@ -1,16 +1,17 @@
 /*
 Deploys event bridge rules for SSO events in SSO account
 */
-import { Rule, RuleTargetInput } from "@aws-cdk/aws-events";
-import { SnsTopic } from "@aws-cdk/aws-events-targets";
+import { Rule, RuleTargetInput } from "aws-cdk-lib/aws-events";
+import { SnsTopic } from "aws-cdk-lib/aws-events-targets";
 import {
   AccountPrincipal,
   PolicyStatement,
   ServicePrincipal,
-} from "@aws-cdk/aws-iam";
-import { Key } from "@aws-cdk/aws-kms";
-import { Topic } from "@aws-cdk/aws-sns";
-import { Construct, Stack, StackProps } from "@aws-cdk/core";
+} from "aws-cdk-lib/aws-iam";
+import { Key } from "aws-cdk-lib/aws-kms";
+import { Topic } from "aws-cdk-lib/aws-sns";
+import { Stack, StackProps } from "aws-cdk-lib";
+import { Construct } from "constructs";
 import { BuildConfig } from "../../build/buildConfig";
 import { SSMParamWriter } from "../../constructs/ssm-param-writer";
 

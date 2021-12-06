@@ -2,11 +2,11 @@
 composite construct that sets up all resources
 for SSO group life cycle notifications
 */
-import { LayerVersion, Runtime } from "@aws-cdk/aws-lambda";
-import { SnsEventSource } from "@aws-cdk/aws-lambda-event-sources";
-import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
-import { ITopic } from "@aws-cdk/aws-sns";
-import { Construct } from "@aws-cdk/core";
+import { LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
+import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
+import { ITopic } from "aws-cdk-lib/aws-sns";
+import { Construct } from "constructs";
 import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 

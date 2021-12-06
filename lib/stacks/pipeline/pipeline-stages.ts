@@ -2,12 +2,8 @@
 Pipeline stages abstraction
 */
 
-import {
-  Construct,
-  DefaultStackSynthesizer,
-  Stage,
-  StageProps,
-} from "@aws-cdk/core";
+import { DefaultStackSynthesizer, Stage, StageProps } from "aws-cdk-lib";
+import { Construct } from "constructs";
 import { BuildConfig } from "../../build/buildConfig";
 import { OrgEventsProcessor } from "../pipelineStageStacks/org-events-processor";
 import { PreSolutionArtefacts } from "../pipelineStageStacks/pre-solution-artefacts";

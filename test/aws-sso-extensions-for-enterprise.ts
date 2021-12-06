@@ -1,9 +1,5 @@
-import {
-  expect as expectCDK,
-  MatchStyle,
-  matchTemplate,
-} from "@aws-cdk/assert";
-import { App, DefaultStackSynthesizer } from "@aws-cdk/core";
+import { App, DefaultStackSynthesizer } from "aws-cdk-lib";
+import { Template } from "aws-cdk-lib/assertions";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { BuildConfig } from "../lib/build/buildConfig";
@@ -170,12 +166,9 @@ test("Empty Stack", () => {
     buildConfig
   );
   // THEN
-  expectCDK(stack).to(
-    matchTemplate(
-      {
-        Resources: {},
-      },
-      MatchStyle.EXACT
-    )
-  );
+  // Only does synth check at this time
+  const template = Template.fromStack(stack);
+  template.templateMatches({
+    Resources: {},
+  });
 });

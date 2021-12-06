@@ -4,12 +4,16 @@ that allows shareable resources and has no dependencies
 on other constructs
 */
 
-import { Key } from "@aws-cdk/aws-kms";
-import { LayerVersion } from "@aws-cdk/aws-lambda";
-import { BlockPublicAccess, Bucket, BucketEncryption } from "@aws-cdk/aws-s3";
-import { Topic } from "@aws-cdk/aws-sns";
-import { EmailSubscription } from "@aws-cdk/aws-sns-subscriptions";
-import { Construct } from "@aws-cdk/core";
+import { Key } from "aws-cdk-lib/aws-kms";
+import { LayerVersion } from "aws-cdk-lib/aws-lambda";
+import {
+  BlockPublicAccess,
+  Bucket,
+  BucketEncryption,
+} from "aws-cdk-lib/aws-s3";
+import { Topic } from "aws-cdk-lib/aws-sns";
+import { EmailSubscription } from "aws-cdk-lib/aws-sns-subscriptions";
+import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";
 import { SSMParamReader } from "./ssm-param-reader";
 

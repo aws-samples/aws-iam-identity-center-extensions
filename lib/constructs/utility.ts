@@ -3,12 +3,12 @@ Utility construct in solution artefacts stack
 that allows shareable resources
 */
 
-import { Table } from "@aws-cdk/aws-dynamodb";
-import { Key } from "@aws-cdk/aws-kms";
-import * as lambda from "@aws-cdk/aws-lambda";
-import { SnsEventSource } from "@aws-cdk/aws-lambda-event-sources";
-import { ITopic, Topic } from "@aws-cdk/aws-sns";
-import { Construct } from "@aws-cdk/core";
+import { Table } from "aws-cdk-lib/aws-dynamodb";
+import { Key } from "aws-cdk-lib/aws-kms";
+import * as lambda from "aws-cdk-lib/aws-lambda";
+import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
+import { ITopic, Topic } from "aws-cdk-lib/aws-sns";
+import { Construct } from "constructs";
 import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 import { SSMParamReader } from "./ssm-param-reader";

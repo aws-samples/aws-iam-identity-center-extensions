@@ -8,9 +8,10 @@ import {
   BillingMode,
   Table,
   TableEncryption,
-} from "@aws-cdk/aws-dynamodb";
-import { Key } from "@aws-cdk/aws-kms";
-import { Construct, RemovalPolicy } from "@aws-cdk/core";
+} from "aws-cdk-lib/aws-dynamodb";
+import { Key } from "aws-cdk-lib/aws-kms";
+import { RemovalPolicy } from "aws-cdk-lib";
+import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {
