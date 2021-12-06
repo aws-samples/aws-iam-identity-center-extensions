@@ -5,8 +5,8 @@ props and also creates a parameter using the SSMParamWriter
 construct and value set to rolearn 
 */
 
-import { AccountPrincipal, PolicyStatement, Role } from "@aws-cdk/aws-iam";
-import { Construct } from "@aws-cdk/core";
+import { AccountPrincipal, PolicyStatement, Role } from "aws-cdk-lib/aws-iam";
+import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";
 import { SSMParamWriter } from "./ssm-param-writer";
 

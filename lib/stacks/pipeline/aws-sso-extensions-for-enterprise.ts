@@ -2,13 +2,14 @@
 Main pipeline stack i.e. entry point of the application
 */
 
-import { Repository } from "@aws-cdk/aws-codecommit";
-import { Construct, Stack, StackProps, Tags } from "@aws-cdk/core";
+import { Repository } from "aws-cdk-lib/aws-codecommit";
+import { Stack, StackProps, Tags } from "aws-cdk-lib";
+import { Construct } from "constructs";
 import {
   CodePipeline,
   CodePipelineSource,
   ShellStep,
-} from "@aws-cdk/pipelines";
+} from "aws-cdk-lib/pipelines";
 import { BuildConfig } from "../../build/buildConfig";
 import {
   OrgArtefactsDeploymentStage,
@@ -42,6 +43,7 @@ export class AwsSsoExtensionsForEnterprise extends Stack {
           buildConfig.PipelineSettings.RepoBranchName
         ),
         commands: [
+          "yarn global add aws-cdk@2.x", //Because CodeBuild standard 5.0 does not yet have AWS CDK monorepo as default CDK package
           "mkdir ./lib/lambda-layers/nodejs-layer/nodejs/payload-schema-definitions",
           "cp -R ./lib/payload-schema-definitions/* ./lib/lambda-layers/nodejs-layer/nodejs/payload-schema-definitions/",
           "yarn --cwd ./lib/lambda-layers/nodejs-layer/nodejs install --frozen-lockfile --silent",

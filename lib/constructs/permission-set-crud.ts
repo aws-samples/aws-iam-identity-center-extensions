@@ -4,21 +4,22 @@ for permission set CRUD operations and handles both API
 and S3 interfaces
 */
 
-import { LambdaRestApi } from "@aws-cdk/aws-apigateway";
+import { LambdaRestApi } from "aws-cdk-lib/aws-apigateway";
 import {
   AttributeType,
   BillingMode,
   StreamViewType,
   Table,
   TableEncryption,
-} from "@aws-cdk/aws-dynamodb";
-import { Role } from "@aws-cdk/aws-iam";
-import { Key } from "@aws-cdk/aws-kms";
-import { LayerVersion, Runtime } from "@aws-cdk/aws-lambda";
-import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
-import { Bucket, EventType } from "@aws-cdk/aws-s3";
-import { LambdaDestination } from "@aws-cdk/aws-s3-notifications";
-import { CfnOutput, Construct, RemovalPolicy } from "@aws-cdk/core";
+} from "aws-cdk-lib/aws-dynamodb";
+import { Role } from "aws-cdk-lib/aws-iam";
+import { Key } from "aws-cdk-lib/aws-kms";
+import { LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
+import { Bucket, EventType } from "aws-cdk-lib/aws-s3";
+import { LambdaDestination } from "aws-cdk-lib/aws-s3-notifications";
+import { CfnOutput, RemovalPolicy } from "aws-cdk-lib";
+import { Construct } from "constructs";
 import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 import { LambdaProxyAPI } from "./lambda-proxy-api";

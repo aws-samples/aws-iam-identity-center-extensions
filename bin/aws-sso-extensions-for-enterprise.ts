@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { App, DefaultStackSynthesizer, Tags } from "@aws-cdk/core";
+import { App, DefaultStackSynthesizer, Tags } from "aws-cdk-lib";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { BuildConfig } from "../lib/build/buildConfig";

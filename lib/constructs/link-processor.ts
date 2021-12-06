@@ -3,17 +3,21 @@ composite construct that sets up all resources
 for links life cycle provisionings
 */
 
-import { Table } from "@aws-cdk/aws-dynamodb";
-import { Key } from "@aws-cdk/aws-kms";
-import { LayerVersion, Runtime, StartingPosition } from "@aws-cdk/aws-lambda";
+import { Table } from "aws-cdk-lib/aws-dynamodb";
+import { Key } from "aws-cdk-lib/aws-kms";
+import {
+  LayerVersion,
+  Runtime,
+  StartingPosition,
+} from "aws-cdk-lib/aws-lambda";
 import {
   DynamoEventSource,
   SnsDlq,
   SnsEventSource,
-} from "@aws-cdk/aws-lambda-event-sources";
-import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
-import { ITopic, Topic } from "@aws-cdk/aws-sns";
-import { Construct } from "@aws-cdk/core";
+} from "aws-cdk-lib/aws-lambda-event-sources";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
+import { ITopic, Topic } from "aws-cdk-lib/aws-sns";
+import { Construct } from "constructs";
 import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 

@@ -1,8 +1,9 @@
 /*
 Deploys roles in SSO account that allow SSO admin API, Identity Store api access from target account
 */
-import { PolicyStatement } from "@aws-cdk/aws-iam";
-import { Construct, Stack, StackProps } from "@aws-cdk/core";
+import { PolicyStatement } from "aws-cdk-lib/aws-iam";
+import { Stack, StackProps } from "aws-cdk-lib";
+import { Construct } from "constructs";
 import { BuildConfig } from "../../build/buildConfig";
 import { CrossAccountRole } from "../../constructs/cross-account-role";
 

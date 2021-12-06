@@ -1,18 +1,19 @@
 /*
 Deploys even bridge rules for org events in Org Main account
 */
-import { Rule, RuleTargetInput } from "@aws-cdk/aws-events";
-import { SnsTopic } from "@aws-cdk/aws-events-targets";
+import { Rule, RuleTargetInput } from "aws-cdk-lib/aws-events";
+import { SnsTopic } from "aws-cdk-lib/aws-events-targets";
 import {
   AccountPrincipal,
   PolicyStatement,
   Role,
   ServicePrincipal,
-} from "@aws-cdk/aws-iam";
-import { Key } from "@aws-cdk/aws-kms";
-import { Topic } from "@aws-cdk/aws-sns";
-import { CfnStateMachine } from "@aws-cdk/aws-stepfunctions";
-import { Construct, Stack, StackProps } from "@aws-cdk/core";
+} from "aws-cdk-lib/aws-iam";
+import { Key } from "aws-cdk-lib/aws-kms";
+import { Topic } from "aws-cdk-lib/aws-sns";
+import { CfnStateMachine } from "aws-cdk-lib/aws-stepfunctions";
+import { Stack, StackProps } from "aws-cdk-lib";
+import { Construct } from "constructs";
 import { BuildConfig } from "../../build/buildConfig";
 import { CrossAccountRole } from "../../constructs/cross-account-role";
 import { SSMParamWriter } from "../../constructs/ssm-param-writer";

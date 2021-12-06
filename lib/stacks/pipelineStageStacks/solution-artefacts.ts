@@ -3,7 +3,8 @@ Deploys Core solution components
 The stack itself does not have any direct resource deployment
 and abstracts all resource deployments to the constructs
 */
-import { Construct, Stack, StackProps } from "@aws-cdk/core";
+import { Stack, StackProps } from "aws-cdk-lib";
+import { Construct } from "constructs";
 import { BuildConfig } from "../../build/buildConfig";
 import { AccessManager } from "../../constructs/access-manager";
 import { IndependentUtility } from "../../constructs/independent-utlity";

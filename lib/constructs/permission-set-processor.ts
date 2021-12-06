@@ -3,18 +3,18 @@ composite construct that sets up all resources
 for permission set life cycle provisioning
 */
 
-import { Table } from "@aws-cdk/aws-dynamodb";
-import { Key } from "@aws-cdk/aws-kms";
-import * as lambda from "@aws-cdk/aws-lambda"; //Needed to avoid semgrep throwing up https://cwe.mitre.org/data/definitions/95.html
-import { LayerVersion, Runtime } from "@aws-cdk/aws-lambda";
+import { Table } from "aws-cdk-lib/aws-dynamodb";
+import { Key } from "aws-cdk-lib/aws-kms";
+import * as lambda from "aws-cdk-lib/aws-lambda"; //Needed to avoid semgrep throwing up https://cwe.mitre.org/data/definitions/95.html
+import { LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import {
   DynamoEventSource,
   SnsDlq,
   SnsEventSource,
-} from "@aws-cdk/aws-lambda-event-sources";
-import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
-import { ITopic, Topic } from "@aws-cdk/aws-sns";
-import { Construct } from "@aws-cdk/core";
+} from "aws-cdk-lib/aws-lambda-event-sources";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
+import { ITopic, Topic } from "aws-cdk-lib/aws-sns";
+import { Construct } from "constructs";
 import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 

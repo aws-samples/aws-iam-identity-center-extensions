@@ -4,9 +4,9 @@ cross account reading through the SSMParamReader
 construct
 */
 
-import { AccountPrincipal, PolicyStatement, Role } from "@aws-cdk/aws-iam";
-import { StringParameter } from "@aws-cdk/aws-ssm";
-import { Construct } from "@aws-cdk/core";
+import { AccountPrincipal, PolicyStatement, Role } from "aws-cdk-lib/aws-iam";
+import { StringParameter } from "aws-cdk-lib/aws-ssm";
+import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {

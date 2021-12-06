@@ -2,8 +2,8 @@
 Lambda layers construct
 */
 
-import { Code, LayerVersion, Runtime } from "@aws-cdk/aws-lambda";
-import { Construct } from "@aws-cdk/core";
+import { Code, LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
+import { Construct } from "constructs";
 import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 

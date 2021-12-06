@@ -11,11 +11,12 @@ import {
   LambdaIntegration,
   LambdaRestApi,
   LogGroupLogDestination,
-} from "@aws-cdk/aws-apigateway";
-import { Effect, IRole, PolicyStatement, Role } from "@aws-cdk/aws-iam";
-import { NodejsFunction } from "@aws-cdk/aws-lambda-nodejs";
-import { LogGroup, RetentionDays } from "@aws-cdk/aws-logs";
-import { CfnOutput, Construct } from "@aws-cdk/core";
+} from "aws-cdk-lib/aws-apigateway";
+import { Effect, IRole, PolicyStatement, Role } from "aws-cdk-lib/aws-iam";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
+import { LogGroup, RetentionDays } from "aws-cdk-lib/aws-logs";
+import { CfnOutput } from "aws-cdk-lib";
+import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {

@@ -5,8 +5,8 @@ all access granting within the stack is consolidated
 here to facilitate easier management and visibility
 */
 
-import { PolicyStatement } from "@aws-cdk/aws-iam";
-import { Construct } from "@aws-cdk/core";
+import { PolicyStatement } from "aws-cdk-lib/aws-iam";
+import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";
 import { IndependentUtility } from "./independent-utlity";
 import { LinkCRUD } from "./link-crud";
