@@ -166,6 +166,7 @@ test("Empty Stack", () => {
     buildConfig
   );
   // THEN
+  // Only does synth check at this time
   const template = Template.fromStack(stack);
   template.templateMatches({
     Resources: {},
