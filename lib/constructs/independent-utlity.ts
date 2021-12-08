@@ -13,6 +13,7 @@ import {
 } from "aws-cdk-lib/aws-s3";
 import { Topic } from "aws-cdk-lib/aws-sns";
 import { EmailSubscription } from "aws-cdk-lib/aws-sns-subscriptions";
+import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";
 import { SSMParamReader } from "./ssm-param-reader";
@@ -29,11 +30,6 @@ export class IndependentUtility extends Construct {
   public readonly errorNotificationsTopic: Topic;
   public readonly ssoArtefactsBucket: Bucket;
   public readonly waiterHandlerSSOAPIRoleArn: string;
-  public readonly permissionSetHandlerSSOAPIRoleArn: string;
-  public readonly linkManagerHandlerSSOAPIRoleArn: string;
-  public readonly listInstancesSSOAPIRoleArn: string;
-  public readonly listGroupsIdentityStoreAPIRoleArn: string;
-  public readonly processTargetAccountSMInvokeRoleArn: string;
   public readonly ddbTablesKey: Key;
   public readonly s3ArtefactsKey: Key;
   public readonly snsTopicsKey: Key;
@@ -126,64 +122,24 @@ export class IndependentUtility extends Construct {
       }
     ).paramValue;
 
-    this.permissionSetHandlerSSOAPIRoleArn = new SSMParamReader(
-      this,
-      name(buildConfig, "permissionSetHandlerSSOAPIRoleArnpr"),
-      buildConfig,
-      {
-        ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
-        ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
-        ParamNameKey: "permissionSetHandler-ssoapi-roleArn",
-        LambdaLayers: independentUtilityProps.nodeJsLayer,
-      }
-    ).paramValue;
+    new StringParameter(this, name(buildConfig, "errorNotificationsTopicArn"), {
+      parameterName: name(buildConfig, "errorNotificationsTopicArn"),
+      stringValue: this.errorNotificationsTopic.topicArn,
+    });
 
-    this.linkManagerHandlerSSOAPIRoleArn = new SSMParamReader(
-      this,
-      name(buildConfig, "linkManagerHandlerSSOAPIRoleArnpr"),
-      buildConfig,
-      {
-        ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
-        ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
-        ParamNameKey: "linkManagerHandler-ssoapi-roleArn",
-        LambdaLayers: independentUtilityProps.nodeJsLayer,
-      }
-    ).paramValue;
+    new StringParameter(this, name(buildConfig, "snsTopicsKeyArn"), {
+      parameterName: name(buildConfig, "snsTopicsKeyArn"),
+      stringValue: this.snsTopicsKey.keyArn,
+    });
 
-    this.listInstancesSSOAPIRoleArn = new SSMParamReader(
-      this,
-      name(buildConfig, "listInstancesSSOAPIRoleArnpr"),
-      buildConfig,
-      {
-        ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
-        ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
-        ParamNameKey: "listInstances-ssoapi-roleArn",
-        LambdaLayers: independentUtilityProps.nodeJsLayer,
-      }
-    ).paramValue;
+    new StringParameter(this, name(buildConfig, "ddbTablesKeyArn"), {
+      parameterName: name(buildConfig, "ddbTablesKeyArn"),
+      stringValue: this.ddbTablesKey.keyArn,
+    });
 
-    this.listGroupsIdentityStoreAPIRoleArn = new SSMParamReader(
-      this,
-      name(buildConfig, "listGroupsIdentityStoreAPIRoleArnpr"),
-      buildConfig,
-      {
-        ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
-        ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
-        ParamNameKey: "listgroups-identitystoreapi-roleArn",
-        LambdaLayers: independentUtilityProps.nodeJsLayer,
-      }
-    ).paramValue;
-
-    this.processTargetAccountSMInvokeRoleArn = new SSMParamReader(
-      this,
-      name(buildConfig, "processTargetAccountSMInvokeRoleArnpr"),
-      buildConfig,
-      {
-        ParamAccountId: buildConfig.PipelineSettings.OrgMainAccountId,
-        ParamRegion: "us-east-1",
-        ParamNameKey: "processTargetAccountSMInvoke-orgapi-roleArn",
-        LambdaLayers: independentUtilityProps.nodeJsLayer,
-      }
-    ).paramValue;
+    new StringParameter(this, name(buildConfig, "waiterHandlerSSOAPIRoleArn"), {
+      parameterName: name(buildConfig, "waiterHandlerSSOAPIRoleArn"),
+      stringValue: this.waiterHandlerSSOAPIRoleArn,
+    });
   }
 }

@@ -2,7 +2,7 @@
 composite construct that sets up all resources
 for SSO group life cycle notifications
 */
-import { LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
+import { ILayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { ITopic } from "aws-cdk-lib/aws-sns";
@@ -20,7 +20,7 @@ export interface SSOGroupProcessorProps {
   readonly groupsTableName: string;
   readonly linkManagerTopicArn: string;
   readonly errorNotificationsTopicArn: string;
-  readonly nodeJsLayer: LayerVersion;
+  readonly nodeJsLayer: ILayerVersion;
   readonly ssoGroupEventNotificationsTopic: ITopic;
   readonly listInstancesSSOAPIRoleArn: string;
   readonly processTargetAccountSMInvokeRoleArn: string;

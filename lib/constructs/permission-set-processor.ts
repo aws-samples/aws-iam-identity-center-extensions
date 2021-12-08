@@ -3,10 +3,9 @@ composite construct that sets up all resources
 for permission set life cycle provisioning
 */
 
-import { Table } from "aws-cdk-lib/aws-dynamodb";
-import { Key } from "aws-cdk-lib/aws-kms";
+import { ITable } from "aws-cdk-lib/aws-dynamodb";
+import { IKey } from "aws-cdk-lib/aws-kms";
 import * as lambda from "aws-cdk-lib/aws-lambda"; //Needed to avoid semgrep throwing up https://cwe.mitre.org/data/definitions/95.html
-import { LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import {
   DynamoEventSource,
   SnsDlq,
@@ -23,8 +22,8 @@ function name(buildConfig: BuildConfig, resourcename: string): string {
 }
 
 export interface PermissionSetProcessProps {
-  readonly nodeJsLayer: LayerVersion;
-  readonly permissionSetTable: Table;
+  readonly nodeJsLayer: lambda.ILayerVersion;
+  readonly permissionSetTable: ITable;
   readonly PermissionSetArnTableName: string;
   readonly errorNotificationsTopic: ITopic;
   readonly waiterHandlerNotificationsTopicArn: string;
@@ -36,7 +35,7 @@ export interface PermissionSetProcessProps {
   readonly listGroupsIdentityStoreAPIRoleArn: string;
   readonly processTargetAccountSMInvokeRoleArn: string;
   readonly processTargetAccountSMTopic: ITopic;
-  readonly snsTopicsKey: Key;
+  readonly snsTopicsKey: IKey;
 }
 
 export class PermissionSetProcessor extends Construct {
@@ -114,7 +113,7 @@ export class PermissionSetProcessor extends Construct {
       name(buildConfig, "permissionSetHandler"),
       {
         functionName: name(buildConfig, "permissionSetHandler"),
-        runtime: Runtime.NODEJS_14_X,
+        runtime: lambda.Runtime.NODEJS_14_X,
         entry: join(
           __dirname,
           "../",
@@ -158,7 +157,7 @@ export class PermissionSetProcessor extends Construct {
       this,
       name(buildConfig, "permissionSetSyncHandler"),
       {
-        runtime: Runtime.NODEJS_14_X,
+        runtime: lambda.Runtime.NODEJS_14_X,
         functionName: name(buildConfig, "permissionSetSyncHandler"),
         entry: join(
           __dirname,

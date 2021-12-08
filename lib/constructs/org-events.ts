@@ -3,7 +3,7 @@ composite construct that sets up all resources
 for org events handling
 */
 
-import { LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
+import { ILayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { ITopic } from "aws-cdk-lib/aws-sns";
@@ -21,7 +21,7 @@ export interface OrgEventsProps {
   readonly groupsTableName: string;
   readonly linkManagerTopicArn: string;
   readonly errorNotificationsTopicArn: string;
-  readonly nodeJsLayer: LayerVersion;
+  readonly nodeJsLayer: ILayerVersion;
   readonly orgEventsNotificationTopic: ITopic;
   readonly listInstancesSSOAPIRoleArn: string;
   readonly listGroupsIdentityStoreAPIRoleArn: string;

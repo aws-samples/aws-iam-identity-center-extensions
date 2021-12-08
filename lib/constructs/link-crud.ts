@@ -23,6 +23,7 @@ import { Construct } from "constructs";
 import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 import { LambdaProxyAPI } from "./lambda-proxy-api";
+import { StringParameter } from "aws-cdk-lib/aws-ssm";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {
   return buildConfig.Environment + "-" + resourcename;
@@ -261,5 +262,19 @@ export class LinkCRUD extends Construct {
         value: `s3://${linkCRUDProps.ssoArtefactsBucket.bucketName}/links_data/`,
       });
     }
+    new StringParameter(this, name(buildConfig, "linksTableArn"), {
+      parameterName: name(buildConfig, "linksTableArn"),
+      stringValue: this.linksTable.tableArn,
+    });
+
+    new StringParameter(this, name(buildConfig, "linksTableStreamArn"), {
+      parameterName: name(buildConfig, "linksTableStreamArn"),
+      stringValue: this.linksTable.tableStreamArn?.toString() + "",
+    });
+
+    new StringParameter(this, name(buildConfig, "provisionedLinksTableArn"), {
+      parameterName: name(buildConfig, "provisionedLinksTableArn"),
+      stringValue: this.provisionedLinksTable.tableArn,
+    });
   }
 }
