@@ -5,7 +5,7 @@ allows cross account read of SSM parameter value
 
 import { CustomResource } from "aws-cdk-lib";
 import { PolicyStatement } from "aws-cdk-lib/aws-iam";
-import { ILayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
+import { ILayerVersion, Runtime } from "aws-cdk-lib/aws-lambda"; // Importing external resources in CDK would use interfaces and not base objects
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Provider } from "aws-cdk-lib/custom-resources";
 import { Construct } from "constructs";

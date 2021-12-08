@@ -3,8 +3,8 @@ composite construct that sets up all resources
 for permission set life cycle provisioning
 */
 
-import { ITable } from "aws-cdk-lib/aws-dynamodb";
-import { IKey } from "aws-cdk-lib/aws-kms";
+import { ITable } from "aws-cdk-lib/aws-dynamodb"; // Importing external resources in CDK would use interfaces and not base objects
+import { IKey } from "aws-cdk-lib/aws-kms"; // Importing external resources in CDK would use interfaces and not base objects
 import * as lambda from "aws-cdk-lib/aws-lambda"; //Needed to avoid semgrep throwing up https://cwe.mitre.org/data/definitions/95.html
 import {
   DynamoEventSource,

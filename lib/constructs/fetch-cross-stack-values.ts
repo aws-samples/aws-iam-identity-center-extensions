@@ -219,7 +219,7 @@ export class FetchCrossStackValues extends Construct {
       buildConfig,
       {
         ParamAccountId: buildConfig.PipelineSettings.OrgMainAccountId,
-        ParamRegion: "us-east-1",
+        ParamRegion: "us-east-1", // Organizations discovery can only be done in us-east-1, hence the step functions and related roles are declared in that region
         ParamNameKey: "processTargetAccountSMInvoke-orgapi-roleArn",
         LambdaLayers: this.nodeJsLayer,
       }

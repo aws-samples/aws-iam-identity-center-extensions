@@ -10,7 +10,7 @@ import {
   Table,
   TableEncryption,
 } from "aws-cdk-lib/aws-dynamodb";
-import { IKey } from "aws-cdk-lib/aws-kms";
+import { IKey } from "aws-cdk-lib/aws-kms"; // Importing external resources in CDK would use interfaces and not base objects
 import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";
 
