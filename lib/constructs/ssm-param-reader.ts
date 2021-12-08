@@ -3,12 +3,12 @@ Custom cloudformation resource construct that
 allows cross account read of SSM parameter value
 */
 
-import { PolicyStatement } from "aws-cdk-lib/aws-iam";
-import { LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
-import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { CustomResource } from "aws-cdk-lib";
-import { Construct } from "constructs";
+import { PolicyStatement } from "aws-cdk-lib/aws-iam";
+import { ILayerVersion, Runtime } from "aws-cdk-lib/aws-lambda"; // Importing external resources in CDK would use interfaces and not base objects
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Provider } from "aws-cdk-lib/custom-resources";
+import { Construct } from "constructs";
 import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 
@@ -20,7 +20,7 @@ export interface SSMParamReaderProps {
   readonly ParamNameKey: string;
   readonly ParamAccountId: string;
   readonly ParamRegion: string;
-  readonly LambdaLayers: LayerVersion;
+  readonly LambdaLayers: ILayerVersion;
 }
 
 export class SSMParamReader extends Construct {

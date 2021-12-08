@@ -3,14 +3,14 @@ composite construct that sets up all resources
 for SSO group import event notifications
 */
 
+import { RemovalPolicy } from "aws-cdk-lib";
 import {
   AttributeType,
   BillingMode,
   Table,
   TableEncryption,
 } from "aws-cdk-lib/aws-dynamodb";
-import { Key } from "aws-cdk-lib/aws-kms";
-import { RemovalPolicy } from "aws-cdk-lib";
+import { IKey } from "aws-cdk-lib/aws-kms"; // Importing external resources in CDK would use interfaces and not base objects
 import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";
 
@@ -19,7 +19,7 @@ function name(buildConfig: BuildConfig, resourcename: string): string {
 }
 
 export interface SSOGroupCrudProps {
-  readonly ddbTablesKey: Key;
+  readonly ddbTablesKey: IKey;
 }
 
 export class SSOGroupCRUD extends Construct {

@@ -23,6 +23,7 @@ import { Construct } from "constructs";
 import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 import { LambdaProxyAPI } from "./lambda-proxy-api";
+import { StringParameter } from "aws-cdk-lib/aws-ssm";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {
   return buildConfig.Environment + "-" + resourcename;
@@ -246,5 +247,24 @@ export class PermissionSetCRUD extends Construct {
         value: `s3://${PermissionSetCRUDProps.ssoArtefactsBucket.bucketName}/permission_sets/`,
       });
     }
+
+    new StringParameter(this, name(buildConfig, "permissionSetTableArn"), {
+      parameterName: name(buildConfig, "permissionSetTableArn"),
+      stringValue: this.permissionSetTable.tableArn,
+    });
+
+    new StringParameter(
+      this,
+      name(buildConfig, "permissionSetTableStreamArn"),
+      {
+        parameterName: name(buildConfig, "permissionSetTableStreamArn"),
+        stringValue: this.permissionSetTable.tableStreamArn?.toString() + "",
+      }
+    );
+
+    new StringParameter(this, name(buildConfig, "permissionSetArnTableArn"), {
+      parameterName: name(buildConfig, "permissionSetArnTableArn"),
+      stringValue: this.permissionSetArnTable.tableArn,
+    });
   }
 }

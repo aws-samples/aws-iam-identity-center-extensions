@@ -103,16 +103,7 @@ export class SolutionArtefactsDeploymentStage extends Stage {
           qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
         }),
       },
-      buildConfig,
-      {
-        deployIndependentUtility:
-          preSolutionArtefactsStack.deployIndependentUtility,
-        deployLambdaLayers: preSolutionArtefactsStack.deployLambdaLayers,
-        deployLinkCRUD: preSolutionArtefactsStack.deployLinkCRUD,
-        deployUtility: preSolutionArtefactsStack.deployUtility,
-        deployPermissionSetCRUD:
-          preSolutionArtefactsStack.deployPermissionSetCRUD,
-      }
+      buildConfig
     );
 
     solutionartefactsStack.node.addDependency(preSolutionArtefactsStack);

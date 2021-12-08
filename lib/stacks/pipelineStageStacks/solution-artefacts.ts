@@ -7,27 +7,15 @@ import { Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { BuildConfig } from "../../build/buildConfig";
 import { AccessManager } from "../../constructs/access-manager";
-import { IndependentUtility } from "../../constructs/independent-utlity";
-import { LambdaLayers } from "../../constructs/lambda-layers";
-import { LinkCRUD } from "../../constructs/link-crud";
+import { FetchCrossStackValues } from "../../constructs/fetch-cross-stack-values";
 import { LinkProcessor } from "../../constructs/link-processor";
 import { OrgEvents } from "../../constructs/org-events";
-import { PermissionSetCRUD } from "../../constructs/permission-set-crud";
 import { PermissionSetProcessor } from "../../constructs/permission-set-processor";
 import { SSOGroupCRUD } from "../../constructs/sso-group-crud";
 import { SSOGroupProcessor } from "../../constructs/sso-group-processor";
-import { Utility } from "../../constructs/utility";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {
   return buildConfig.Environment + "-" + resourcename;
-}
-
-export interface PreSolutionArtefactsProps {
-  readonly deployIndependentUtility: IndependentUtility;
-  readonly deployLambdaLayers: LambdaLayers;
-  readonly deployLinkCRUD: LinkCRUD;
-  readonly deployPermissionSetCRUD: PermissionSetCRUD;
-  readonly deployUtility: Utility;
 }
 
 export class SolutionArtefacts extends Stack {
@@ -35,18 +23,24 @@ export class SolutionArtefacts extends Stack {
     scope: Construct,
     id: string,
     props: StackProps | undefined,
-    buildConfig: BuildConfig,
-    preSolutionArtefactsProps: PreSolutionArtefactsProps
+    buildConfig: BuildConfig
   ) {
     super(scope, id, props);
+
+    // Deploy Solutions artefacts
+
+    const deployFetchCrossStackValues = new FetchCrossStackValues(
+      this,
+      name(buildConfig, "fetchCrossStackValues"),
+      buildConfig
+    );
 
     const deploySSOGroupCRUD = new SSOGroupCRUD(
       this,
       name(buildConfig, "ssoGroupCRUD"),
       buildConfig,
       {
-        ddbTablesKey:
-          preSolutionArtefactsProps.deployIndependentUtility.ddbTablesKey,
+        ddbTablesKey: deployFetchCrossStackValues.ddbTablesKey,
       }
     );
 
@@ -56,36 +50,27 @@ export class SolutionArtefacts extends Stack {
       buildConfig,
       {
         errorNotificationsTopic:
-          preSolutionArtefactsProps.deployIndependentUtility
-            .errorNotificationsTopic,
-        linksTable: preSolutionArtefactsProps.deployLinkCRUD.linksTable,
-        nodeJsLayer: preSolutionArtefactsProps.deployLambdaLayers.nodeJsLayer,
+          deployFetchCrossStackValues.errorNotificationsTopic,
+        linksTable: deployFetchCrossStackValues.linksTable,
+        nodeJsLayer: deployFetchCrossStackValues.nodeJsLayer,
         provisionedLinksTableName:
-          preSolutionArtefactsProps.deployLinkCRUD.provisionedLinksTable
-            .tableName,
+          deployFetchCrossStackValues.provisionedLinksTable.tableName,
         waiterHandlerNotificationsTopicArn:
-          preSolutionArtefactsProps.deployUtility
-            .waiterHandlerNotificationsTopic.topicArn,
+          deployFetchCrossStackValues.waiterHandlerNotificationsTopic.topicArn,
         groupsTableName: deploySSOGroupCRUD.groupsTable.tableName,
         permissionSetArnTableName:
-          preSolutionArtefactsProps.deployPermissionSetCRUD
-            .permissionSetArnTable.tableName,
+          deployFetchCrossStackValues.permissionSetArnTable.tableName,
         linkManagerHandlerSSOAPIRoleArn:
-          preSolutionArtefactsProps.deployIndependentUtility
-            .linkManagerHandlerSSOAPIRoleArn,
+          deployFetchCrossStackValues.linkManagerHandlerSSOAPIRoleArn,
         listGroupsIdentityStoreAPIRoleArn:
-          preSolutionArtefactsProps.deployIndependentUtility
-            .listGroupsIdentityStoreAPIRoleArn,
+          deployFetchCrossStackValues.listGroupsIdentityStoreAPIRoleArn,
         listInstancesSSOAPIRoleArn:
-          preSolutionArtefactsProps.deployIndependentUtility
-            .listInstancesSSOAPIRoleArn,
+          deployFetchCrossStackValues.listInstancesSSOAPIRoleArn,
         processTargetAccountSMInvokeRoleArn:
-          preSolutionArtefactsProps.deployIndependentUtility
-            .processTargetAccountSMInvokeRoleArn,
+          deployFetchCrossStackValues.processTargetAccountSMInvokeRoleArn,
         processTargetAccountSMTopic:
-          preSolutionArtefactsProps.deployUtility.processTargetAccountSMTopic,
-        snsTopicsKey:
-          preSolutionArtefactsProps.deployIndependentUtility.snsTopicsKey,
+          deployFetchCrossStackValues.processTargetAccountSMTopic,
+        snsTopicsKey: deployFetchCrossStackValues.snsTopicsKey,
       }
     );
 
@@ -95,27 +80,21 @@ export class SolutionArtefacts extends Stack {
       buildConfig,
       {
         ssoGroupEventNotificationsTopic:
-          preSolutionArtefactsProps.deployUtility
-            .ssoGroupEventsNotificationsTopic,
+          deployFetchCrossStackValues.ssoGroupEventNotificationsTopic,
         errorNotificationsTopicArn:
-          preSolutionArtefactsProps.deployIndependentUtility
-            .errorNotificationsTopic.topicArn,
+          deployFetchCrossStackValues.errorNotificationsTopic.topicArn,
         groupsTableName: deploySSOGroupCRUD.groupsTable.tableName,
         linkManagerTopicArn: deployLinkProcessor.linkManagerTopic.topicArn,
-        linksTableName:
-          preSolutionArtefactsProps.deployLinkCRUD.linksTable.tableName,
+        linksTableName: deployFetchCrossStackValues.linksTable.tableName,
         permissionSetArnTableName:
-          preSolutionArtefactsProps.deployPermissionSetCRUD
-            .permissionSetArnTable.tableName,
-        nodeJsLayer: preSolutionArtefactsProps.deployLambdaLayers.nodeJsLayer,
+          deployFetchCrossStackValues.permissionSetArnTable.tableName,
+        nodeJsLayer: deployFetchCrossStackValues.nodeJsLayer,
         listInstancesSSOAPIRoleArn:
-          preSolutionArtefactsProps.deployIndependentUtility
-            .listInstancesSSOAPIRoleArn,
+          deployFetchCrossStackValues.listInstancesSSOAPIRoleArn,
         processTargetAccountSMInvokeRoleArn:
-          preSolutionArtefactsProps.deployIndependentUtility
-            .processTargetAccountSMInvokeRoleArn,
+          deployFetchCrossStackValues.processTargetAccountSMInvokeRoleArn,
         processTargetAccountSMTopic:
-          preSolutionArtefactsProps.deployUtility.processTargetAccountSMTopic,
+          deployFetchCrossStackValues.processTargetAccountSMTopic,
       }
     );
 
@@ -125,37 +104,27 @@ export class SolutionArtefacts extends Stack {
       buildConfig,
       {
         PermissionSetArnTableName:
-          preSolutionArtefactsProps.deployPermissionSetCRUD
-            .permissionSetArnTable.tableName,
-        permissionSetTable:
-          preSolutionArtefactsProps.deployPermissionSetCRUD.permissionSetTable,
+          deployFetchCrossStackValues.permissionSetArnTable.tableName,
+        permissionSetTable: deployFetchCrossStackValues.permissionSetTable,
         errorNotificationsTopic:
-          preSolutionArtefactsProps.deployIndependentUtility
-            .errorNotificationsTopic,
-        nodeJsLayer: preSolutionArtefactsProps.deployLambdaLayers.nodeJsLayer,
+          deployFetchCrossStackValues.errorNotificationsTopic,
+        nodeJsLayer: deployFetchCrossStackValues.nodeJsLayer,
         waiterHandlerNotificationsTopicArn:
-          preSolutionArtefactsProps.deployUtility
-            .waiterHandlerNotificationsTopic.topicArn,
+          deployFetchCrossStackValues.waiterHandlerNotificationsTopic.topicArn,
         permissionSetHandlerSSOAPIRoleArn:
-          preSolutionArtefactsProps.deployIndependentUtility
-            .permissionSetHandlerSSOAPIRoleArn,
+          deployFetchCrossStackValues.permissionSetHandlerSSOAPIRoleArn,
         groupsTableName: deploySSOGroupCRUD.groupsTable.tableName,
         linkManagerTopicArn: deployLinkProcessor.linkManagerTopic.topicArn,
-        linksTableName:
-          preSolutionArtefactsProps.deployLinkCRUD.linksTable.tableName,
+        linksTableName: deployFetchCrossStackValues.linksTable.tableName,
         listGroupsIdentityStoreAPIRoleArn:
-          preSolutionArtefactsProps.deployIndependentUtility
-            .listGroupsIdentityStoreAPIRoleArn,
+          deployFetchCrossStackValues.listGroupsIdentityStoreAPIRoleArn,
         listInstancesSSOAPIRoleArn:
-          preSolutionArtefactsProps.deployIndependentUtility
-            .listInstancesSSOAPIRoleArn,
+          deployFetchCrossStackValues.listInstancesSSOAPIRoleArn,
         processTargetAccountSMInvokeRoleArn:
-          preSolutionArtefactsProps.deployIndependentUtility
-            .processTargetAccountSMInvokeRoleArn,
+          deployFetchCrossStackValues.processTargetAccountSMInvokeRoleArn,
         processTargetAccountSMTopic:
-          preSolutionArtefactsProps.deployUtility.processTargetAccountSMTopic,
-        snsTopicsKey:
-          preSolutionArtefactsProps.deployIndependentUtility.snsTopicsKey,
+          deployFetchCrossStackValues.processTargetAccountSMTopic,
+        snsTopicsKey: deployFetchCrossStackValues.snsTopicsKey,
       }
     );
 
@@ -165,36 +134,27 @@ export class SolutionArtefacts extends Stack {
       buildConfig,
       {
         errorNotificationsTopicArn:
-          preSolutionArtefactsProps.deployIndependentUtility
-            .errorNotificationsTopic.topicArn,
+          deployFetchCrossStackValues.errorNotificationsTopic.topicArn,
         groupsTableName: deploySSOGroupCRUD.groupsTable.tableName,
         linkManagerTopicArn: deployLinkProcessor.linkManagerTopic.topicArn,
-        linksTableName:
-          preSolutionArtefactsProps.deployLinkCRUD.linksTable.tableName,
-        nodeJsLayer: preSolutionArtefactsProps.deployLambdaLayers.nodeJsLayer,
+        linksTableName: deployFetchCrossStackValues.linksTable.tableName,
+        nodeJsLayer: deployFetchCrossStackValues.nodeJsLayer,
         orgEventsNotificationTopic:
-          preSolutionArtefactsProps.deployUtility.orgEventsNotificationsTopic,
+          deployFetchCrossStackValues.orgEventsNotificationsTopic,
         permissionSetArnTableName:
-          preSolutionArtefactsProps.deployPermissionSetCRUD
-            .permissionSetArnTable.tableName,
+          deployFetchCrossStackValues.permissionSetArnTable.tableName,
         listGroupsIdentityStoreAPIRoleArn:
-          preSolutionArtefactsProps.deployIndependentUtility
-            .listGroupsIdentityStoreAPIRoleArn,
+          deployFetchCrossStackValues.listGroupsIdentityStoreAPIRoleArn,
         listInstancesSSOAPIRoleArn:
-          preSolutionArtefactsProps.deployIndependentUtility
-            .listInstancesSSOAPIRoleArn,
+          deployFetchCrossStackValues.listInstancesSSOAPIRoleArn,
         provisionedlinksTableName:
-          preSolutionArtefactsProps.deployLinkCRUD.provisionedLinksTable
-            .tableName,
+          deployFetchCrossStackValues.provisionedLinksTable.tableName,
       }
     );
 
-    new AccessManager(this, name(buildConfig, "accessManager"), buildConfig, {
-      IndependentUtility: preSolutionArtefactsProps.deployIndependentUtility,
-      LinkCRUD: preSolutionArtefactsProps.deployLinkCRUD,
-      PermissionSetCRUD: preSolutionArtefactsProps.deployPermissionSetCRUD,
+    new AccessManager(this, name(buildConfig, "accessManager"), {
+      FetchCrossStackValues: deployFetchCrossStackValues,
       SSOGroupCRUD: deploySSOGroupCRUD,
-      Utility: preSolutionArtefactsProps.deployUtility,
       LinkProcessor: deployLinkProcessor,
       PermissionSetProcessor: deployPermissionSetProcessor,
       SSOGroupProcessor: deploySSOGroupProcessor,

@@ -10,6 +10,7 @@ import { IndependentUtility } from "../../constructs/independent-utlity";
 import { LambdaLayers } from "../../constructs/lambda-layers";
 import { LinkCRUD } from "../../constructs/link-crud";
 import { PermissionSetCRUD } from "../../constructs/permission-set-crud";
+import { PreSolutionAccessManager } from "../../constructs/preSolution-access-manager";
 import { Utility } from "../../constructs/utility";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {
@@ -87,6 +88,18 @@ export class PreSolutionArtefacts extends Stack {
         ssoArtefactsBucket: this.deployIndependentUtility.ssoArtefactsBucket,
         ddbTablesKey: this.deployIndependentUtility.ddbTablesKey,
         logsKey: this.deployIndependentUtility.logsKey,
+      }
+    );
+
+    new PreSolutionAccessManager(
+      this,
+      name(buildConfig, "preSolutionAccessManager"),
+      buildConfig,
+      {
+        IndependentUtility: this.deployIndependentUtility,
+        LinkCRUD: this.deployLinkCRUD,
+        PermissionSetCRUD: this.deployPermissionSetCRUD,
+        Utility: this.deployUtility,
       }
     );
   }

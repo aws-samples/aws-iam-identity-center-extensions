@@ -3,6 +3,7 @@ Lambda layers construct
 */
 
 import { Code, LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
+import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
@@ -29,6 +30,11 @@ export class LambdaLayers extends Construct {
       }
     );
 
+    new StringParameter(this, name(buildConfig, "nodeJsLayerVersionArn"), {
+      parameterName: name(buildConfig, "nodeJsLayerVersionArn"),
+      stringValue: this.nodeJsLayer.layerVersionArn,
+    });
+
     this.pythonLayer = new LayerVersion(
       this,
       name(buildConfig, "pythonLayer"),
@@ -39,5 +45,10 @@ export class LambdaLayers extends Construct {
         compatibleRuntimes: [Runtime.PYTHON_3_8],
       }
     );
+
+    new StringParameter(this, name(buildConfig, "pythonLayerVersionArn"), {
+      parameterName: name(buildConfig, "pythonLayerVersionArn"),
+      stringValue: this.pythonLayer.layerVersionArn,
+    });
   }
 }

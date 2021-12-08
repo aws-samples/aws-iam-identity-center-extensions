@@ -3,13 +3,13 @@ composite construct that sets up all resources
 for links life cycle provisionings
 */
 
-import { Table } from "aws-cdk-lib/aws-dynamodb";
-import { Key } from "aws-cdk-lib/aws-kms";
+import { ITable } from "aws-cdk-lib/aws-dynamodb"; // Importing external resources in CDK would use interfaces and not base objects
+import { IKey } from "aws-cdk-lib/aws-kms"; // Importing external resources in CDK would use interfaces and not base objects
 import {
-  LayerVersion,
+  ILayerVersion,
   Runtime,
   StartingPosition,
-} from "aws-cdk-lib/aws-lambda";
+} from "aws-cdk-lib/aws-lambda"; // Importing external resources in CDK would use interfaces and not base objects
 import {
   DynamoEventSource,
   SnsDlq,
@@ -26,7 +26,7 @@ function name(buildConfig: BuildConfig, resourcename: string): string {
 }
 
 export interface LinkProcessProps {
-  readonly linksTable: Table;
+  readonly linksTable: ITable;
   readonly provisionedLinksTableName: string;
   readonly groupsTableName: string;
   readonly permissionSetArnTableName: string;
@@ -37,8 +37,8 @@ export interface LinkProcessProps {
   readonly listGroupsIdentityStoreAPIRoleArn: string;
   readonly processTargetAccountSMInvokeRoleArn: string;
   readonly processTargetAccountSMTopic: ITopic;
-  readonly nodeJsLayer: LayerVersion;
-  readonly snsTopicsKey: Key;
+  readonly nodeJsLayer: ILayerVersion;
+  readonly snsTopicsKey: IKey;
 }
 
 export class LinkProcessor extends Construct {
