@@ -3,6 +3,7 @@ composite construct that sets up all resources
 for permission set life cycle provisioning
 */
 
+import { Duration } from "aws-cdk-lib";
 import { ITable } from "aws-cdk-lib/aws-dynamodb"; // Importing external resources in CDK would use interfaces and not base objects
 import { IKey } from "aws-cdk-lib/aws-kms"; // Importing external resources in CDK would use interfaces and not base objects
 import * as lambda from "aws-cdk-lib/aws-lambda"; //Needed to avoid semgrep throwing up https://cwe.mitre.org/data/definitions/95.html
@@ -26,14 +27,14 @@ export interface PermissionSetProcessProps {
   readonly permissionSetTable: ITable;
   readonly PermissionSetArnTableName: string;
   readonly errorNotificationsTopic: ITopic;
-  readonly waiterHandlerNotificationsTopicArn: string;
   readonly permissionSetHandlerSSOAPIRoleArn: string;
   readonly linksTableName: string;
   readonly groupsTableName: string;
-  readonly linkManagerTopicArn: string;
+  readonly linkQueueUrl: string;
   readonly listInstancesSSOAPIRoleArn: string;
   readonly listGroupsIdentityStoreAPIRoleArn: string;
   readonly processTargetAccountSMInvokeRoleArn: string;
+  readonly waiterHandlerSSOAPIRoleArn: string;
   readonly processTargetAccountSMTopic: ITopic;
   readonly snsTopicsKey: IKey;
 }
@@ -118,7 +119,7 @@ export class PermissionSetProcessor extends Construct {
           __dirname,
           "../",
           "lambda-functions",
-          "sso-handlers",
+          "application-handlers",
           "src",
           "permissionSetTopic.ts"
         ),
@@ -129,6 +130,7 @@ export class PermissionSetProcessor extends Construct {
             "@aws-sdk/client-sso-admin",
             "@aws-sdk/credential-providers",
             "@aws-sdk/lib-dynamodb",
+            "@aws-sdk/util-waiter",
           ],
           minify: true,
         },
@@ -139,13 +141,14 @@ export class PermissionSetProcessor extends Construct {
           AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
           errorNotificationsTopicArn:
             permissionSetProcessorProps.errorNotificationsTopic.topicArn,
-          waiterTopicArn:
-            permissionSetProcessorProps.waiterHandlerNotificationsTopicArn,
           permissionSetSyncTopicArn: this.permissionSetSyncTopic.topicArn,
           SSOAPIRoleArn:
             permissionSetProcessorProps.permissionSetHandlerSSOAPIRoleArn,
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
+          waiterHandlerSSOAPIRoleArn:
+            permissionSetProcessorProps.waiterHandlerSSOAPIRoleArn,
         },
+        timeout: Duration.minutes(11), //aggressive timeout to accommodate SSO Admin API's workflow based logic
       }
     );
 
@@ -163,7 +166,7 @@ export class PermissionSetProcessor extends Construct {
           __dirname,
           "../",
           "lambda-functions",
-          "sso-handlers",
+          "application-handlers",
           "src",
           "permissionSetSync.ts"
         ),
@@ -176,6 +179,8 @@ export class PermissionSetProcessor extends Construct {
             "@aws-sdk/client-sso-admin",
             "@aws-sdk/credential-providers",
             "@aws-sdk/lib-dynamodb",
+            "@aws-sdk/client-sqs",
+            "uuid",
           ],
           minify: true,
         },
@@ -186,7 +191,7 @@ export class PermissionSetProcessor extends Construct {
           AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
           errorNotificationsTopicArn:
             permissionSetProcessorProps.errorNotificationsTopic.topicArn,
-          linkManagerTopicArn: permissionSetProcessorProps.linkManagerTopicArn,
+          linkQueueUrl: permissionSetProcessorProps.linkQueueUrl,
           SSOAPIRoleArn: permissionSetProcessorProps.listInstancesSSOAPIRoleArn,
           ISAPIRoleArn:
             permissionSetProcessorProps.listGroupsIdentityStoreAPIRoleArn,

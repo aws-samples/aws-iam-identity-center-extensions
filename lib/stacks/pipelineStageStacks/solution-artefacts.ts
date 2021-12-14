@@ -9,6 +9,7 @@ import { BuildConfig } from "../../build/buildConfig";
 import { AccessManager } from "../../constructs/access-manager";
 import { FetchCrossStackValues } from "../../constructs/fetch-cross-stack-values";
 import { LinkProcessor } from "../../constructs/link-processor";
+import { ObservabilityArtefacts } from "../../constructs/observability-artefacts";
 import { OrgEvents } from "../../constructs/org-events";
 import { PermissionSetProcessor } from "../../constructs/permission-set-processor";
 import { SSOGroupCRUD } from "../../constructs/sso-group-crud";
@@ -55,8 +56,6 @@ export class SolutionArtefacts extends Stack {
         nodeJsLayer: deployFetchCrossStackValues.nodeJsLayer,
         provisionedLinksTableName:
           deployFetchCrossStackValues.provisionedLinksTable.tableName,
-        waiterHandlerNotificationsTopicArn:
-          deployFetchCrossStackValues.waiterHandlerNotificationsTopic.topicArn,
         groupsTableName: deploySSOGroupCRUD.groupsTable.tableName,
         permissionSetArnTableName:
           deployFetchCrossStackValues.permissionSetArnTable.tableName,
@@ -70,7 +69,10 @@ export class SolutionArtefacts extends Stack {
           deployFetchCrossStackValues.processTargetAccountSMInvokeRoleArn,
         processTargetAccountSMTopic:
           deployFetchCrossStackValues.processTargetAccountSMTopic,
-        snsTopicsKey: deployFetchCrossStackValues.snsTopicsKey,
+        linkProcessorTopic: deployFetchCrossStackValues.linkProcessorTopic,
+        linkManagerQueue: deployFetchCrossStackValues.linkManagerQueue,
+        waiterHandlerSSOAPIRoleArn:
+          deployFetchCrossStackValues.waiterHandlerSSOAPIRoleArn,
       }
     );
 
@@ -84,7 +86,7 @@ export class SolutionArtefacts extends Stack {
         errorNotificationsTopicArn:
           deployFetchCrossStackValues.errorNotificationsTopic.topicArn,
         groupsTableName: deploySSOGroupCRUD.groupsTable.tableName,
-        linkManagerTopicArn: deployLinkProcessor.linkManagerTopic.topicArn,
+        linkQueueUrl: deployFetchCrossStackValues.linkManagerQueue.queueUrl,
         linksTableName: deployFetchCrossStackValues.linksTable.tableName,
         permissionSetArnTableName:
           deployFetchCrossStackValues.permissionSetArnTable.tableName,
@@ -109,12 +111,10 @@ export class SolutionArtefacts extends Stack {
         errorNotificationsTopic:
           deployFetchCrossStackValues.errorNotificationsTopic,
         nodeJsLayer: deployFetchCrossStackValues.nodeJsLayer,
-        waiterHandlerNotificationsTopicArn:
-          deployFetchCrossStackValues.waiterHandlerNotificationsTopic.topicArn,
         permissionSetHandlerSSOAPIRoleArn:
           deployFetchCrossStackValues.permissionSetHandlerSSOAPIRoleArn,
         groupsTableName: deploySSOGroupCRUD.groupsTable.tableName,
-        linkManagerTopicArn: deployLinkProcessor.linkManagerTopic.topicArn,
+        linkQueueUrl: deployFetchCrossStackValues.linkManagerQueue.queueUrl,
         linksTableName: deployFetchCrossStackValues.linksTable.tableName,
         listGroupsIdentityStoreAPIRoleArn:
           deployFetchCrossStackValues.listGroupsIdentityStoreAPIRoleArn,
@@ -125,6 +125,8 @@ export class SolutionArtefacts extends Stack {
         processTargetAccountSMTopic:
           deployFetchCrossStackValues.processTargetAccountSMTopic,
         snsTopicsKey: deployFetchCrossStackValues.snsTopicsKey,
+        waiterHandlerSSOAPIRoleArn:
+          deployFetchCrossStackValues.waiterHandlerSSOAPIRoleArn,
       }
     );
 
@@ -136,7 +138,7 @@ export class SolutionArtefacts extends Stack {
         errorNotificationsTopicArn:
           deployFetchCrossStackValues.errorNotificationsTopic.topicArn,
         groupsTableName: deploySSOGroupCRUD.groupsTable.tableName,
-        linkManagerTopicArn: deployLinkProcessor.linkManagerTopic.topicArn,
+        linkQueueUrl: deployFetchCrossStackValues.linkManagerQueue.queueUrl,
         linksTableName: deployFetchCrossStackValues.linksTable.tableName,
         nodeJsLayer: deployFetchCrossStackValues.nodeJsLayer,
         orgEventsNotificationTopic:
@@ -160,5 +162,11 @@ export class SolutionArtefacts extends Stack {
       SSOGroupProcessor: deploySSOGroupProcessor,
       OrgEvents: deployOrgEvents,
     });
+
+    new ObservabilityArtefacts(
+      this,
+      name(buildConfig, "observabilityArtefacts"),
+      buildConfig
+    );
   }
 }

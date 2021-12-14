@@ -6,15 +6,25 @@ Trigger source: link S3 path object notification for both created and change typ
 */
 
 // Environment configuration read
-const { DdbTable, errorNotificationsTopicArn, AWS_REGION } = process.env;
+const {
+  DdbTable,
+  errorNotificationsTopicArn,
+  AWS_REGION,
+  linkProcessingTopicArn,
+} = process.env;
 
 // SDK and third party client imports
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { S3Event, S3EventRecord } from "aws-lambda";
-import { ErrorMessage, LinkData } from "../../helpers/src/interfaces";
-
+import {
+  ErrorMessage,
+  LinkData,
+  requestStatus,
+} from "../../helpers/src/interfaces";
+import { logger } from "../../helpers/src/utilities";
+import { v4 as uuidv4 } from "uuid";
 // SDK and third party client object initialistaion
 const ddbClientObject = new DynamoDBClient({ region: AWS_REGION });
 const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
@@ -28,6 +38,7 @@ const errorMessage: ErrorMessage = {
 export const handler = async (event: S3Event) => {
   await Promise.all(
     event.Records.map(async (record: S3EventRecord) => {
+      const requestId = uuidv4().toString();
       try {
         const fileName = decodeURIComponent(record.s3.object.key.split("/")[1]);
         if (
@@ -60,9 +71,26 @@ export const handler = async (event: S3Event) => {
               },
             })
           );
-          console.log(
-            `Processed upsert of link data through S3 interface successfully: ${upsertData}`
+          await snsClientObject.send(
+            new PublishCommand({
+              TopicArn: linkProcessingTopicArn + "",
+              Message: JSON.stringify({
+                linkData: fileName,
+                action: "create",
+                requestId: requestId,
+              }),
+            })
           );
+          logger({
+            handler: "userInterface-s3CreateUpdate",
+            logMode: "info",
+            relatedData: fileName,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            hasRelatedRequests:
+              upsertData.awsEntityType === "account" ? false : true,
+            statusMessage: `Account Assignment create operation is being processed`,
+          });
         } else {
           await snsClientObject.send(
             new PublishCommand({
@@ -74,9 +102,14 @@ export const handler = async (event: S3Event) => {
               }),
             })
           );
-          console.error(
-            `File name does not pass the schema validation for a link operation: ${fileName}`
-          );
+          logger({
+            handler: "userInterface-s3CreateUpdate",
+            logMode: "error",
+            relatedData: fileName,
+            requestId: requestId,
+            status: requestStatus.FailedWithError,
+            statusMessage: `Account Assignment create operation failed due to fileName validation`,
+          });
         }
       } catch (err) {
         await snsClientObject.send(
@@ -89,11 +122,15 @@ export const handler = async (event: S3Event) => {
             }),
           })
         );
-        console.error(
-          `Exception when processing link create/update through S3 interface: ${JSON.stringify(
+        logger({
+          handler: "userInterface-s3CreateUpdate",
+          logMode: "error",
+          requestId: requestId,
+          status: requestStatus.FailedWithException,
+          statusMessage: `Account Assignment create operation failed with error: ${JSON.stringify(
             err
-          )}`
-        );
+          )}`,
+        });
       }
     })
   );

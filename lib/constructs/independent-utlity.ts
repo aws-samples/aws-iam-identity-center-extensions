@@ -4,6 +4,7 @@ that allows shareable resources and has no dependencies
 on other constructs
 */
 
+import { Duration } from "aws-cdk-lib";
 import { Key } from "aws-cdk-lib/aws-kms";
 import { LayerVersion } from "aws-cdk-lib/aws-lambda";
 import {
@@ -13,6 +14,7 @@ import {
 } from "aws-cdk-lib/aws-s3";
 import { Topic } from "aws-cdk-lib/aws-sns";
 import { EmailSubscription } from "aws-cdk-lib/aws-sns-subscriptions";
+import { Queue, QueueEncryption } from "aws-cdk-lib/aws-sqs";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";
@@ -29,11 +31,14 @@ export interface IndependentUtilityProps {
 export class IndependentUtility extends Construct {
   public readonly errorNotificationsTopic: Topic;
   public readonly ssoArtefactsBucket: Bucket;
+  public readonly linkManagerQueue: Queue;
+  public readonly linkManagerDLQ: Queue;
   public readonly waiterHandlerSSOAPIRoleArn: string;
   public readonly ddbTablesKey: Key;
   public readonly s3ArtefactsKey: Key;
   public readonly snsTopicsKey: Key;
   public readonly logsKey: Key;
+  public readonly queuesKey: Key;
 
   constructor(
     scope: Construct,
@@ -69,6 +74,13 @@ export class IndependentUtility extends Construct {
       alias: name(buildConfig, "ddbTablesKey"),
       description:
         "KMS CMK used for encrypting/decrypting all DynamoDB tables used in aws-sso-extensions-for-enterprise solution",
+    });
+
+    this.queuesKey = new Key(this, name(buildConfig, "queuesKey"), {
+      enableKeyRotation: true,
+      alias: name(buildConfig, "queuesKey"),
+      description:
+        "KMS CMK used for encrypting/decrypting all SQS queues used in aws-sso-extensions-for-enterprise solution",
     });
 
     this.errorNotificationsTopic = new Topic(
@@ -122,6 +134,31 @@ export class IndependentUtility extends Construct {
       }
     ).paramValue;
 
+    this.linkManagerDLQ = new Queue(this, name(buildConfig, "linkManagerDLQ"), {
+      fifo: true,
+      encryption: QueueEncryption.KMS,
+      encryptionMasterKey: this.queuesKey,
+      visibilityTimeout: Duration.hours(10),
+      queueName: name(buildConfig, "linkManagerDLQ.fifo"),
+    });
+
+    this.linkManagerQueue = new Queue(
+      this,
+      name(buildConfig, "linkManagerQueue"),
+      {
+        fifo: true,
+        encryption: QueueEncryption.KMS,
+        encryptionMasterKey: this.queuesKey,
+        visibilityTimeout: Duration.hours(2),
+        contentBasedDeduplication: true,
+        queueName: name(buildConfig, "linkManagerQueue.fifo"),
+        deadLetterQueue: {
+          queue: this.linkManagerDLQ,
+          maxReceiveCount: 4,
+        },
+      }
+    );
+
     new StringParameter(this, name(buildConfig, "errorNotificationsTopicArn"), {
       parameterName: name(buildConfig, "errorNotificationsTopicArn"),
       stringValue: this.errorNotificationsTopic.topicArn,
@@ -140,6 +177,16 @@ export class IndependentUtility extends Construct {
     new StringParameter(this, name(buildConfig, "waiterHandlerSSOAPIRoleArn"), {
       parameterName: name(buildConfig, "waiterHandlerSSOAPIRoleArn"),
       stringValue: this.waiterHandlerSSOAPIRoleArn,
+    });
+
+    new StringParameter(this, name(buildConfig, "queuesKeyArn"), {
+      parameterName: name(buildConfig, "queuesKeyArn"),
+      stringValue: this.queuesKey.keyArn,
+    });
+
+    new StringParameter(this, name(buildConfig, "linkQueueArn"), {
+      parameterName: name(buildConfig, "linkQueueArn"),
+      stringValue: this.linkManagerQueue.queueArn,
     });
   }
 }

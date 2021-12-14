@@ -31,13 +31,15 @@ import { join } from "path";
 import {
   CreateUpdatePermissionSetPayload,
   DeletePermissionSetPayload,
+  requestStatus,
 } from "../../helpers/src/interfaces";
 //Import helper utilities and interfaces
 import {
   imperativeParseJSON,
   JSONParserError,
 } from "../../helpers/src/payload-validator";
-
+import { v4 as uuidv4 } from "uuid";
+import { logger } from "../../helpers/src/utilities";
 // SDK and third party client object initialistaion
 const ddbClientObject = new DynamoDBClient({ region: AWS_REGION });
 const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
@@ -78,6 +80,7 @@ export const handler = async (
   if (event.body !== null && event.body !== undefined) {
     try {
       const body = JSON.parse(event.body);
+      const requestId = uuidv4().toString();
       if (body.action === "create" || body.action === "update") {
         const payload: CreateUpdatePermissionSetPayload = imperativeParseJSON(
           event.body,
@@ -99,13 +102,19 @@ export const handler = async (
             },
           })
         );
-        console.log(
-          `processed upsert of permission set through API interface succesfully: ${payload.permissionSetData.permissionSetName}`
-        );
+        logger({
+          handler: "userInterface-permissionSetApi",
+          logMode: "info",
+          relatedData: payload.permissionSetData.permissionSetName,
+          requestId: requestId,
+          status: requestStatus.InProgress,
+          statusMessage: `Permission Set ${payload.action} operation is being processed`,
+        });
         return {
           statusCode: 200,
           body: JSON.stringify({
-            message: `Successfully invoked ${payload.action} permissionSet call`,
+            message: `Permission Set ${payload.action} operation is being processed`,
+            requestId: requestId,
           }),
         };
       } else if (body.action === "delete") {
@@ -130,14 +139,19 @@ export const handler = async (
         );
 
         if (relatedLinks.Items?.length !== 0) {
-          console.log(
-            `Cannot delete permissionSet as there are existing links referencing the permission set: ${payload.permissionSetData.permissionSetName}`
-          );
+          logger({
+            handler: "userInterface-permissionSetApi",
+            logMode: "warn",
+            relatedData: payload.permissionSetData.permissionSetName,
+            requestId: requestId,
+            status: requestStatus.Aborted,
+            statusMessage: `Permission Set ${payload.action} operation aborted as there are existing account assignments referencing the permission set`,
+          });
           return {
             statusCode: 400,
             body: JSON.stringify({
-              message:
-                "Cannot delete the permission set due to existing links referencing the permission set",
+              message: `Permission Set ${payload.action} operation aborted as there are existing account assignments referencing the permission set`,
+              requestId: requestId,
             }),
           };
         } else {
@@ -155,39 +169,61 @@ export const handler = async (
               },
             })
           );
-          console.log(
-            `processed deletion of permission set through API interface succesfully: ${payload.permissionSetData.permissionSetName}`
-          );
+          logger({
+            handler: "userInterface-permissionSetApi",
+            logMode: "info",
+            relatedData: payload.permissionSetData.permissionSetName,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            statusMessage: `Permission Set ${payload.action} operation is being processed`,
+          });
           return {
             statusCode: 200,
             body: JSON.stringify({
-              message: "Successfully invoked delete permissionSet call",
+              message: `Permission Set ${payload.action} operation is being processed`,
+              requestId: requestId,
             }),
           };
         }
       } else {
+        logger({
+          handler: "userInterface-permissionSetApi",
+          logMode: "error",
+          requestId: requestId,
+          status: requestStatus.FailedWithError,
+          statusMessage: `Permission Set operation failed due to invalid action - ${body.action}`,
+        });
         return {
           statusCode: 400,
           body: JSON.stringify({
-            message: `Invalid action type provided ${body.action}`,
+            message: `Permission Set operation failed due to invalid action - ${body.action}`,
+            requestId: requestId,
           }),
         };
       }
     } catch (err) {
       if (err instanceof JSONParserError) {
-        console.error(
-          `Error processing permissionset operation through API interface due to schema errors for: ${JSON.stringify(
+        logger({
+          handler: "userInterface-permissionSetApi",
+          logMode: "error",
+          status: requestStatus.FailedWithException,
+          statusMessage: `Permission Set operation failed due to schema validation errors:${JSON.stringify(
             err.errors
-          )}`
-        );
+          )}`,
+        });
         return {
           statusCode: 500,
           body: JSON.stringify({ errors: err.errors }),
         };
       } else {
-        console.error(
-          `Exception when processing linkAPI operation : ${JSON.stringify(err)}`
-        );
+        logger({
+          handler: "userInterface-permissionSetApi",
+          logMode: "error",
+          status: requestStatus.FailedWithException,
+          statusMessage: `Permission Set operation failed due to exception:${JSON.stringify(
+            err
+          )}`,
+        });
         return {
           statusCode: 500,
           body: JSON.stringify({
@@ -197,7 +233,12 @@ export const handler = async (
       }
     }
   } else {
-    console.error("Invalid message body provided");
+    logger({
+      handler: "userInterface-permissionSetApi",
+      logMode: "error",
+      status: requestStatus.FailedWithException,
+      statusMessage: `Permission Set operation failed due to invalid message body`,
+    });
     return {
       statusCode: 400,
       body: JSON.stringify({

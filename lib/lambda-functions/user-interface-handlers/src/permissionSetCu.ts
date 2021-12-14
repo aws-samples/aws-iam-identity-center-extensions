@@ -29,13 +29,18 @@ import { Readable } from "stream";
 import {
   CreateUpdatePermissionSetPayload,
   ErrorMessage,
+  requestStatus,
 } from "../../helpers/src/interfaces";
 import {
   imperativeParseJSON,
   JSONParserError,
 } from "../../helpers/src/payload-validator";
-import { removeEmpty, streamToString } from "../../helpers/src/utilities";
-
+import {
+  logger,
+  removeEmpty,
+  streamToString,
+} from "../../helpers/src/utilities";
+import { v4 as uuidv4 } from "uuid";
 // SDK and third party client object initialistaion
 const ddbClientObject = new DynamoDBClient({ region: AWS_REGION });
 const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
@@ -67,6 +72,7 @@ export const handler = async (event: S3Event) => {
   await Promise.all(
     event.Records.map(async (record: S3EventRecord) => {
       try {
+        const requestId = uuidv4().toString();
         // Get original text from object in incoming event
         const originalText: GetObjectCommandOutput = await s3clientObject.send(
           new GetObjectCommand({
@@ -90,6 +96,14 @@ export const handler = async (event: S3Event) => {
             },
           })
         );
+        logger({
+          handler: "userInterface-permissionSetS3CreateUpdate",
+          logMode: "info",
+          relatedData: upsertData.permissionSetData.permissionSetName,
+          requestId: requestId,
+          status: requestStatus.InProgress,
+          statusMessage: `Permission Set operation is being processed`,
+        });
       } catch (err) {
         if (err instanceof JSONParserError) {
           await snsClientObject.send(
@@ -102,11 +116,14 @@ export const handler = async (event: S3Event) => {
               }),
             })
           );
-          console.error(
-            `Error processing Permission set create/update through S3 interface with schema errors: ${JSON.stringify(
+          logger({
+            handler: "userInterface-permissionSetS3CreateUpdate",
+            logMode: "error",
+            status: requestStatus.FailedWithException,
+            statusMessage: `Permission Set operation failed due to schema validation errors:${JSON.stringify(
               err.errors
-            )}`
-          );
+            )}`,
+          });
         } else {
           await snsClientObject.send(
             new PublishCommand({
@@ -118,11 +135,14 @@ export const handler = async (event: S3Event) => {
               }),
             })
           );
-          console.error(
-            `Error processing permissionSet create/update via S3 interface with exception: ${JSON.stringify(
+          logger({
+            handler: "userInterface-permissionSetS3CreateUpdate",
+            logMode: "error",
+            status: requestStatus.FailedWithException,
+            statusMessage: `Permission Set operation failed due to exception:${JSON.stringify(
               err
-            )}`
-          );
+            )}`,
+          });
         }
       }
     })

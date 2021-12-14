@@ -18,7 +18,7 @@ export interface SSOGroupProcessorProps {
   readonly linksTableName: string;
   readonly permissionSetArnTableName: string;
   readonly groupsTableName: string;
-  readonly linkManagerTopicArn: string;
+  readonly linkQueueUrl: string;
   readonly errorNotificationsTopicArn: string;
   readonly nodeJsLayer: ILayerVersion;
   readonly ssoGroupEventNotificationsTopic: ITopic;
@@ -48,7 +48,7 @@ export class SSOGroupProcessor extends Construct {
           __dirname,
           "../",
           "lambda-functions",
-          "sso-handlers",
+          "application-handlers",
           "src",
           "groupsCud.ts"
         ),
@@ -60,6 +60,8 @@ export class SSOGroupProcessor extends Construct {
             "@aws-sdk/client-sfn",
             "@aws-sdk/client-sso-admin",
             "@aws-sdk/credential-providers",
+            "@aws-sdk/client-sqs",
+            "uuid",
           ],
           minify: true,
         },
@@ -69,7 +71,7 @@ export class SSOGroupProcessor extends Construct {
           permissionarntable: ssoGroupProcessorProps.permissionSetArnTableName,
           linkstable: ssoGroupProcessorProps.linksTableName,
           AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
-          topicArn: ssoGroupProcessorProps.linkManagerTopicArn,
+          linkQueueUrl: ssoGroupProcessorProps.linkQueueUrl,
           errorNotificationsTopicArn:
             ssoGroupProcessorProps.errorNotificationsTopicArn,
           SSOAPIRoleArn: ssoGroupProcessorProps.listInstancesSSOAPIRoleArn,

@@ -43,7 +43,7 @@ const {
   Arntable,
   errorNotificationsTopicArn,
   permissionSetSyncTopicArn,
-  waiterTopicArn,
+  waiterHandlerSSOAPIRoleArn,
   ssoRegion,
   AWS_REGION,
 } = process.env;
@@ -77,6 +77,7 @@ import {
   UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { SNSEvent } from "aws-lambda";
+import { waitUntilPermissionSetProvisioned } from "../../custom-waiters/src/waitUntilPermissionSetProvisioned";
 import { ErrorMessage } from "../../helpers/src/interfaces";
 import { MinutesToISO8601Duration } from "../../helpers/src/utilities";
 
@@ -84,6 +85,15 @@ import { MinutesToISO8601Duration } from "../../helpers/src/utilities";
 const ddbClientObject = new DynamoDBClient({ region: AWS_REGION });
 const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
 const snsClientObject = new SNSClient({ region: AWS_REGION });
+
+const ssoAdminWaiterClientObject = new SSOAdminClient({
+  region: ssoRegion,
+  credentials: fromTemporaryCredentials({
+    params: {
+      RoleArn: waiterHandlerSSOAPIRoleArn,
+    },
+  }),
+});
 
 const ssoAdminClientObject = new SSOAdminClient({
   region: ssoRegion,
@@ -131,9 +141,7 @@ export const handler = async (event: SNSEvent) => {
           ),
         })
       );
-      console.log(
-        `In permissionsettopic handler, created permission set ${permissionSetName}`
-      );
+
       permissionSetArn =
         createOp.PermissionSet?.PermissionSetArn?.toString() + "";
       await ddbDocClientObject.send(
@@ -148,9 +156,6 @@ export const handler = async (event: SNSEvent) => {
           },
         })
       );
-      console.log(
-        `In permissionsettopic handler, set arn value for permission set ${permissionSetName}`
-      );
       if (currentItem.Item && currentItem.Item.tags.length !== 0) {
         await ssoAdminClientObject.send(
           new TagResourceCommand({
@@ -158,9 +163,6 @@ export const handler = async (event: SNSEvent) => {
             ResourceArn: createOp.PermissionSet?.PermissionSetArn?.toString(),
             Tags: currentItem.Item.tags,
           })
-        );
-        console.log(
-          `In permissionsettopic handler, update tags for permission set ${permissionSetName}`
         );
       }
       if (
@@ -181,9 +183,6 @@ export const handler = async (event: SNSEvent) => {
             }
           )
         );
-        console.log(
-          `In permissionsettopic handler, processed all managed policies for permission set ${permissionSetName}`
-        );
       }
       if (currentItem.Item && "inlinePolicyDocument" in currentItem.Item) {
         if (Object.keys(currentItem.Item.inlinePolicyDocument).length !== 0) {
@@ -196,9 +195,6 @@ export const handler = async (event: SNSEvent) => {
               PermissionSetArn:
                 createOp.PermissionSet?.PermissionSetArn?.toString(),
             })
-          );
-          console.log(
-            `In permissionsettopic handler, processed inline policy for permission set ${permissionSetName}`
           );
         }
       }
@@ -266,9 +262,6 @@ export const handler = async (event: SNSEvent) => {
                     ManagedPolicyArn: item.oldVal,
                   })
                 );
-                console.log(
-                  `In permissionsettopic handler, processed managed policies-delete for permission set ${permissionSetName}`
-                );
                 reProvision = true;
               } else if (
                 item.path.toString().includes("managedPoliciesArnList") &&
@@ -281,9 +274,6 @@ export const handler = async (event: SNSEvent) => {
                     PermissionSetArn: permissionSetArn,
                     ManagedPolicyArn: item.newVal,
                   })
-                );
-                console.log(
-                  `In permissionsettopic handler, processed managed policies-create for permission set ${permissionSetName}`
                 );
                 reProvision = true;
               } else if (
@@ -298,9 +288,6 @@ export const handler = async (event: SNSEvent) => {
                     ManagedPolicyArn: item.oldVal,
                   })
                 );
-                console.log(
-                  `In permissionsettopic handler, processed managed policies-update-remove-old-value for permission set ${permissionSetName}`
-                );
                 // managedpolicies-updated-adding new value
                 await ssoAdminClientObject.send(
                   new AttachManagedPolicyToPermissionSetCommand({
@@ -308,9 +295,6 @@ export const handler = async (event: SNSEvent) => {
                     PermissionSetArn: permissionSetArn,
                     ManagedPolicyArn: item.newVal,
                   })
-                );
-                console.log(
-                  `In permissionsettopic handler, processed managed policies-update-add-new-value for permission set ${permissionSetName}`
                 );
                 reProvision = true;
               } else if (
@@ -338,9 +322,6 @@ export const handler = async (event: SNSEvent) => {
                     InstanceArn: instanceArn,
                     PermissionSetArn: permissionSetArn,
                   })
-                );
-                console.log(
-                  `In permissionsettopic handler, delete current inline policy for permission set ${permissionSetName}`
                 );
                 reProvision = true;
               } else if (
@@ -372,9 +353,6 @@ export const handler = async (event: SNSEvent) => {
                     ],
                   })
                 );
-                console.log(
-                  `In permissionsettopic handler, add new tag for permission set ${permissionSetName}`
-                );
               } else if (
                 /tags.\d$/gm.test(item.path.toString()) &&
                 item.diff === "deleted"
@@ -386,9 +364,6 @@ export const handler = async (event: SNSEvent) => {
                     ResourceArn: permissionSetArn,
                     TagKeys: [item.oldVal.Key],
                   })
-                );
-                console.log(
-                  `In permissionsettopic handler, remove existing tag for permission set ${permissionSetName}`
                 );
               } else if (/tags.\d.[A-Za-z]*$/gm.test(item.path.toString())) {
                 // Detected update of a tag key or value
@@ -405,9 +380,6 @@ export const handler = async (event: SNSEvent) => {
                 InlinePolicy: JSON.stringify(currentInlinePolicy),
               })
             );
-            console.log(
-              `In permissionsettopic handler, processed inline policy update for permission set ${permissionSetName}`
-            );
           }
           if (updatePermissionSetAttributes) {
             // Processing permission set attributes updates
@@ -421,9 +393,6 @@ export const handler = async (event: SNSEvent) => {
                 RelayState: currentRelayState,
               })
             );
-            console.log(
-              `In permissionsettopic handler, processed attribute update for permission set ${permissionSetName}`
-            );
           }
           if (updateTags && currentTags.length !== 0) {
             // Processing Tag key or value updates
@@ -433,9 +402,6 @@ export const handler = async (event: SNSEvent) => {
                 ResourceArn: permissionSetArn,
                 Tags: currentTags,
               })
-            );
-            console.log(
-              `In permissionsettopic handler, processed tag updates for permission set ${permissionSetName}`
             );
           }
 
@@ -461,19 +427,17 @@ export const handler = async (event: SNSEvent) => {
                   TargetType: "ALL_PROVISIONED_ACCOUNTS",
                 })
               );
-              console.log(
-                `In permissionsettopic handler, triggered re-provisioning for permission set ${permissionSetName} across ${fetchAccountsList.AccountIds?.length} number of accounts`
-              );
-              await snsClientObject.send(
-                new PublishCommand({
-                  TopicArn: waiterTopicArn,
-                  Message: JSON.stringify({
-                    waiter_name: "PermissionSetProvisioned",
-                    instance_arn: instanceArn,
-                    request_id:
-                      reProvisionOp.PermissionSetProvisioningStatus?.RequestId,
-                  }),
-                })
+              await waitUntilPermissionSetProvisioned(
+                {
+                  client: ssoAdminWaiterClientObject,
+                  maxWaitTime: 600, //aggressive timeout to accommodate SSO Admin API's workflow based logic
+                },
+                {
+                  InstanceArn: instanceArn,
+                  ProvisionPermissionSetRequestId:
+                    reProvisionOp.PermissionSetProvisioningStatus?.RequestId,
+                },
+                permissionSetName
               );
             }
           }
@@ -508,9 +472,6 @@ export const handler = async (event: SNSEvent) => {
             },
           })
         );
-        console.log(
-          `In permissionsettopic handler, processed deletion for permission set ${permissionSetName}`
-        );
       }
     }
 
@@ -524,9 +485,6 @@ export const handler = async (event: SNSEvent) => {
           }),
         })
       );
-      console.log(
-        `In permissionsettopic handler, triggering sync logic for permission set ${permissionSetName}`
-      );
     }
   } catch (err) {
     await snsClientObject.send(
@@ -538,11 +496,6 @@ export const handler = async (event: SNSEvent) => {
           errorDetails: err,
         }),
       })
-    );
-    console.error(
-      `Exception when processing permission set topic: ${JSON.stringify(
-        err
-      )} for eventDetail: ${JSON.stringify(event)}`
     );
   }
 };

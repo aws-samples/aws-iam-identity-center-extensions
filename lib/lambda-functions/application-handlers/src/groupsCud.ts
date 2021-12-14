@@ -46,7 +46,7 @@ const {
   processTargetAccountSMArn,
   permissionarntable,
   linkstable,
-  topicArn,
+  linkQueueUrl,
   errorNotificationsTopicArn,
   ssoRegion,
   AWS_REGION,
@@ -55,6 +55,7 @@ const {
 // SDK and third party client imports
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { SFNClient } from "@aws-sdk/client-sfn";
+import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import {
   ListInstancesCommand,
@@ -74,15 +75,17 @@ import {
 import { SNSEvent } from "aws-lambda";
 import {
   ErrorMessage,
+  requestStatus,
   StateMachinePayload,
   StaticSSOPayload,
 } from "../../helpers/src/interfaces";
-import { invokeStepFunction } from "../../helpers/src/utilities";
-
+import { invokeStepFunction, logger } from "../../helpers/src/utilities";
+import { v4 as uuidv4 } from "uuid";
 // SDK and third party client object initialistaion
 const ddbClientObject = new DynamoDBClient({ region: AWS_REGION });
 const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
 const snsClientObject = new SNSClient({ region: AWS_REGION });
+const sqsClientObject = new SQSClient({ region: AWS_REGION });
 const ssoAdminClientObject = new SSOAdminClient({
   region: ssoRegion,
   credentials: fromTemporaryCredentials({
@@ -106,6 +109,7 @@ const errorMessage: ErrorMessage = {
 };
 
 export const handler = async (event: SNSEvent) => {
+  const requestId = uuidv4().toString();
   try {
     const message = JSON.parse(event.Records[0].Sns.Message);
     const resolvedInstances: ListInstancesCommandOutput =
@@ -149,9 +153,14 @@ export const handler = async (event: SNSEvent) => {
         })
       );
 
-      console.log(
-        `In ssogroups handler, resolved groupName as ${groupName} and processed DDB table upsert`
-      );
+      logger({
+        handler: "groupsHandler",
+        logMode: "info",
+        requestId: requestId,
+        relatedData: `${groupName}`,
+        status: requestStatus.InProgress,
+        statusMessage: `CreateGroup operation - resolved groupName and processed DDB table upsert`,
+      });
 
       const relatedLinks: QueryCommandOutput = await ddbDocClientObject.send(
         // QueryCommand is a pagniated call, however the logic requires
@@ -181,10 +190,10 @@ export const handler = async (event: SNSEvent) => {
             if (permissionSetFetch.Item) {
               const { permissionSetArn } = permissionSetFetch.Item;
               if (awsEntityType === "account") {
-                await snsClientObject.send(
-                  new PublishCommand({
-                    TopicArn: topicArn,
-                    Message: JSON.stringify({
+                await sqsClientObject.send(
+                  new SendMessageCommand({
+                    QueueUrl: linkQueueUrl,
+                    MessageBody: JSON.stringify({
                       ssoParams: {
                         ...staticSSOPayload,
                         TargetId: awsEntityData,
@@ -194,9 +203,24 @@ export const handler = async (event: SNSEvent) => {
                       actionType: "create",
                       entityType: awsEntityType,
                       tagKeyLookUp: "none",
+                      sourceRequestId: requestId,
                     }),
+                    MessageDeduplicationId: `create-${awsEntityData}-${
+                      permissionSetArn.toString().split("/")[2]
+                    }-${groupId}`,
+                    MessageGroupId: `${awsEntityData}-${
+                      permissionSetArn.toString().split("/")[2]
+                    }-${groupId}`,
                   })
                 );
+                logger({
+                  handler: "groupsHandler",
+                  logMode: "info",
+                  relatedData: `${groupName}`,
+                  requestId: requestId,
+                  status: requestStatus.Completed,
+                  statusMessage: `CreateGroup operation - triggered account assignment provisioning operation`,
+                });
               } else if (
                 awsEntityType === "ou_id" ||
                 awsEntityType === "root" ||
@@ -211,6 +235,7 @@ export const handler = async (event: SNSEvent) => {
                   principalType: staticSSOPayload.PrincipalType,
                   targetType: staticSSOPayload.TargetType,
                   topicArn: processTargetAccountSMTopicArn + "",
+                  sourceRequestId: requestId,
                 };
                 await invokeStepFunction(
                   stateMachinePayload,
@@ -218,19 +243,38 @@ export const handler = async (event: SNSEvent) => {
                   processTargetAccountSMArn + "",
                   sfnClientObject
                 );
+                logger({
+                  handler: "groupsHandler",
+                  logMode: "info",
+                  relatedData: `${groupName}`,
+                  requestId: requestId,
+                  status: requestStatus.Completed,
+                  statusMessage: `CreateGroup operation - triggered step function for org based resolution`,
+                });
               }
             } else {
               // Permission set for the group-link does not exist
-              console.log(`Permission set for the group-link does not exist`);
+              logger({
+                handler: "groupsHandler",
+                logMode: "info",
+                relatedData: `${groupName}`,
+                requestId: requestId,
+                status: requestStatus.Completed,
+                statusMessage: `CreateGroup operation - permission set referenced in related account assignments not found`,
+              });
             }
           })
         );
-        console.log(
-          `In ssogroups handler, related links found for groupName ${groupName}`
-        );
       } else {
         // No related links for the group being processed
-        console.log(`No related links for the group being processed`);
+        logger({
+          handler: "groupsHandler",
+          logMode: "info",
+          relatedData: `${groupName}`,
+          requestId: requestId,
+          status: requestStatus.Completed,
+          statusMessage: `CreateGroup operation - no related account assignments found for the group`,
+        });
       }
     } else if (message.detail.eventName === "DeleteGroup") {
       groupId = message.detail.requestParameters.groupId;
@@ -270,15 +314,26 @@ export const handler = async (event: SNSEvent) => {
                   },
                 })
               );
+              logger({
+                handler: "groupsHandler",
+                logMode: "info",
+                requestId: requestId,
+                relatedData: `${groupName}`,
+                status: requestStatus.Completed,
+                statusMessage: `DeleteGroup operation - Deleting related link as the link would be orphaned : ${Item.awsEntityId}`,
+              });
             })
-          );
-
-          console.log(
-            `In ssogroups handler, resolved groupName as ${groupName} and processed DDB table deletion`
           );
         } else {
           // No related links for the group being deleted
-          console.log(` No related links for the group being deleted`);
+          logger({
+            handler: "groupsHandler",
+            logMode: "info",
+            relatedData: `${groupName}`,
+            requestId: requestId,
+            status: requestStatus.Completed,
+            statusMessage: `DeleteGroup operation - no related account assignments found for the group being deleted`,
+          });
         }
         await ddbDocClientObject.send(
           new DeleteCommand({
@@ -290,7 +345,14 @@ export const handler = async (event: SNSEvent) => {
         );
       } else {
         // The group does not exist, so not deleting again
-        console.log(`The group does not exist, so not deleting again`);
+        logger({
+          handler: "groupsHandler",
+          logMode: "info",
+          relatedData: `${groupName}`,
+          requestId: requestId,
+          status: requestStatus.Completed,
+          statusMessage: `DeleteGroup operation - group does not exist, so not deleting again`,
+        });
       }
     }
   } catch (err) {
@@ -304,10 +366,14 @@ export const handler = async (event: SNSEvent) => {
         }),
       })
     );
-    console.error(
-      `Exception when processing group event notifications: ${JSON.stringify(
+    logger({
+      handler: "groupsHandler",
+      logMode: "error",
+      requestId: requestId,
+      status: requestStatus.FailedWithException,
+      statusMessage: `Groups operation - failed with exception: ${JSON.stringify(
         err
-      )} for eventDetail: ${JSON.stringify(event)}`
-    );
+      )} for eventDetail: ${event}`,
+    });
   }
 };

@@ -3,7 +3,6 @@ All access granting within the preSolution artefacts stack is consolidated
 here to facilitate easier management and visibility
 */
 
-import { PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";
 import { IndependentUtility } from "./independent-utlity";
@@ -27,29 +26,6 @@ export class PreSolutionAccessManager extends Construct {
   ) {
     super(scope, id);
 
-    // Waiter Handler access
-    preSolutionAccessManagerProps.IndependentUtility.snsTopicsKey.grantEncryptDecrypt(
-      preSolutionAccessManagerProps.Utility.waiterHandler
-    );
-    preSolutionAccessManagerProps.IndependentUtility.errorNotificationsTopic.grantPublish(
-      preSolutionAccessManagerProps.Utility.waiterHandler
-    );
-    preSolutionAccessManagerProps.IndependentUtility.ddbTablesKey.grantEncryptDecrypt(
-      preSolutionAccessManagerProps.Utility.waiterHandler
-    );
-    preSolutionAccessManagerProps.LinkCRUD.provisionedLinksTable.grantReadWriteData(
-      preSolutionAccessManagerProps.Utility.waiterHandler
-    );
-    preSolutionAccessManagerProps.Utility.waiterHandler.addToRolePolicy(
-      new PolicyStatement({
-        resources: [
-          preSolutionAccessManagerProps.IndependentUtility
-            .waiterHandlerSSOAPIRoleArn,
-        ],
-        actions: ["sts:AssumeRole"],
-      })
-    );
-
     // Import interfaces access
 
     if (buildConfig.Parameters.LinksProvisioningMode.toLowerCase() === "api") {
@@ -65,6 +41,12 @@ export class PreSolutionAccessManager extends Construct {
         preSolutionAccessManagerProps.LinkCRUD.linkAPIHandler
       );
       preSolutionAccessManagerProps.IndependentUtility.ssoArtefactsBucket.grantReadWrite(
+        preSolutionAccessManagerProps.LinkCRUD.linkAPIHandler
+      );
+      preSolutionAccessManagerProps.IndependentUtility.snsTopicsKey.grantEncryptDecrypt(
+        preSolutionAccessManagerProps.LinkCRUD.linkAPIHandler
+      );
+      preSolutionAccessManagerProps.LinkCRUD.linkProcessingTopic.grantPublish(
         preSolutionAccessManagerProps.LinkCRUD.linkAPIHandler
       );
     } else {
@@ -92,6 +74,12 @@ export class PreSolutionAccessManager extends Construct {
         preSolutionAccessManagerProps.LinkCRUD.linkCuHandler
       );
       preSolutionAccessManagerProps.IndependentUtility.errorNotificationsTopic.grantPublish(
+        preSolutionAccessManagerProps.LinkCRUD.linkDelHandler
+      );
+      preSolutionAccessManagerProps.LinkCRUD.linkProcessingTopic.grantPublish(
+        preSolutionAccessManagerProps.LinkCRUD.linkCuHandler
+      );
+      preSolutionAccessManagerProps.LinkCRUD.linkProcessingTopic.grantPublish(
         preSolutionAccessManagerProps.LinkCRUD.linkDelHandler
       );
     }

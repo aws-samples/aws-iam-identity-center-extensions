@@ -21,9 +21,11 @@ import { S3Event, S3EventRecord } from "aws-lambda";
 import {
   DeletePermissionSetDataProps,
   ErrorMessage,
+  requestStatus,
 } from "../../helpers/src/interfaces";
 import { JSONParserError } from "../../helpers/src/payload-validator";
-
+import { v4 as uuidv4 } from "uuid";
+import { logger } from "../../helpers/src/utilities";
 // SDK and third party client object initialistaion
 const ddbClientObject = new DynamoDBClient({ region: AWS_REGION });
 const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
@@ -37,6 +39,7 @@ export const handler = async (event: S3Event) => {
   await Promise.all(
     event.Records.map(async (record: S3EventRecord) => {
       try {
+        const requestId = uuidv4().toString();
         const keyValue = record.s3.object.key.split("/")[1].split(".")[0];
         const payload: DeletePermissionSetDataProps = {
           permissionSetName: keyValue,
@@ -66,9 +69,14 @@ export const handler = async (event: S3Event) => {
               }),
             })
           );
-          console.error(
-            "Cannot delete permission set as there are existing links that reference the permission set"
-          );
+          logger({
+            handler: "userInterface-permissionSetS3Delete",
+            logMode: "warn",
+            relatedData: keyValue,
+            requestId: requestId,
+            status: requestStatus.Aborted,
+            statusMessage: `Permission Set delete operation aborted as there are existing account assignments referencing the permission set`,
+          });
         } else {
           // Delete from DynamoDB
           await ddbDocClientObject.send(
@@ -79,9 +87,14 @@ export const handler = async (event: S3Event) => {
               },
             })
           );
-          console.log(
-            `processed deletion of permission set through S3 interface succesfully: ${keyValue}`
-          );
+          logger({
+            handler: "userInterface-permissionSetS3Delete",
+            logMode: "info",
+            relatedData: keyValue,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            statusMessage: `Permission Set operation is being processed`,
+          });
         }
       } catch (err) {
         if (err instanceof JSONParserError) {
@@ -95,11 +108,14 @@ export const handler = async (event: S3Event) => {
               }),
             })
           );
-          console.error(
-            `Error processing permission set delete operation through S3 interface with schema errors: ${JSON.stringify(
+          logger({
+            handler: "userInterface-permissionSetS3Delete",
+            logMode: "error",
+            status: requestStatus.FailedWithException,
+            statusMessage: `Permission Set operation failed due to schema validation errors:${JSON.stringify(
               err.errors
-            )}`
-          );
+            )}`,
+          });
         } else {
           await snsClientObject.send(
             new PublishCommand({
@@ -111,11 +127,14 @@ export const handler = async (event: S3Event) => {
               }),
             })
           );
-          console.error(
-            `Error processing permissionSet delete via S3 interface with exception: ${JSON.stringify(
+          logger({
+            handler: "userInterface-permissionSetS3Delete",
+            logMode: "error",
+            status: requestStatus.FailedWithException,
+            statusMessage: `Permission Set operation failed due to exception:${JSON.stringify(
               err
-            )}`
-          );
+            )}`,
+          });
         }
       }
     })

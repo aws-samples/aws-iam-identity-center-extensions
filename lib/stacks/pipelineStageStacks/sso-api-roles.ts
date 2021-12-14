@@ -89,6 +89,7 @@ export class SSOApiRoles extends Stack {
             "sso:DeleteAccountAssignment",
             "sso:ListAccountAssignmentCreationStatus",
             "sso:ListAccountAssignments",
+            "sso:ListInstances",
           ],
         }),
       }

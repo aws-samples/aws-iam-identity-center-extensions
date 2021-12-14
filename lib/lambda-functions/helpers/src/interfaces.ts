@@ -56,10 +56,31 @@ export interface StateMachinePayload {
   readonly principalType: string;
   readonly permissionSetArn: string;
   readonly principalId: string;
+  readonly sourceRequestId: string;
 }
 
 export interface StaticSSOPayload {
   readonly InstanceArn: string;
   readonly TargetType: string;
   readonly PrincipalType: string;
+}
+
+export enum requestStatus {
+  InProgress = "InProgress",
+  Completed = "Completed",
+  FailedWithError = "FailedWithError",
+  FailedWithException = "FailedWithException",
+  OnHold = "OnHold",
+  Aborted = "Aborted",
+}
+
+export interface LogMessage {
+  readonly logMode: string;
+  readonly handler: string;
+  readonly requestId?: string;
+  readonly status: requestStatus;
+  readonly statusMessage?: string;
+  readonly relatedData?: string;
+  readonly hasRelatedRequests?: boolean;
+  readonly sourceRequestId?: string;
 }
