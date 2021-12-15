@@ -76,7 +76,7 @@ export class ObservabilityArtefacts extends Construct {
       {
         name: name(buildConfig, "ssoGroupTriggerFlows-getRequestDetails"),
         queryString:
-          "filter requestId like '' | fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc",
+          "fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc | limit 30",
         logGroupNames: ssoGroupLogGroupNames,
       }
     );
@@ -106,7 +106,7 @@ export class ObservabilityArtefacts extends Construct {
           "permissionSetSyncTriggerFlows-getRequestDetails"
         ),
         queryString:
-          "filter requestId like '' | fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc",
+          "fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc | limit 30",
         logGroupNames: permissionSetSyncLogGroupNames,
       }
     );
@@ -136,7 +136,7 @@ export class ObservabilityArtefacts extends Construct {
       {
         name: name(buildConfig, "orgEventsTriggerFlows-getRequestDetails"),
         queryString:
-          "filter requestId like '' | fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc",
+          "fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc | limit 30",
         logGroupNames: orgEventsLogGroupNames,
       }
     );
