@@ -4,11 +4,11 @@ for links CRUD operations and handles both API
 and S3 interfaces
 */
 
+import { CfnOutput, RemovalPolicy } from "aws-cdk-lib";
 import { LambdaRestApi } from "aws-cdk-lib/aws-apigateway";
 import {
   AttributeType,
   BillingMode,
-  StreamViewType,
   Table,
   TableEncryption,
 } from "aws-cdk-lib/aws-dynamodb";
@@ -18,12 +18,12 @@ import { LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Bucket, EventType } from "aws-cdk-lib/aws-s3";
 import { LambdaDestination } from "aws-cdk-lib/aws-s3-notifications";
-import { CfnOutput, RemovalPolicy } from "aws-cdk-lib";
+import { Topic } from "aws-cdk-lib/aws-sns";
+import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 import { LambdaProxyAPI } from "./lambda-proxy-api";
-import { StringParameter } from "aws-cdk-lib/aws-ssm";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {
   return buildConfig.Environment + "-" + resourcename;
@@ -33,6 +33,7 @@ export interface LinkCRUDProps {
   readonly nodeJsLayer: LayerVersion;
   readonly errorNotificationsTopicArn: string;
   readonly ssoArtefactsBucket: Bucket;
+  readonly snsTopicsKey: Key;
   readonly ddbTablesKey: Key;
   readonly logsKey: Key;
 }
@@ -44,6 +45,7 @@ export class LinkCRUD extends Construct {
   public readonly linkAPI: LambdaRestApi;
   public readonly linkCuHandler: NodejsFunction;
   public readonly linkDelHandler: NodejsFunction;
+  public readonly linkProcessingTopic: Topic;
 
   constructor(
     scope: Construct,
@@ -52,6 +54,15 @@ export class LinkCRUD extends Construct {
     linkCRUDProps: LinkCRUDProps
   ) {
     super(scope, id);
+
+    this.linkProcessingTopic = new Topic(
+      this,
+      name(buildConfig, "linkProcessingTopic"),
+      {
+        displayName: name(buildConfig, "linkProcessingTopic"),
+        masterKey: linkCRUDProps.snsTopicsKey,
+      }
+    );
 
     this.provisionedLinksTable = new Table(
       this,
@@ -87,7 +98,6 @@ export class LinkCRUD extends Construct {
       billingMode: BillingMode.PAY_PER_REQUEST,
       encryption: TableEncryption.CUSTOMER_MANAGED,
       encryptionKey: linkCRUDProps.ddbTablesKey,
-      stream: StreamViewType.NEW_AND_OLD_IMAGES,
       pointInTimeRecovery: true,
       removalPolicy: RemovalPolicy.DESTROY,
     });
@@ -127,7 +137,7 @@ export class LinkCRUD extends Construct {
             __dirname,
             "../",
             "lambda-functions",
-            "ddb-import-handlers",
+            "user-interface-handlers",
             "src",
             "linkApi.ts"
           ),
@@ -135,8 +145,10 @@ export class LinkCRUD extends Construct {
             externalModules: [
               "@aws-sdk/client-dynamodb",
               "@aws-sdk/client-s3",
+              "@aws-sdk/client-sns",
               "@aws-sdk/lib-dynamodb",
               "ajv",
+              "uuid",
             ],
             minify: true,
           },
@@ -145,6 +157,7 @@ export class LinkCRUD extends Construct {
             DdbTable: this.linksTable.tableName,
             AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
             artefactsBucketName: linkCRUDProps.ssoArtefactsBucket.bucketName,
+            linkProcessingTopicArn: this.linkProcessingTopic.topicArn,
           },
         }
       );
@@ -174,7 +187,7 @@ export class LinkCRUD extends Construct {
             __dirname,
             "../",
             "lambda-functions",
-            "ddb-import-handlers",
+            "user-interface-handlers",
             "src",
             "linkCu.ts"
           ),
@@ -183,6 +196,7 @@ export class LinkCRUD extends Construct {
               "@aws-sdk/client-dynamodb",
               "@aws-sdk/lib-dynamodb",
               "@aws-sdk/client-sns",
+              "uuid",
             ],
             minify: true,
           },
@@ -192,6 +206,7 @@ export class LinkCRUD extends Construct {
             AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
             errorNotificationsTopicArn:
               linkCRUDProps.errorNotificationsTopicArn,
+            linkProcessingTopicArn: this.linkProcessingTopic.topicArn,
           },
         }
       );
@@ -215,7 +230,7 @@ export class LinkCRUD extends Construct {
             __dirname,
             "../",
             "lambda-functions",
-            "ddb-import-handlers",
+            "user-interface-handlers",
             "src",
             "linkDel.ts"
           ),
@@ -224,6 +239,7 @@ export class LinkCRUD extends Construct {
               "@aws-sdk/client-dynamodb",
               "@aws-sdk/lib-dynamodb",
               "@aws-sdk/client-sns",
+              "uuid",
             ],
             minify: true,
           },
@@ -233,6 +249,7 @@ export class LinkCRUD extends Construct {
             AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
             errorNotificationsTopicArn:
               linkCRUDProps.errorNotificationsTopicArn,
+            linkProcessingTopicArn: this.linkProcessingTopic.topicArn,
           },
         }
       );
@@ -275,6 +292,11 @@ export class LinkCRUD extends Construct {
     new StringParameter(this, name(buildConfig, "provisionedLinksTableArn"), {
       parameterName: name(buildConfig, "provisionedLinksTableArn"),
       stringValue: this.provisionedLinksTable.tableArn,
+    });
+
+    new StringParameter(this, name(buildConfig, "linkProcessorTopicArn"), {
+      parameterName: name(buildConfig, "linkProcessorTopicArn"),
+      stringValue: this.linkProcessingTopic.topicArn,
     });
   }
 }

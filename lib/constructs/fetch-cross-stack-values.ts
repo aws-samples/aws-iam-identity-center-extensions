@@ -9,6 +9,7 @@ import { ITable, Table } from "aws-cdk-lib/aws-dynamodb";
 import { IKey, Key } from "aws-cdk-lib/aws-kms";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import { ITopic, Topic } from "aws-cdk-lib/aws-sns";
+import { IQueue, Queue } from "aws-cdk-lib/aws-sqs";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";
@@ -20,10 +21,10 @@ function name(buildConfig: BuildConfig, resourcename: string): string {
 
 export class FetchCrossStackValues extends Construct {
   public readonly errorNotificationsTopic: ITopic;
-  public readonly waiterHandlerNotificationsTopic: ITopic;
   public readonly ssoGroupEventNotificationsTopic: ITopic;
   public readonly orgEventsNotificationsTopic: ITopic;
   public readonly processTargetAccountSMTopic: ITopic;
+  public readonly linkProcessorTopic: ITopic;
   public readonly nodeJsLayer: lambda.ILayerVersion;
   public readonly linksTable: ITable;
   public readonly provisionedLinksTable: ITable;
@@ -31,13 +32,14 @@ export class FetchCrossStackValues extends Construct {
   public readonly permissionSetArnTable: ITable;
   public readonly snsTopicsKey: IKey;
   public readonly ddbTablesKey: IKey;
+  public readonly queuesKey: IKey;
+  public readonly linkManagerQueue: IQueue;
   public readonly permissionSetHandlerSSOAPIRoleArn: string;
   public readonly linkManagerHandlerSSOAPIRoleArn: string;
   public readonly listInstancesSSOAPIRoleArn: string;
   public readonly listGroupsIdentityStoreAPIRoleArn: string;
   public readonly processTargetAccountSMInvokeRoleArn: string;
   public readonly waiterHandlerSSOAPIRoleArn: string;
-  public readonly waiterHandler: lambda.IFunction;
 
   constructor(scope: Construct, id: string, buildConfig: BuildConfig) {
     super(scope, id);
@@ -48,15 +50,6 @@ export class FetchCrossStackValues extends Construct {
       StringParameter.valueForStringParameter(
         this,
         name(buildConfig, "errorNotificationsTopicArn")
-      )
-    );
-
-    this.waiterHandlerNotificationsTopic = Topic.fromTopicArn(
-      this,
-      name(buildConfig, "importedWaiterHandlerNotificationsTopic"),
-      StringParameter.valueForStringParameter(
-        this,
-        name(buildConfig, "waiterHandlerNotificationsTopicArn")
       )
     );
 
@@ -84,6 +77,24 @@ export class FetchCrossStackValues extends Construct {
       StringParameter.valueForStringParameter(
         this,
         name(buildConfig, "processTargetAccountSMTopicArn")
+      )
+    );
+
+    this.linkProcessorTopic = Topic.fromTopicArn(
+      this,
+      name(buildConfig, "importedLinkProcessorTopic"),
+      StringParameter.valueForStringParameter(
+        this,
+        name(buildConfig, "linkProcessorTopicArn")
+      )
+    );
+
+    this.linkManagerQueue = Queue.fromQueueArn(
+      this,
+      name(buildConfig, "importedLinkManagerQueue"),
+      StringParameter.valueForStringParameter(
+        this,
+        name(buildConfig, "linkQueueArn")
       )
     );
 
@@ -165,6 +176,15 @@ export class FetchCrossStackValues extends Construct {
       )
     );
 
+    this.queuesKey = Key.fromKeyArn(
+      this,
+      name(buildConfig, "importedQueuesKey"),
+      StringParameter.valueForStringParameter(
+        this,
+        name(buildConfig, "queuesKeyArn")
+      )
+    );
+
     this.permissionSetHandlerSSOAPIRoleArn = new SSMParamReader(
       this,
       name(buildConfig, "permissionSetHandlerSSOAPIRoleArnpr"),
@@ -224,15 +244,6 @@ export class FetchCrossStackValues extends Construct {
         LambdaLayers: this.nodeJsLayer,
       }
     ).paramValue;
-
-    this.waiterHandler = lambda.Function.fromFunctionArn(
-      this,
-      name(buildConfig, "importedWaiterHandler"),
-      StringParameter.valueForStringParameter(
-        this,
-        name(buildConfig, "waiterHandlerArn")
-      )
-    );
 
     this.waiterHandlerSSOAPIRoleArn = StringParameter.valueForStringParameter(
       this,

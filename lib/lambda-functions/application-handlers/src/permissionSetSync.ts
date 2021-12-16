@@ -31,7 +31,7 @@ Trigger source: Permission set sync notification
 
 const {
   linksTableName,
-  linkManagerTopicArn,
+  linkQueueUrl,
   groupsTableName,
   adUsed,
   domainName,
@@ -54,6 +54,7 @@ import {
 } from "@aws-sdk/client-identitystore";
 import { SFNClient } from "@aws-sdk/client-sfn";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
+import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
 import {
   ListInstancesCommand,
   ListInstancesCommandOutput,
@@ -67,17 +68,19 @@ import {
   QueryCommandOutput,
 } from "@aws-sdk/lib-dynamodb";
 import { SNSEvent } from "aws-lambda";
+import { v4 as uuidv4 } from "uuid";
 import {
   ErrorMessage,
+  requestStatus,
   StateMachinePayload,
   StaticSSOPayload,
 } from "../../helpers/src/interfaces";
-import { invokeStepFunction } from "../../helpers/src/utilities";
-
+import { invokeStepFunction, logger } from "../../helpers/src/utilities";
 // SDK and third party client object initialistaion
 const ddbClientObject = new DynamoDBClient({ region: AWS_REGION });
 const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
 const snsClientObject = new SNSClient({ region: AWS_REGION });
+const sqsClientObject = new SQSClient({ region: AWS_REGION });
 
 const ssoAdminClientObject = new SSOAdminClient({
   region: ssoRegion,
@@ -110,6 +113,7 @@ const errorMessage: ErrorMessage = {
 };
 
 export const handler = async (event: SNSEvent) => {
+  const requestId = uuidv4().toString();
   try {
     const message = JSON.parse(event.Records[0].Sns.Message);
     const relatedLinks: QueryCommandOutput = await ddbDocClientObject.send(
@@ -125,6 +129,14 @@ export const handler = async (event: SNSEvent) => {
         },
       })
     );
+    logger({
+      handler: "permissionSetSyncHandler",
+      logMode: "info",
+      requestId: requestId,
+      relatedData: `${message.permission_set_name}`,
+      status: requestStatus.InProgress,
+      statusMessage: `Permission Set sync - operation started`,
+    });
 
     if (relatedLinks.Items && relatedLinks.Items.length !== 0) {
       const resolvedInstances: ListInstancesCommandOutput =
@@ -153,10 +165,10 @@ export const handler = async (event: SNSEvent) => {
             );
           if (relatedGroups.Items && relatedGroups.Items.length !== 0) {
             if (Item.awsEntityType === "account") {
-              await snsClientObject.send(
-                new PublishCommand({
-                  TopicArn: linkManagerTopicArn,
-                  Message: JSON.stringify({
+              await sqsClientObject.send(
+                new SendMessageCommand({
+                  QueueUrl: linkQueueUrl,
+                  MessageBody: JSON.stringify({
                     ssoParams: {
                       ...staticSSOPayload,
                       PrincipalId: relatedGroups.Items[0].groupId,
@@ -166,9 +178,24 @@ export const handler = async (event: SNSEvent) => {
                     actionType: "create",
                     entityType: Item.awsEntityType,
                     tagKeyLookUp: "none",
+                    sourceRequestId: requestId,
                   }),
+                  MessageDeduplicationId: `create-${Item.awsEntityData}-${
+                    message.permission_set_arn.toString().split("/")[2]
+                  }-${relatedGroups.Items[0].groupId}`,
+                  MessageGroupId: `${Item.awsEntityData}-${
+                    message.permission_set_arn.toString().split("/")[2]
+                  }-${relatedGroups.Items[0].groupId}`,
                 })
               );
+              logger({
+                handler: "permissionSetSyncHandler",
+                logMode: "info",
+                requestId: requestId,
+                relatedData: `${message.permission_set_name}`,
+                status: requestStatus.Completed,
+                statusMessage: `Permission Set sync - posted to link manager topic`,
+              });
             } else if (
               Item.awsEntityType === "ou_id" ||
               Item.awsEntityType === "root" ||
@@ -183,6 +210,7 @@ export const handler = async (event: SNSEvent) => {
                 principalType: staticSSOPayload.PrincipalType,
                 targetType: staticSSOPayload.TargetType,
                 topicArn: processTargetAccountSMTopicArn + "",
+                sourceRequestId: requestId,
               };
               await invokeStepFunction(
                 stateMachinePayload,
@@ -190,6 +218,14 @@ export const handler = async (event: SNSEvent) => {
                 processTargetAccountSMArn + "",
                 sfnClientObject
               );
+              logger({
+                handler: "permissionSetSyncHandler",
+                logMode: "info",
+                relatedData: `${message.permission_set_name}`,
+                requestId: requestId,
+                status: requestStatus.Completed,
+                statusMessage: `Permission Set sync - posted to step function`,
+              });
             }
           } else if (adUsed === "true" && domainName !== "") {
             // Handling AD sync as the group does not yet exist within DDB
@@ -223,10 +259,10 @@ export const handler = async (event: SNSEvent) => {
                 })
               );
               if (Item.awsEntityType === "account") {
-                await snsClientObject.send(
-                  new PublishCommand({
-                    TopicArn: linkManagerTopicArn,
-                    Message: JSON.stringify({
+                await sqsClientObject.send(
+                  new SendMessageCommand({
+                    QueueUrl: linkQueueUrl,
+                    MessageBody: JSON.stringify({
                       ssoParams: {
                         ...staticSSOPayload,
                         PrincipalId: listGroupsResult.Groups[0].GroupId,
@@ -236,9 +272,24 @@ export const handler = async (event: SNSEvent) => {
                       actionType: "create",
                       entityType: Item.awsEntityType,
                       tagKeyLookUp: "none",
+                      sourceRequestId: requestId,
                     }),
+                    MessageDeduplicationId: `create-${Item.awsEntityData}-${
+                      message.permission_set_arn.toString().split("/")[2]
+                    }-${listGroupsResult.Groups[0].GroupId}`,
+                    MessageGroupId: `${Item.awsEntityData}-${
+                      message.permission_set_arn.toString().split("/")[2]
+                    }-${listGroupsResult.Groups[0].GroupId}`,
                   })
                 );
+                logger({
+                  handler: "permissionSetSyncHandler",
+                  logMode: "info",
+                  relatedData: `${message.permission_set_name}`,
+                  status: requestStatus.Completed,
+                  requestId: requestId,
+                  statusMessage: `Permission Set sync - posted to link manager topic`,
+                });
               } else if (
                 Item.awsEntityType === "ou_id" ||
                 Item.awsEntityType === "root" ||
@@ -253,6 +304,7 @@ export const handler = async (event: SNSEvent) => {
                   principalType: staticSSOPayload.PrincipalType,
                   targetType: staticSSOPayload.TargetType,
                   topicArn: processTargetAccountSMTopicArn + "",
+                  sourceRequestId: requestId,
                 };
                 await invokeStepFunction(
                   stateMachinePayload,
@@ -260,25 +312,50 @@ export const handler = async (event: SNSEvent) => {
                   processTargetAccountSMArn + "",
                   sfnClientObject
                 );
+                logger({
+                  handler: "permissionSetSyncHandler",
+                  logMode: "info",
+                  relatedData: `${message.permission_set_name}`,
+                  requestId: requestId,
+                  status: requestStatus.Completed,
+                  statusMessage: `Permission Set sync - posted to step function`,
+                });
               }
             } else {
               // No related groups found from AD sync for this link
-              console.log(`No related groups found from AD sync for this link`);
+              logger({
+                handler: "permissionSetSyncHandler",
+                logMode: "info",
+                relatedData: `${message.permission_set_name}`,
+                requestId: requestId,
+                status: requestStatus.Completed,
+                statusMessage: `Permission Set sync - no related groups found`,
+              });
             }
           } else {
             // Ignoring permission set sync for the link as the group is not yet provisioned
-            console.log(
-              `Ignoring permission set sync for the link as the group is not yet provisioned`
-            );
+            logger({
+              handler: "permissionSetSyncHandler",
+              logMode: "info",
+              relatedData: `${message.permission_set_name}`,
+              requestId: requestId,
+              status: requestStatus.Completed,
+              statusMessage: `Permission Set sync - ignoring operation as group is not yet provisioned`,
+            });
           }
         })
       );
     } else {
       // Ignoring permission set sync as there are no
       // related links already provisioined for this permission set
-      console.log(
-        `Ignoring permission set sync as there are no related links already provisioined for this permission set`
-      );
+      logger({
+        handler: "permissionSetSyncHandler",
+        logMode: "info",
+        relatedData: `${message.permission_set_name}`,
+        requestId: requestId,
+        status: requestStatus.Completed,
+        statusMessage: `Permission Set sync - ignoring operation as there are no related links already provisioined for this permission set`,
+      });
     }
   } catch (err) {
     await snsClientObject.send(
@@ -291,10 +368,14 @@ export const handler = async (event: SNSEvent) => {
         }),
       })
     );
-    console.error(
-      `Exception when processing permission set sync: ${JSON.stringify(
+    logger({
+      handler: "permissionSetSyncHandler",
+      logMode: "error",
+      status: requestStatus.FailedWithException,
+      requestId: requestId,
+      statusMessage: `permission set sync processor failed with exception: ${JSON.stringify(
         err
-      )} for eventDetail: ${JSON.stringify(event)}`
-    );
+      )} for eventDetail: ${JSON.stringify(event)}`,
+    });
   }
 };

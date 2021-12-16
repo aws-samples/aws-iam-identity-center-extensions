@@ -3,20 +3,16 @@ composite construct that sets up all resources
 for links life cycle provisionings
 */
 
+import { Duration } from "aws-cdk-lib";
 import { ITable } from "aws-cdk-lib/aws-dynamodb"; // Importing external resources in CDK would use interfaces and not base objects
-import { IKey } from "aws-cdk-lib/aws-kms"; // Importing external resources in CDK would use interfaces and not base objects
+import { ILayerVersion, Runtime } from "aws-cdk-lib/aws-lambda"; // Importing external resources in CDK would use interfaces and not base objects
 import {
-  ILayerVersion,
-  Runtime,
-  StartingPosition,
-} from "aws-cdk-lib/aws-lambda"; // Importing external resources in CDK would use interfaces and not base objects
-import {
-  DynamoEventSource,
-  SnsDlq,
   SnsEventSource,
+  SqsEventSource,
 } from "aws-cdk-lib/aws-lambda-event-sources";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
-import { ITopic, Topic } from "aws-cdk-lib/aws-sns";
+import { ITopic } from "aws-cdk-lib/aws-sns";
+import { IQueue } from "aws-cdk-lib/aws-sqs";
 import { Construct } from "constructs";
 import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
@@ -31,20 +27,20 @@ export interface LinkProcessProps {
   readonly groupsTableName: string;
   readonly permissionSetArnTableName: string;
   readonly errorNotificationsTopic: ITopic;
-  readonly waiterHandlerNotificationsTopicArn: string;
   readonly linkManagerHandlerSSOAPIRoleArn: string;
+  readonly waiterHandlerSSOAPIRoleArn: string;
   readonly listInstancesSSOAPIRoleArn: string;
   readonly listGroupsIdentityStoreAPIRoleArn: string;
   readonly processTargetAccountSMInvokeRoleArn: string;
   readonly processTargetAccountSMTopic: ITopic;
+  readonly linkProcessorTopic: ITopic;
   readonly nodeJsLayer: ILayerVersion;
-  readonly snsTopicsKey: IKey;
+  readonly linkManagerQueue: IQueue;
 }
 
 export class LinkProcessor extends Construct {
-  public readonly linkManagerTopic: Topic;
   public readonly linkManagerHandler: NodejsFunction;
-  public readonly linkStreamHandler: NodejsFunction;
+  public readonly linkTopicProcessor: NodejsFunction;
   public readonly processTargetAccountSMListenerHandler: NodejsFunction;
 
   constructor(
@@ -65,7 +61,7 @@ export class LinkProcessor extends Construct {
           __dirname,
           "../",
           "lambda-functions",
-          "sso-handlers",
+          "application-handlers",
           "src",
           "linkManager.ts"
         ),
@@ -76,6 +72,8 @@ export class LinkProcessor extends Construct {
             "@aws-sdk/client-sns",
             "@aws-sdk/client-sso-admin",
             "@aws-sdk/credential-providers",
+            "@aws-sdk/util-waiter",
+            "uuid",
           ],
           minify: true,
         },
@@ -85,25 +83,20 @@ export class LinkProcessor extends Construct {
           AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
           errorNotificationsTopicArn:
             linkprocessProps.errorNotificationsTopic.topicArn,
-          waiterTopicArn: linkprocessProps.waiterHandlerNotificationsTopicArn,
           payerAccount: buildConfig.PipelineSettings.OrgMainAccountId,
           SSOAPIRoleArn: linkprocessProps.linkManagerHandlerSSOAPIRoleArn,
+          waiterHandlerSSOAPIRoleArn:
+            linkprocessProps.waiterHandlerSSOAPIRoleArn,
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         },
-      }
-    );
-
-    this.linkManagerTopic = new Topic(
-      this,
-      name(buildConfig, "linkManagerTopic"),
-      {
-        displayName: name(buildConfig, "linkManagerTopic"),
-        masterKey: linkprocessProps.snsTopicsKey,
+        timeout: Duration.minutes(11), //aggressive timeout to accommodate SSO Admin API's workflow based logic
       }
     );
 
     this.linkManagerHandler.addEventSource(
-      new SnsEventSource(this.linkManagerTopic)
+      new SqsEventSource(linkprocessProps.linkManagerQueue, {
+        batchSize: 10,
+      })
     );
 
     this.processTargetAccountSMListenerHandler = new NodejsFunction(
@@ -119,17 +112,17 @@ export class LinkProcessor extends Construct {
           __dirname,
           "../",
           "lambda-functions",
-          "sso-handlers",
+          "application-handlers",
           "src",
           "processTargetAccountSMListener.ts"
         ),
         bundling: {
-          externalModules: ["@aws-sdk/client-sns"],
+          externalModules: ["@aws-sdk/client-sns", "@aws-sdk/client-sqs"],
           minify: true,
         },
         layers: [linkprocessProps.nodeJsLayer],
         environment: {
-          linkManagertopicArn: this.linkManagerTopic.topicArn,
+          linkQueueUrl: linkprocessProps.linkManagerQueue.queueUrl,
           errorNotificationsTopicArn:
             linkprocessProps.errorNotificationsTopic.topicArn,
         },
@@ -140,19 +133,19 @@ export class LinkProcessor extends Construct {
       new SnsEventSource(linkprocessProps.processTargetAccountSMTopic)
     );
 
-    this.linkStreamHandler = new NodejsFunction(
+    this.linkTopicProcessor = new NodejsFunction(
       this,
-      name(buildConfig, "linkStreamHandler"),
+      name(buildConfig, "linkTopicProcessor"),
       {
-        functionName: name(buildConfig, "linkStreamHandler"),
+        functionName: name(buildConfig, "linkTopicProcessor"),
         runtime: Runtime.NODEJS_14_X,
         entry: join(
           __dirname,
           "../",
           "lambda-functions",
-          "ddb-stream-handlers",
+          "application-handlers",
           "src",
-          "link.ts"
+          "linkTopicProcessor.ts"
         ),
         bundling: {
           externalModules: [
@@ -163,12 +156,13 @@ export class LinkProcessor extends Construct {
             "@aws-sdk/client-sso-admin",
             "@aws-sdk/credential-providers",
             "@aws-sdk/client-identitystore",
+            "@aws-sdk/client-sqs",
           ],
           minify: true,
         },
         layers: [linkprocessProps.nodeJsLayer],
         environment: {
-          topicArn: this.linkManagerTopic.topicArn,
+          linkQueueUrl: linkprocessProps.linkManagerQueue.queueUrl,
           groupsTable: linkprocessProps.groupsTableName,
           permissionSetArnTable: linkprocessProps.permissionSetArnTableName,
           errorNotificationsTopicArn:
@@ -187,14 +181,8 @@ export class LinkProcessor extends Construct {
       }
     );
 
-    this.linkStreamHandler.addEventSource(
-      new DynamoEventSource(linkprocessProps.linksTable, {
-        startingPosition: StartingPosition.TRIM_HORIZON,
-        batchSize: 5,
-        bisectBatchOnError: true,
-        onFailure: new SnsDlq(linkprocessProps.errorNotificationsTopic),
-        retryAttempts: 3,
-      })
+    this.linkTopicProcessor.addEventSource(
+      new SnsEventSource(linkprocessProps.linkProcessorTopic)
     );
   }
 }

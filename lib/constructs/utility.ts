@@ -6,11 +6,9 @@ that allows shareable resources
 import { Table } from "aws-cdk-lib/aws-dynamodb";
 import { Key } from "aws-cdk-lib/aws-kms";
 import * as lambda from "aws-cdk-lib/aws-lambda";
-import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { ITopic, Topic } from "aws-cdk-lib/aws-sns";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
-import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 import { SSMParamReader } from "./ssm-param-reader";
 
@@ -20,19 +18,17 @@ function name(buildConfig: BuildConfig, resourcename: string): string {
 
 export interface UtilityProps {
   readonly errorNotificationsTopic: Topic;
-  readonly pythonLayer: lambda.LayerVersion;
   readonly nodeJsLayer: lambda.LayerVersion;
   readonly provisionedLinksTable: Table;
   readonly waiterHandlerSSOAPIRoleArn: string;
   readonly snsTopicsKey: Key;
+  readonly linkManagerQueueUrl: string;
 }
 
 export class Utility extends Construct {
   public readonly orgEventsNotificationsTopic: ITopic;
   public readonly ssoGroupEventsNotificationsTopic: ITopic;
   public readonly processTargetAccountSMTopic: ITopic;
-  public readonly waiterHandler: lambda.Function;
-  public readonly waiterHandlerNotificationsTopic: Topic;
 
   constructor(
     scope: Construct,
@@ -90,50 +86,6 @@ export class Utility extends Construct {
       ).paramValue
     );
 
-    this.waiterHandler = new lambda.Function(
-      this,
-      name(buildConfig, "waiterHandler"),
-      {
-        runtime: lambda.Runtime.PYTHON_3_8,
-        handler: "ssoAdminAPIWaiters.lambda_handler",
-        functionName: name(buildConfig, "waiterHandler"),
-        code: lambda.Code.fromAsset(
-          join(__dirname, "../", "lambda-functions", "custom-waiters", "src")
-        ),
-        layers: [utilityProps.pythonLayer],
-        environment: {
-          errorNotificationsTopicArn:
-            utilityProps.errorNotificationsTopic.topicArn,
-          provisionedLinksTable: utilityProps.provisionedLinksTable.tableName,
-          SSOAPIRoleArn: utilityProps.waiterHandlerSSOAPIRoleArn,
-          SSOServiceAccountRegion:
-            buildConfig.PipelineSettings.SSOServiceAccountRegion,
-        },
-      }
-    );
-
-    this.waiterHandlerNotificationsTopic = new Topic(
-      this,
-      name(buildConfig, "waiterNotificationTopic"),
-      {
-        displayName: name(buildConfig, "waiterNotificationTopic"),
-        masterKey: utilityProps.snsTopicsKey,
-      }
-    );
-
-    this.waiterHandler.addEventSource(
-      new SnsEventSource(this.waiterHandlerNotificationsTopic)
-    );
-
-    new StringParameter(
-      this,
-      name(buildConfig, "waiterHandlerNotificationsTopicArn"),
-      {
-        parameterName: name(buildConfig, "waiterHandlerNotificationsTopicArn"),
-        stringValue: this.waiterHandlerNotificationsTopic.topicArn,
-      }
-    );
-
     new StringParameter(
       this,
       name(buildConfig, "processTargetAccountSMTopicArn"),
@@ -160,10 +112,5 @@ export class Utility extends Construct {
         stringValue: this.orgEventsNotificationsTopic.topicArn,
       }
     );
-
-    new StringParameter(this, name(buildConfig, "waiterHandlerArn"), {
-      parameterName: name(buildConfig, "waiterHandlerArn"),
-      stringValue: this.waiterHandler.functionArn,
-    });
   }
 }

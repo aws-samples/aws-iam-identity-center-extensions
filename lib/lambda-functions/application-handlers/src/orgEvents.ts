@@ -45,7 +45,7 @@ const {
   SSOAPIRoleArn,
   ISAPIRoleArn,
   groupsTable,
-  topicArn,
+  linkQueueUrl,
   adUsed,
   domainName,
   errorNotificationsTopicArn,
@@ -62,6 +62,7 @@ import {
   ListGroupsCommandOutput,
 } from "@aws-sdk/client-identitystore";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
+import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import {
   ListInstancesCommand,
   ListInstancesCommandOutput,
@@ -76,12 +77,18 @@ import {
   QueryCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { SNSEvent } from "aws-lambda";
-import { ErrorMessage, StaticSSOPayload } from "../../helpers/src/interfaces";
-
+import {
+  ErrorMessage,
+  requestStatus,
+  StaticSSOPayload,
+} from "../../helpers/src/interfaces";
+import { logger } from "../../helpers/src/utilities";
+import { v4 as uuidv4 } from "uuid";
 // SDK and third party client object initialistaion
 const ddbClientObject = new DynamoDBClient({ region: AWS_REGION });
 const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
 const snsClientObject = new SNSClient({ region: AWS_REGION });
+const sqsClientObject = new SQSClient({ region: AWS_REGION });
 const ssoAdminClientObject = new SSOAdminClient({
   region: ssoRegion,
   credentials: fromTemporaryCredentials({
@@ -107,7 +114,8 @@ const errorMessage: ErrorMessage = {
 export const tagBasedDeProvisioning = async (
   staticssoPayload: StaticSSOPayload,
   passedTagKey: string,
-  targetId: string
+  targetId: string,
+  requestId: string
 ) => {
   const tagKeyLookUpValue = `${passedTagKey}^${targetId}`;
   const relatedProvisionedLinks: QueryCommandOutput =
@@ -133,10 +141,10 @@ export const tagBasedDeProvisioning = async (
       relatedProvisionedLinks.Items.map(async (Item) => {
         const parentLinkValue = Item.parentLink.toString();
         const parentLinkItems = parentLinkValue.split("@");
-        await snsClientObject.send(
-          new PublishCommand({
-            TopicArn: topicArn,
-            Message: JSON.stringify({
+        await sqsClientObject.send(
+          new SendMessageCommand({
+            QueueUrl: linkQueueUrl,
+            MessageBody: JSON.stringify({
               ssoParams: {
                 ...staticssoPayload,
                 PrincipalId: parentLinkItems[0],
@@ -146,20 +154,32 @@ export const tagBasedDeProvisioning = async (
               actionType: "delete",
               entityType: "account_tag",
               tagKeyLookUp: `${passedTagKey}^${targetId}`,
+              sourceRequestId: requestId,
             }),
+            MessageDeduplicationId: `delete-${targetId}-${parentLinkItems[3]}-${parentLinkItems[0]}`,
+            MessageGroupId: `${targetId}-${parentLinkItems[3]}-${parentLinkItems[0]}`,
           })
         );
-        console.log(
-          `Processed proactive deprovisioning due to untagresource on parentLink ${parentLinkValue}`
-        );
+        logger({
+          handler: "orgEventsProcessor",
+          logMode: "info",
+          requestId: requestId,
+          relatedData: `${parentLinkValue}`,
+          status: requestStatus.Completed,
+          statusMessage: `OrgEvents - proactive deprovisioning due to untag resource posted to link manager topic`,
+        });
       })
     );
   } else {
     // Ignore if a tag that's not part of the provsionedlinks
     // is deleted from the account
-    console.log(
-      "In org events, ignoring de-provisioning logic check as the tag created/updated/deleted is not part of provisioned links"
-    );
+    logger({
+      handler: "orgEventsProcessor",
+      logMode: "info",
+      status: requestStatus.Completed,
+      requestId: requestId,
+      statusMessage: `OrgEvents - ignoring de-provisioning logic check as the tag created/updated/deleted is not part of provisioned links`,
+    });
   }
 };
 
@@ -169,7 +189,8 @@ export const orgEventProvisioning = async (
   actionType: string,
   entityData: string,
   entityType: string,
-  identityStoreId: string
+  identityStoreId: string,
+  requestId: string
 ) => {
   let tagKeyLookupValue = "none";
 
@@ -217,10 +238,10 @@ export const orgEventProvisioning = async (
             );
 
           if (relatedGroups.Items && relatedGroups.Items.length !== 0) {
-            await snsClientObject.send(
-              new PublishCommand({
-                TopicArn: topicArn,
-                Message: JSON.stringify({
+            await sqsClientObject.send(
+              new SendMessageCommand({
+                QueueUrl: linkQueueUrl,
+                MessageBody: JSON.stringify({
                   ssoParams: {
                     ...staticssoPayload,
                     PrincipalId: relatedGroups.Items[0].groupId,
@@ -230,12 +251,28 @@ export const orgEventProvisioning = async (
                   actionType: actionType,
                   entityType: entityType,
                   tagKeyLookUp: tagKeyLookupValue,
+                  sourceRequestId: requestId,
                 }),
+                MessageDeduplicationId: `${actionType}-${targetId}-${
+                  permissionSetFetch.Item.permissionSetArn
+                    .toString()
+                    .split("/")[2]
+                }-${relatedGroups.Items[0].groupId}`,
+                MessageGroupId: `${targetId}-${
+                  permissionSetFetch.Item.permissionSetArn
+                    .toString()
+                    .split("/")[2]
+                }-${relatedGroups.Items[0].groupId}`,
               })
             );
-            console.log(
-              `Processed provisioning of links as there are related links for ${entityData} of type ${entityType} found`
-            );
+            logger({
+              handler: "orgEventsProcessor",
+              logMode: "info",
+              relatedData: `${entityData}`,
+              status: requestStatus.Completed,
+              requestId: requestId,
+              statusMessage: `OrgEvents - link provisioned to link manager topic`,
+            });
           } else if (adUsed === "true" && domainName !== "") {
             const listGroupsResult: ListGroupsCommandOutput =
               await identityStoreClientObject.send(
@@ -264,10 +301,10 @@ export const orgEventProvisioning = async (
                   },
                 })
               );
-              await snsClientObject.send(
-                new PublishCommand({
-                  TopicArn: topicArn,
-                  Message: JSON.stringify({
+              await sqsClientObject.send(
+                new SendMessageCommand({
+                  QueueUrl: linkQueueUrl,
+                  MessageBody: JSON.stringify({
                     ssoParams: {
                       ...staticssoPayload,
                       PrincipalId: groupId,
@@ -278,21 +315,50 @@ export const orgEventProvisioning = async (
                     actionType: actionType,
                     entityType: entityType,
                     tagKeyLookUp: tagKeyLookupValue,
+                    sourceRequestId: requestId,
                   }),
+                  MessageDeduplicationId: `${actionType}-${targetId}-${
+                    permissionSetFetch.Item.permissionSetArn
+                      .toString()
+                      .split("/")[2]
+                  }-${groupId}`,
+                  MessageGroupId: `${targetId}-${
+                    permissionSetFetch.Item.permissionSetArn
+                      .toString()
+                      .split("/")[2]
+                  }-${groupId}`,
                 })
               );
+              logger({
+                handler: "orgEventsProcessor",
+                logMode: "info",
+                relatedData: `${entityData}`,
+                status: requestStatus.Completed,
+                requestId: requestId,
+                statusMessage: `OrgEvents - link provisioned to link manager topic`,
+              });
             } else {
               // No related groups found from AD sync for this link
-              console.log(
-                `Ignoring org event for ${entityData} of type ${entityType} as related groups are not found`
-              );
+              logger({
+                handler: "orgEventsProcessor",
+                logMode: "info",
+                relatedData: `${entityData}`,
+                status: requestStatus.Aborted,
+                requestId: requestId,
+                statusMessage: `OrgEvents - no related groups found`,
+              });
             }
           } else {
             // Either the permissionset or the group
             // pertaining to the link have not been provisioned yet
-            console.log(
-              `Ignoring org event for ${entityData} of type ${entityType} as related groups or permission set are not found`
-            );
+            logger({
+              handler: "orgEventsProcessor",
+              logMode: "info",
+              relatedData: `${entityData}`,
+              status: requestStatus.Aborted,
+              requestId: requestId,
+              statusMessage: `OrgEvents - no related groups or permission set found`,
+            });
           }
         }
       })
@@ -300,13 +366,19 @@ export const orgEventProvisioning = async (
   } else if (entityType === "account_tag") {
     // We need to determine if an account tag has been
     // updated to trigger de-provisioning logic
-    console.log(
-      `In orgevents, conducting de-provsioning check for entityData ${entityData} on targetaccount ID ${targetId} as an account tag is now updated`
-    );
+    logger({
+      handler: "orgEventsProcessor",
+      logMode: "info",
+      relatedData: `${entityData}`,
+      requestId: requestId,
+      status: requestStatus.Completed,
+      statusMessage: `OrgEvents - conducting de-provsioning check for entityData ${entityData} on targetaccount ID ${targetId} as an account tag is now updated`,
+    });
     await tagBasedDeProvisioning(
       staticssoPayload,
       entityData.split("^")[0],
-      targetId
+      targetId,
+      requestId
     );
   } else {
     // No related links for the org event being processed
@@ -314,6 +386,7 @@ export const orgEventProvisioning = async (
 };
 
 export const handler = async (event: SNSEvent) => {
+  const requestId = uuidv4().toString();
   try {
     const message = JSON.parse(event.Records[0].Sns.Message);
     const resolvedInstances: ListInstancesCommandOutput =
@@ -333,7 +406,8 @@ export const handler = async (event: SNSEvent) => {
         "create",
         "all",
         "root",
-        identityStoreId
+        identityStoreId,
+        requestId
       );
     } else if (message.detail.eventName === "MoveAccount") {
       await orgEventProvisioning(
@@ -342,7 +416,8 @@ export const handler = async (event: SNSEvent) => {
         "delete",
         message.detail.requestParameters.sourceParentId,
         "ou_id",
-        identityStoreId
+        identityStoreId,
+        requestId
       );
       await orgEventProvisioning(
         staticSSOPayload,
@@ -350,10 +425,10 @@ export const handler = async (event: SNSEvent) => {
         "create",
         message.detail.requestParameters.destinationParentId,
         "ou_id",
-        identityStoreId
+        identityStoreId,
+        requestId
       );
     } else if (message["detail-type"] === "Tag Change on Resource") {
-      console.log("In org events, received tag change on account");
       // When tag changes are recieved by the lambda
       // handler it would contain changed-tag-keys
       // and the current set of tag key value pairs
@@ -380,21 +455,31 @@ export const handler = async (event: SNSEvent) => {
         changedTagKeys.map(async (changedTagKey: string) => {
           if (!Object.prototype.hasOwnProperty.call(tags, changedTagKey)) {
             // Account tag has been deleted
-            console.log(
-              `Determined that the tag change delta for ${changedTagKey} is a delete operation`
-            );
+            logger({
+              handler: "orgEventsProcessor",
+              logMode: "info",
+              relatedData: `${changedTagKey}`,
+              status: requestStatus.Completed,
+              statusMessage: `OrgEvents - tag change , delta is a delete operation`,
+            });
             await tagBasedDeProvisioning(
               staticSSOPayload,
               changedTagKey,
-              resources[0].split("/")[2]
+              resources[0].split("/")[2],
+              requestId
             );
           } else if (
             Object.prototype.hasOwnProperty.call(tags, changedTagKey)
           ) {
             // Account tag is either created/updated
-            console.log(
-              `Determined that the tag change delta for ${changedTagKey} is a create/update operation`
-            );
+            logger({
+              handler: "orgEventsProcessor",
+              logMode: "info",
+              relatedData: `${changedTagKey}`,
+              status: requestStatus.Completed,
+              requestId: requestId,
+              statusMessage: `OrgEvents - tag change , delta is a create/update operation`,
+            });
             const tagValue = tags[`${changedTagKey}`];
             await orgEventProvisioning(
               staticSSOPayload,
@@ -402,7 +487,8 @@ export const handler = async (event: SNSEvent) => {
               "create",
               `${changedTagKey}^${tagValue}`,
               "account_tag",
-              identityStoreId
+              identityStoreId,
+              requestId
             );
           }
         })
@@ -419,10 +505,14 @@ export const handler = async (event: SNSEvent) => {
         }),
       })
     );
-    console.error(
-      `Exception when processing org events handling: ${JSON.stringify(
+    logger({
+      handler: "orgEventsProcessor",
+      logMode: "error",
+      status: requestStatus.FailedWithException,
+      requestId: requestId,
+      statusMessage: `org events processor failed with exception: ${JSON.stringify(
         err
-      )} for eventDetail: ${JSON.stringify(event)}`
-    );
+      )} for eventDetail: ${JSON.stringify(event)}`,
+    });
   }
 };

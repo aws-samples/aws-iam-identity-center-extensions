@@ -57,6 +57,7 @@ export class PreSolutionArtefacts extends Stack {
         ssoArtefactsBucket: this.deployIndependentUtility.ssoArtefactsBucket,
         ddbTablesKey: this.deployIndependentUtility.ddbTablesKey,
         logsKey: this.deployIndependentUtility.logsKey,
+        snsTopicsKey: this.deployIndependentUtility.snsTopicsKey,
       }
     );
 
@@ -66,13 +67,14 @@ export class PreSolutionArtefacts extends Stack {
       buildConfig,
       {
         provisionedLinksTable: this.deployLinkCRUD.provisionedLinksTable,
-        pythonLayer: this.deployLambdaLayers.pythonLayer,
         errorNotificationsTopic:
           this.deployIndependentUtility.errorNotificationsTopic,
         waiterHandlerSSOAPIRoleArn:
           this.deployIndependentUtility.waiterHandlerSSOAPIRoleArn,
         nodeJsLayer: this.deployLambdaLayers.nodeJsLayer,
         snsTopicsKey: this.deployIndependentUtility.snsTopicsKey,
+        linkManagerQueueUrl:
+          this.deployIndependentUtility.linkManagerQueue.queueUrl,
       }
     );
 

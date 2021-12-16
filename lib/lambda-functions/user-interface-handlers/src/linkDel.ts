@@ -6,14 +6,20 @@ Trigger source: link S3 path object notification for removed type events
 */
 
 // Environment configuration read
-const { DdbTable, errorNotificationsTopicArn, AWS_REGION } = process.env;
+const {
+  DdbTable,
+  errorNotificationsTopicArn,
+  AWS_REGION,
+  linkProcessingTopicArn,
+} = process.env;
 
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import { DeleteCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { S3Event, S3EventRecord } from "aws-lambda";
-import { ErrorMessage } from "../../helpers/src/interfaces";
-
+import { ErrorMessage, requestStatus } from "../../helpers/src/interfaces";
+import { logger } from "../../helpers/src/utilities";
+import { v4 as uuidv4 } from "uuid";
 // SDK and third party client object initialistaion
 const ddbClientObject = new DynamoDBClient({ region: AWS_REGION });
 const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
@@ -27,6 +33,7 @@ const errorMessage: ErrorMessage = {
 export const handler = async (event: S3Event) => {
   await Promise.all(
     event.Records.map(async (record: S3EventRecord) => {
+      const requestId = uuidv4().toString();
       try {
         const fileName = decodeURIComponent(record.s3.object.key.split("/")[1]);
         if (
@@ -51,9 +58,26 @@ export const handler = async (event: S3Event) => {
               },
             })
           );
-          console.log(
-            `Procssed deletion of link data through S3 interface successfully: ${fileName}`
+          await snsClientObject.send(
+            new PublishCommand({
+              TopicArn: linkProcessingTopicArn + "",
+              Message: JSON.stringify({
+                linkData: fileName,
+                action: "create",
+                requestId: requestId,
+              }),
+            })
           );
+          logger({
+            handler: "userInterface-s3Delete",
+            logMode: "info",
+            relatedData: fileName,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            hasRelatedRequests:
+              fileName.split(".")[0] === "account" ? false : true,
+            statusMessage: `Account Assignment delete operation is being processed`,
+          });
         } else {
           await snsClientObject.send(
             new PublishCommand({
@@ -65,9 +89,14 @@ export const handler = async (event: S3Event) => {
               }),
             })
           );
-          console.error(
-            `File name does not pass the schema validation for a link operation: ${fileName}`
-          );
+          logger({
+            handler: "userInterface-s3Delete",
+            logMode: "error",
+            relatedData: fileName,
+            requestId: requestId,
+            status: requestStatus.FailedWithError,
+            statusMessage: `Account Assignment create operation failed due to fileName validation`,
+          });
         }
       } catch (err) {
         await snsClientObject.send(
@@ -80,11 +109,15 @@ export const handler = async (event: S3Event) => {
             }),
           })
         );
-        console.error(
-          `Exception when processing link delete through S3 interface: ${JSON.stringify(
+        logger({
+          handler: "userInterface-s3Delete",
+          logMode: "error",
+          requestId: requestId,
+          status: requestStatus.FailedWithException,
+          statusMessage: `Account Assignment delete operation failed with error: ${JSON.stringify(
             err
-          )}`
-        );
+          )}`,
+        });
       }
     })
   );

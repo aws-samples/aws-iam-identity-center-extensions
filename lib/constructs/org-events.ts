@@ -19,7 +19,7 @@ export interface OrgEventsProps {
   readonly linksTableName: string;
   readonly permissionSetArnTableName: string;
   readonly groupsTableName: string;
-  readonly linkManagerTopicArn: string;
+  readonly linkQueueUrl: string;
   readonly errorNotificationsTopicArn: string;
   readonly nodeJsLayer: ILayerVersion;
   readonly orgEventsNotificationTopic: ITopic;
@@ -49,7 +49,7 @@ export class OrgEvents extends Construct {
           __dirname,
           "../",
           "lambda-functions",
-          "sso-handlers",
+          "application-handlers",
           "src",
           "orgEvents.ts"
         ),
@@ -61,12 +61,14 @@ export class OrgEvents extends Construct {
             "@aws-sdk/client-sso-admin",
             "@aws-sdk/credential-providers",
             "@aws-sdk/lib-dynamodb",
+            "@aws-sdk/client-sqs",
+            "uuid",
           ],
           minify: true,
         },
         layers: [orgEventsProps.nodeJsLayer],
         environment: {
-          topicArn: orgEventsProps.linkManagerTopicArn,
+          linkQueueUrl: orgEventsProps.linkQueueUrl,
           groupsTable: orgEventsProps.groupsTableName,
           permissionSetArnTable: orgEventsProps.permissionSetArnTableName,
           DdbTable: orgEventsProps.linksTableName,

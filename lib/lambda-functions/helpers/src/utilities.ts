@@ -1,6 +1,6 @@
 import { SFNClient, StartExecutionCommand } from "@aws-sdk/client-sfn";
 import { Readable } from "stream";
-import { StateMachinePayload } from "./interfaces";
+import { LogMessage, StateMachinePayload } from "./interfaces";
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 export const removeEmpty = (obj: { [x: string]: any }) => {
   Object.keys(obj).forEach(
@@ -68,4 +68,25 @@ export function MinutesToISO8601Duration(minutes: number) {
   }
   dur += `${s}M`;
   return dur;
+}
+
+export function logger(logMessage: LogMessage) {
+  switch (logMessage.logMode) {
+    case "info": {
+      console.log(JSON.stringify(logMessage));
+      break;
+    }
+    case "warn": {
+      console.warn(JSON.stringify(logMessage));
+      break;
+    }
+    case "error": {
+      console.error(JSON.stringify(logMessage));
+      break;
+    }
+    default: {
+      console.error(JSON.stringify(logMessage));
+      break;
+    }
+  }
 }
