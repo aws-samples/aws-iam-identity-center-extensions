@@ -21,9 +21,12 @@ import { ErrorMessage, requestStatus } from "../../helpers/src/interfaces";
 import { logger } from "../../helpers/src/utilities";
 import { v4 as uuidv4 } from "uuid";
 // SDK and third party client object initialistaion
-const ddbClientObject = new DynamoDBClient({ region: AWS_REGION });
+const ddbClientObject = new DynamoDBClient({
+  region: AWS_REGION,
+  maxAttempts: 2,
+});
 const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
-const snsClientObject = new SNSClient({ region: AWS_REGION });
+const snsClientObject = new SNSClient({ region: AWS_REGION, maxAttempts: 2 });
 
 //Error notification
 const errorMessage: ErrorMessage = {
@@ -37,16 +40,28 @@ export const handler = async (event: S3Event) => {
       try {
         const fileName = decodeURIComponent(record.s3.object.key.split("/")[1]);
         if (
-          /root\.all\.[\w+=,.@-]{1,32}\.[a-zA-Z0-9-_@.\s]+\.ssofile/gm.test(
+          /root\.all\.[\w+=,.@-]{1,32}\.[a-zA-Z0-9-_@.\s]+\.GROUP\.ssofile/gm.test(
             fileName
           ) ||
-          /ou_id\.ou-[a-z0-9]{4}-[a-z0-9]{8}\.[\w+=,.@-]{1,32}\.[a-zA-Z0-9-_@.\s]+\.ssofile/gm.test(
+          /root\.all\.[\w+=,.@-]{1,32}\.[a-zA-Z0-9-_@.\s]+\.USER\.ssofile/gm.test(
             fileName
           ) ||
-          /account\.\d{12}\.[\w+=,.@-]{1,32}\.[a-zA-Z0-9-_@.\s]+\.ssofile/gm.test(
+          /ou_id\.ou-[a-z0-9]{4}-[a-z0-9]{8}\.[\w+=,.@-]{1,32}\.[a-zA-Z0-9-_@.\s]+\.GROUP\.ssofile/gm.test(
             fileName
           ) ||
-          /account_tag\.[\w+=,.@-]{1,128}\^[\w+=,.@-]{1,256}\.[\w+=,.@-]{1,32}\.[a-zA-Z0-9-_@.\s]+\.ssofile/gm.test(
+          /ou_id\.ou-[a-z0-9]{4}-[a-z0-9]{8}\.[\w+=,.@-]{1,32}\.[a-zA-Z0-9-_@.\s]+\.USER\.ssofile/gm.test(
+            fileName
+          ) ||
+          /account\.\d{12}\.[\w+=,.@-]{1,32}\.[a-zA-Z0-9-_@.\s]+\.GROUP\.ssofile/gm.test(
+            fileName
+          ) ||
+          /account\.\d{12}\.[\w+=,.@-]{1,32}\.[a-zA-Z0-9-_@.\s]+\.USER\.ssofile/gm.test(
+            fileName
+          ) ||
+          /account_tag\.[\w+=,.@-]{1,128}\^[\w+=,.@-]{1,256}\.[\w+=,.@-]{1,32}\.[a-zA-Z0-9-_@.\s]+\.GROUP\.ssofile/gm.test(
+            fileName
+          ) ||
+          /account_tag\.[\w+=,.@-]{1,128}\^[\w+=,.@-]{1,256}\.[\w+=,.@-]{1,32}\.[a-zA-Z0-9-_@.\s]+\.USER\.ssofile/gm.test(
             fileName
           )
         ) {

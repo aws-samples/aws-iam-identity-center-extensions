@@ -8,8 +8,7 @@ Trigger source: SSO group changes notification topic which in turn
 - determine the group name (SSO uses
       different event schemas for this
       event depending on the identity store)
-- if create/delete
-  - upsert/delete into groups DDB table
+- if create/delete  
   - determine if there are related links
     already provisioned by looking up
     links table
@@ -24,11 +23,10 @@ Trigger source: SSO group changes notification topic which in turn
               account, ou_id, account_tag or root
             - if account, post the link
               operation details to link manager
-              topic
+              FIFO queue
             - if ou_id, root, account_tag resolve the
               actual accounts and post the link
-              operation details to the link manager
-              topic, one message per account
+              operation details to org entities state machine in org account              
         - if permission set is not provisioned,
           stop the operation here
     - if there are no related links, then
@@ -40,8 +38,7 @@ Trigger source: SSO group changes notification topic which in turn
 // Environment configuration read
 const {
   SSOAPIRoleArn,
-  DdbTable,
-  processTargetAccountSMInvokeRoleArn,
+  orgListSMRoleArn,
   processTargetAccountSMTopicArn,
   processTargetAccountSMArn,
   permissionarntable,
@@ -55,8 +52,8 @@ const {
 // SDK and third party client imports
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { SFNClient } from "@aws-sdk/client-sfn";
-import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
+import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
 import {
   ListInstancesCommand,
   ListInstancesCommandOutput,
@@ -64,15 +61,14 @@ import {
 } from "@aws-sdk/client-sso-admin";
 import { fromTemporaryCredentials } from "@aws-sdk/credential-providers";
 import {
-  DeleteCommand,
   DynamoDBDocumentClient,
   GetCommand,
   GetCommandOutput,
-  PutCommand,
   QueryCommand,
   QueryCommandOutput,
 } from "@aws-sdk/lib-dynamodb";
 import { SNSEvent } from "aws-lambda";
+import { v4 as uuidv4 } from "uuid";
 import {
   ErrorMessage,
   requestStatus,
@@ -80,12 +76,14 @@ import {
   StaticSSOPayload,
 } from "../../helpers/src/interfaces";
 import { invokeStepFunction, logger } from "../../helpers/src/utilities";
-import { v4 as uuidv4 } from "uuid";
 // SDK and third party client object initialistaion
-const ddbClientObject = new DynamoDBClient({ region: AWS_REGION });
+const ddbClientObject = new DynamoDBClient({
+  region: AWS_REGION,
+  maxAttempts: 2,
+});
 const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
-const snsClientObject = new SNSClient({ region: AWS_REGION });
-const sqsClientObject = new SQSClient({ region: AWS_REGION });
+const snsClientObject = new SNSClient({ region: AWS_REGION, maxAttempts: 2 });
+const sqsClientObject = new SQSClient({ region: AWS_REGION, maxAttempts: 2 });
 const ssoAdminClientObject = new SSOAdminClient({
   region: ssoRegion,
   credentials: fromTemporaryCredentials({
@@ -93,14 +91,16 @@ const ssoAdminClientObject = new SSOAdminClient({
       RoleArn: SSOAPIRoleArn,
     },
   }),
+  maxAttempts: 2,
 });
 const sfnClientObject = new SFNClient({
   region: "us-east-1",
   credentials: fromTemporaryCredentials({
     params: {
-      RoleArn: processTargetAccountSMInvokeRoleArn,
+      RoleArn: orgListSMRoleArn,
     },
   }),
+  maxAttempts: 2,
 });
 
 //Error notification
@@ -143,15 +143,6 @@ export const handler = async (event: SNSEvent) => {
       ) {
         groupName = message.detail.responseElements.group.groupName;
       }
-      await ddbDocClientObject.send(
-        new PutCommand({
-          TableName: DdbTable,
-          Item: {
-            groupName: groupName,
-            groupId: groupId,
-          },
-        })
-      );
 
       logger({
         handler: "groupsHandler",
@@ -159,7 +150,7 @@ export const handler = async (event: SNSEvent) => {
         requestId: requestId,
         relatedData: `${groupName}`,
         status: requestStatus.InProgress,
-        statusMessage: `CreateGroup operation - resolved groupName and processed DDB table upsert`,
+        statusMessage: `CreateGroup operation - resolved groupName`,
       });
 
       const relatedLinks: QueryCommandOutput = await ddbDocClientObject.send(
@@ -167,10 +158,10 @@ export const handler = async (event: SNSEvent) => {
         // checking only if the result set is greater than 0
         new QueryCommand({
           TableName: linkstable,
-          IndexName: "groupName",
-          KeyConditionExpression: "#groupname = :groupname",
-          ExpressionAttributeNames: { "#groupname": "groupName" },
-          ExpressionAttributeValues: { ":groupname": groupName },
+          IndexName: "principalName",
+          KeyConditionExpression: "#principalName = :principalName",
+          ExpressionAttributeNames: { "#principalName": "principalName" },
+          ExpressionAttributeValues: { ":principalName": groupName },
         })
       );
 
@@ -236,6 +227,7 @@ export const handler = async (event: SNSEvent) => {
                   targetType: staticSSOPayload.TargetType,
                   topicArn: processTargetAccountSMTopicArn + "",
                   sourceRequestId: requestId,
+                  pageSize: 5,
                 };
                 await invokeStepFunction(
                   stateMachinePayload,
@@ -277,83 +269,14 @@ export const handler = async (event: SNSEvent) => {
         });
       }
     } else if (message.detail.eventName === "DeleteGroup") {
-      groupId = message.detail.requestParameters.groupId;
-      const groupFetch: GetCommandOutput = await ddbDocClientObject.send(
-        new GetCommand({
-          TableName: DdbTable,
-          Key: {
-            groupId: groupId,
-          },
-        })
-      );
-      if (groupFetch.Item) {
-        groupName = groupFetch.Item.groupName;
-        // QueryCommand is a pagniated call, however the logic requires
-        // checking only if the result set is greater than 0
-        const relatedLinks: QueryCommandOutput = await ddbDocClientObject.send(
-          new QueryCommand({
-            TableName: linkstable,
-            IndexName: "groupName",
-            KeyConditionExpression: "#groupname = :groupname",
-            ExpressionAttributeNames: { "#groupname": "groupName" },
-            ExpressionAttributeValues: { ":groupname": groupName },
-          })
-        );
-
-        if (relatedLinks.Items && relatedLinks.Items?.length !== 0) {
-          // Received groupDelete where the group has existing links.
-          // These links would become orphaned and not accessbile anymore,
-          // therefore deleting them
-          await Promise.all(
-            relatedLinks.Items.map(async (Item) => {
-              await ddbDocClientObject.send(
-                new DeleteCommand({
-                  TableName: linkstable,
-                  Key: {
-                    awsEntityId: Item.awsEntityId,
-                  },
-                })
-              );
-              logger({
-                handler: "groupsHandler",
-                logMode: "info",
-                requestId: requestId,
-                relatedData: `${groupName}`,
-                status: requestStatus.Completed,
-                statusMessage: `DeleteGroup operation - Deleting related link as the link would be orphaned : ${Item.awsEntityId}`,
-              });
-            })
-          );
-        } else {
-          // No related links for the group being deleted
-          logger({
-            handler: "groupsHandler",
-            logMode: "info",
-            relatedData: `${groupName}`,
-            requestId: requestId,
-            status: requestStatus.Completed,
-            statusMessage: `DeleteGroup operation - no related account assignments found for the group being deleted`,
-          });
-        }
-        await ddbDocClientObject.send(
-          new DeleteCommand({
-            TableName: DdbTable,
-            Key: {
-              groupId: groupId,
-            },
-          })
-        );
-      } else {
-        // The group does not exist, so not deleting again
-        logger({
-          handler: "groupsHandler",
-          logMode: "info",
-          relatedData: `${groupName}`,
-          requestId: requestId,
-          status: requestStatus.Completed,
-          statusMessage: `DeleteGroup operation - group does not exist, so not deleting again`,
-        });
-      }
+      logger({
+        handler: "groupsHandler",
+        logMode: "info",
+        relatedData: `${groupName}`,
+        requestId: requestId,
+        status: requestStatus.Completed,
+        statusMessage: `DeleteGroup operation - no actions being done as the group is deleted directly`,
+      });
     }
   } catch (err) {
     await snsClientObject.send(

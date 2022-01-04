@@ -44,7 +44,8 @@ export interface LinkData {
   readonly awsEntityType: string;
   readonly awsEntityData: string;
   readonly permissionSetName: string;
-  readonly groupName: string;
+  readonly principalName: string;
+  readonly principalType: string;
 }
 
 export interface StateMachinePayload {
@@ -57,6 +58,7 @@ export interface StateMachinePayload {
   readonly permissionSetArn: string;
   readonly principalId: string;
   readonly sourceRequestId: string;
+  readonly pageSize: number;
 }
 
 export interface StaticSSOPayload {

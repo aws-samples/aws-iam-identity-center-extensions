@@ -221,11 +221,11 @@ export class OrgEventsProcessor extends Stack {
 
     new CrossAccountRole(
       this,
-      name(buildConfig, "processTargetAccountSMInvokeRole"),
+      name(buildConfig, "orgListSMRole"),
       buildConfig,
       {
         assumeAccountID: buildConfig.PipelineSettings.TargetAccountId,
-        roleNameKey: "processTargetAccountSMInvoke-orgapi",
+        roleNameKey: "orgListSM-orgapi",
         policyStatement: new PolicyStatement({
           resources: [processTargetAccountSM.ref],
           actions: ["states:StartExecution"],

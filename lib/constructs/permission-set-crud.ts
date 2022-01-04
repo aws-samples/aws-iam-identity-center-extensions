@@ -4,11 +4,11 @@ for permission set CRUD operations and handles both API
 and S3 interfaces
 */
 
+import { CfnOutput, RemovalPolicy } from "aws-cdk-lib";
 import { LambdaRestApi } from "aws-cdk-lib/aws-apigateway";
 import {
   AttributeType,
   BillingMode,
-  StreamViewType,
   Table,
   TableEncryption,
 } from "aws-cdk-lib/aws-dynamodb";
@@ -18,12 +18,12 @@ import { LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Bucket, EventType } from "aws-cdk-lib/aws-s3";
 import { LambdaDestination } from "aws-cdk-lib/aws-s3-notifications";
-import { CfnOutput, RemovalPolicy } from "aws-cdk-lib";
+import { Topic } from "aws-cdk-lib/aws-sns";
+import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 import { LambdaProxyAPI } from "./lambda-proxy-api";
-import { StringParameter } from "aws-cdk-lib/aws-ssm";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {
   return buildConfig.Environment + "-" + resourcename;
@@ -35,6 +35,7 @@ export interface PermissionSetCRUDProps {
   readonly errorNotificationsTopicArn: string;
   readonly ssoArtefactsBucket: Bucket;
   readonly ddbTablesKey: Key;
+  readonly snsTopicsKey: Key;
   readonly logsKey: Key;
 }
 
@@ -45,6 +46,7 @@ export class PermissionSetCRUD extends Construct {
   public readonly permissionSetAPI: LambdaRestApi;
   public readonly permissionSetCuHandler: NodejsFunction;
   public readonly permissionSetDelHandler: NodejsFunction;
+  public readonly permissionSetProcessingTopic: Topic;
 
   constructor(
     scope: Construct,
@@ -53,6 +55,15 @@ export class PermissionSetCRUD extends Construct {
     PermissionSetCRUDProps: PermissionSetCRUDProps
   ) {
     super(scope, id);
+
+    this.permissionSetProcessingTopic = new Topic(
+      this,
+      name(buildConfig, "permissionSetProcessingTopic"),
+      {
+        displayName: name(buildConfig, "permissionSetProcessingTopic"),
+        masterKey: PermissionSetCRUDProps.snsTopicsKey,
+      }
+    );
 
     this.permissionSetTable = new Table(
       this,
@@ -66,7 +77,6 @@ export class PermissionSetCRUD extends Construct {
         billingMode: BillingMode.PAY_PER_REQUEST,
         encryption: TableEncryption.CUSTOMER_MANAGED,
         encryptionKey: PermissionSetCRUDProps.ddbTablesKey,
-        stream: StreamViewType.NEW_AND_OLD_IMAGES,
         pointInTimeRecovery: true,
         removalPolicy: RemovalPolicy.DESTROY,
       }
@@ -112,9 +122,12 @@ export class PermissionSetCRUD extends Construct {
             externalModules: [
               "@aws-sdk/client-dynamodb",
               "@aws-sdk/client-s3",
+              "@aws-sdk/client-sns",
               "@aws-sdk/lib-dynamodb",
               "ajv",
               "uuid",
+              "fs",
+              "path",
             ],
           },
           layers: [PermissionSetCRUDProps.nodeJsLayer],
@@ -124,6 +137,8 @@ export class PermissionSetCRUD extends Construct {
             linksTable: PermissionSetCRUDProps.linksTableName,
             artefactsBucketName:
               PermissionSetCRUDProps.ssoArtefactsBucket.bucketName,
+            permissionSetProcessingTopicArn:
+              this.permissionSetProcessingTopic.topicArn,
           },
         }
       );
@@ -166,6 +181,8 @@ export class PermissionSetCRUD extends Construct {
               "@aws-sdk/lib-dynamodb",
               "ajv",
               "uuid",
+              "fs",
+              "path",
             ],
           },
           layers: [PermissionSetCRUDProps.nodeJsLayer],
@@ -174,6 +191,8 @@ export class PermissionSetCRUD extends Construct {
             AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
             errorNotificationsTopicArn:
               PermissionSetCRUDProps.errorNotificationsTopicArn,
+            permissionSetProcessingTopicArn:
+              this.permissionSetProcessingTopic.topicArn,
           },
         }
       );
@@ -232,6 +251,8 @@ export class PermissionSetCRUD extends Construct {
             errorNotificationsTopicArn:
               PermissionSetCRUDProps.errorNotificationsTopicArn,
             linksTable: PermissionSetCRUDProps.linksTableName,
+            permissionSetProcessingTopicArn:
+              this.permissionSetProcessingTopic.topicArn,
           },
         }
       );
@@ -269,5 +290,14 @@ export class PermissionSetCRUD extends Construct {
       parameterName: name(buildConfig, "permissionSetArnTableArn"),
       stringValue: this.permissionSetArnTable.tableArn,
     });
+
+    new StringParameter(
+      this,
+      name(buildConfig, "permissionSetProcessorTopicArn"),
+      {
+        parameterName: name(buildConfig, "permissionSetProcessorTopicArn"),
+        stringValue: this.permissionSetProcessingTopic.topicArn,
+      }
+    );
   }
 }

@@ -1,0 +1,59 @@
+title Org Events Flow
+
+Org Events EventBridge Rule(Org account)->Org Events Processor: trigger matching org event
+Org Events Processor->Org Events Processor: determineEventType()
+alt Account creation event
+Org Events Processor->Solution Persistence(DynamoDB): lookup if there are any account assignments with scopeType = root
+alt resultSet.length >0
+Org Events Processor->Solution Persistence(DynamoDB): doesPermissionSetExist() ?
+alt Permission Set exists
+Org Events Processor->AWS SSO Identity Store: doesPrincipalExist()?
+AWS SSO Identity Store->Org Events Processor: return principal list result
+alt Principal exists
+Org Events Processor->Account assignment FIFO queue: post account assignment operation
+note over Account assignment FIFO queue: from this point, the same sequence\n as account assignment life cycle\n is followed
+else Principal does not exist
+Org Events Processor->Org Events Processor: log and complete the operation
+end
+else Permission set does not exist
+Org Events Processor->Org Events Processor: log and complete the operation
+end
+else resultSet.length = 0
+Org Events Processor->Org Events Processor: log and complete the operation
+end
+else Account move event
+Org Events Processor->Solution Persistence(DynamoDB): lookup if there are any account assignments with scopeType = ou_id and scopeValue = old ou_id
+alt resultSet.length >0
+note over Org Events Processor: from this point, the same sequence as \n Account creation event is followed
+else resultSet.length = 0
+Org Events Processor->Org Events Processor: log and complete the operation
+end
+Org Events Processor->Solution Persistence(DynamoDB): lookup if there are any account assignments with scopeType = ou_id and scopeValue = new ou_id
+alt resultSet.length >0
+note over Org Events Processor: from this point, the same sequence as \n Account creation event is followed
+else resultSet.length = 0
+Org Events Processor->Org Events Processor: log and complete the operation
+end
+else Tag Change on org resource event
+Org Events Processor->Org Events Processor: determine tagChange type?
+alt tag key-pair create/updated
+Org Events Processor->Solution Persistence(DynamoDB): lookup if there are any account assignments with scopeType = account_tag and scopeValue = tagKey^tagValue
+alt resultSet.length>0
+note over Org Events Processor: from this point, the same sequence as \n Account creation event is followed
+else resultSet.length = 0
+Org Events Processor->Solution Persistence(DynamoDB): lookup if there are any provisioned account assignments with tagKeyLookUp = tagKey^accountId
+alt resultSet.length >0
+Org Events Processor->Account assignment FIFO queue: Post delete account assignment operation
+else resultSet.length = 0
+Org Events Processor->Org Events Processor: log and complete the operation
+end
+end
+else tag key-pair deleted
+Org Events Processor->Solution Persistence(DynamoDB): lookup if there are any provisioned account assignments with tagKeyLookUp = tagKey^accountId
+alt resultSet.length >0
+Org Events Processor->Account assignment FIFO queue: Post delete account assignment operation
+else resultSet.length = 0
+Org Events Processor->Org Events Processor: log and complete the operation
+end
+end
+end

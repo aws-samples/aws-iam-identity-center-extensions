@@ -2,21 +2,24 @@
 Objective: Implement link provisioning/deprovisioning operations
 Trigger source: Link Manager SNS topic
 - assumes role in SSO account for calling SSO admin API
+- if the targetAccount is payerAccount, the operation is ignored as SSO Admin API does not allow this
 - determine if the link action type is create or delete
 - if create
   - do a lookup into provisioned links table with the
     link partition key
   - if link already exists, stop the process
   - if link does not exist yet, call sso create
-    account assignment operation, and post the
-    request id to waiter handler topic
+    account assignment operation
+  - wait until operation is complete/fail/time out
+  - if operation is complete , update provisioned links table
 - if delete
   - do a lookup into provisioned links table with the
     link partition key
   - if link does not exist, stop the process
   - if link exists, call sso delete account
-    assignment operation, and post the request id to
-    waiter handler topic
+    assignment operation
+  - wait until operation is complete/fail/time out
+  - if operation is complete, delete item from provisioined links table
 - Catch all failures in a generic exception block
   and post the error details to error notifications topics
 */
@@ -59,9 +62,12 @@ import { waitUntilAccountAssignmentDeletion } from "../../custom-waiters/src/wai
 import { ErrorMessage, requestStatus } from "../../helpers/src/interfaces";
 import { logger } from "../../helpers/src/utilities";
 // SDK and third party client object initialistaion
-const ddbClientObject = new DynamoDBClient({ region: AWS_REGION });
+const ddbClientObject = new DynamoDBClient({
+  region: AWS_REGION,
+  maxAttempts: 2,
+});
 const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
-const snsClientObject = new SNSClient({ region: AWS_REGION });
+const snsClientObject = new SNSClient({ region: AWS_REGION, maxAttempts: 2 });
 const ssoAdminClientObject = new SSOAdminClient({
   region: ssoRegion,
   credentials: fromTemporaryCredentials({
@@ -69,6 +75,7 @@ const ssoAdminClientObject = new SSOAdminClient({
       RoleArn: SSOAPIRoleArn,
     },
   }),
+  maxAttempts: 2,
 });
 const ssoAdminWaiterClientObject = new SSOAdminClient({
   region: ssoRegion,
@@ -77,6 +84,7 @@ const ssoAdminWaiterClientObject = new SSOAdminClient({
       RoleArn: waiterHandlerSSOAPIRoleArn,
     },
   }),
+  maxAttempts: 2,
 });
 
 //Error notification
@@ -155,6 +163,7 @@ export const handler = async (event: SQSEvent) => {
                   Item: {
                     parentLink: provisionedLinksKey,
                     tagKeyLookUp: message.tagKeyLookUp,
+                    principalType: ssoParams.PrincipalType,
                   },
                 })
               );

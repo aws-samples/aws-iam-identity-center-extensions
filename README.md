@@ -1,7 +1,5 @@
 # AWS SSO Extensions For Enterprise
 
-![High level design](docs/images/aws-sso-extensions-for-enterprise-overview.png)
-
 ## Table of Contents
 
 - [Overview](#Overview)
@@ -14,9 +12,7 @@
   - [De-couple life cycle management of different SSO objects and other features](#de-couple-life-cycle-management-of-different-sso-objects-and-other-features)
 
 - [Detailed Building Blocks Overview](docs/documentation/Building-Blocks.md)
-- [Solution Overview diagrams](docs/documentation/Overview-diagrams.md)
-- [Use case Logical State Flows](docs/documentation/Use-Case-Logical-State-Flows.md)
-- [Example: aws-sso-extensions-for-enterprise with SailPoint and ADFS](docs/documentation/Example-Use-case.md)
+- [Use case Flows](docs/documentation/Use-Case-Flows.md)
 - [Security](#security)
 - [License](#license)
 
@@ -183,20 +179,20 @@ This solution provides a composite API for managing permission set lifecycles, a
 
 This solution enables enterprise friendly account assignment lifecycles through the following features:
 
-- Using groups as the mechanism for the principal type, instead of an individual user
-- Friendly names for groups and permission sets when creating account assignments
+- Using users/groups as the mechanism for the principal type
+- Friendly names for users/groups and permission sets when creating account assignments
 - Based on the configuration parameter, you can use either an S3 based interface/ Rest API interface to create/delete account assignments
 - Create & delete account assignments with scope set to **account, root, ou_id or account_tag**
 - Using the entity value passed in the payload, the solution calculates the account list and processes the account assignment operations on all the accounts automatically
 
 <details>
-<summary>Example payload to provision permission set <b>CloudOperator-ps</b> for <b>all accounts in your organization</b> and provide access to <b>team-CloudOperators</b></summary>
+<summary>Example payload to provision permission set <b>CloudOperator-ps</b> for <b>all accounts in your organization</b> and provide access to <b>team-CloudOperators user group</b></summary>
 <p>
 
 ```json
 {
   "action": "create",
-  "linkData": "root.all.CloudOperator-ps.team-CloudOperators.ssofile"
+  "linkData": "root.all.CloudOperator-ps.team-CloudOperators.GROUP.ssofile"
 }
 ```
 
@@ -204,13 +200,13 @@ This solution enables enterprise friendly account assignment lifecycles through 
 </details>
 
 <details>
-<summary>Example payload to provision permission set <b>SecurityAuditor-ps</b> for <b>all accounts in your organization unit with ID ou-id12345</b> and provide access to <b>team-SecurityAuditors</b></summary>
+<summary>Example payload to provision permission set <b>SecurityAuditor-ps</b> for <b>all accounts in your organization unit with ID ou-id12345</b> and provide access to <b>team-SecurityAuditors user group</b></summary>
 <p>
 
 ```json
 {
   "action": "create",
-  "linkData": "ou_id.ou-id12345.SecurityAuditor-ps.team-SecurityAuditors.ssofile"
+  "linkData": "ou_id.ou-id12345.SecurityAuditor-ps.team-SecurityAuditors.GROUP.ssofile"
 }
 ```
 
@@ -218,13 +214,13 @@ This solution enables enterprise friendly account assignment lifecycles through 
 </details>
 
 <details>
-<summary>Example payload to provision permission set <b>DataScientist-ps</b> for <b>all accounts that have tagkey team set to value DataScientists</b> and provide access to <b>team-DataScientists</b></summary>
+<summary>Example payload to provision permission set <b>DataScientist-ps</b> for <b>all accounts that have tagkey team set to value DataScientists</b> and provide access to <b>team-DataScientists user group</b></summary>
 <p>
 
 ```json
 {
   "action": "create",
-  "linkData": "account_tag.team^DataScientists.DataScientist-ps.team-DataScientists.ssofile"
+  "linkData": "account_tag.team^DataScientists.DataScientist-ps.team-DataScientists.GROUP.ssofile"
 }
 ```
 
@@ -232,18 +228,33 @@ This solution enables enterprise friendly account assignment lifecycles through 
 </details>
 
 <details>
-<summary>Example payload to provision permission set <b>Billing-ps</b> for <b>account 123456789012</b> and provide access to <b>team-Accountants</b></summary>
+<summary>Example payload to provision permission set <b>Billing-ps</b> for <b>account 123456789012</b> and provide access to <b>team-Accountants user group</b></summary>
 <p>
 
 ```json
 {
   "action": "create",
-  "linkData": "account.123456789012.Billing-ps.team-Accountants.ssofile"
+  "linkData": "account.123456789012.Billing-ps.team-Accountants.GROUP.ssofile"
 }
 ```
 
 </p>
 </details>
+
+<details>
+<summary>Example payload to provision permission set <b>Breakglass-ps</b> for <b>all accounts in your organization</b> and provide access to <b>break-glass user</b></summary>
+<p>
+
+```json
+{
+  "action": "create",
+  "linkData": "root.all.Breakglass-ps.break-glass.USER.ssofile"
+}
+```
+
+</p>
+</details>
+<br/>
 
 ### Automated access change management for root, ou_id and account_tag scopes
 

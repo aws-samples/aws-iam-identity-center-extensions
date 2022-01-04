@@ -1,3 +1,6 @@
+/*
+Objective: Custom waiter for permission set provisioning status
+*/
 import {
   DescribePermissionSetProvisioningStatusCommand,
   DescribePermissionSetProvisioningStatusCommandInput,

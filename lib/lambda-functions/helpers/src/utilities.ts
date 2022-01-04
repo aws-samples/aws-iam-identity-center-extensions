@@ -53,23 +53,6 @@ export const invokeStepFunction = async (
   );
 };
 
-export function MinutesToISO8601Duration(minutes: number) {
-  let s = minutes;
-  const days = Math.floor(s / 1440);
-  s -= days * 1440;
-  const hours = Math.floor(s / 60);
-  s -= hours * 60;
-  let dur = "PT";
-  if (days > 0) {
-    dur += `${days}D`;
-  }
-  if (hours > 0) {
-    dur += `${hours}H`;
-  }
-  dur += `${s}M`;
-  return dur;
-}
-
 export function logger(logMessage: LogMessage) {
   switch (logMessage.logMode) {
     case "info": {

@@ -144,6 +144,10 @@ test("Empty Stack", () => {
         ),
         IsAdUsed: ensureBoolean(unparsedEnv["Parameters"], "IsAdUsed"),
         DomainName: ensureString(unparsedEnv["Parameters"], "DomainName"),
+        ImportCurrentSSOConfiguration: ensureBoolean(
+          unparsedEnv["Parameters"],
+          "ImportCurrentSSOConfiguration"
+        ),
       },
     };
   }

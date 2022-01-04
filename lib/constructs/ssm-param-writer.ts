@@ -1,6 +1,6 @@
 /*
 Custom SSM writer construct that facilitates
-cross account reading through the SSMParamReader
+cross account/cross region reading through the SSMParamReader
 construct
 */
 

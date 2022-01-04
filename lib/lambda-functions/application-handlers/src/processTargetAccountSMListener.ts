@@ -17,8 +17,8 @@ import { SNSEvent } from "aws-lambda";
 import { ErrorMessage, requestStatus } from "../../helpers/src/interfaces";
 import { logger } from "../../helpers/src/utilities";
 // SDK and third party client object initialistaion
-const snsClientObject = new SNSClient({ region: AWS_REGION });
-const sqsClientObject = new SQSClient({ region: AWS_REGION });
+const snsClientObject = new SNSClient({ region: AWS_REGION, maxAttempts: 2 });
+const sqsClientObject = new SQSClient({ region: AWS_REGION, maxAttempts: 2 });
 
 //Error notification
 const errorMessage: ErrorMessage = {

@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "87a4624a-2ed7-4b24-9e0b-3c4d4b4ac88a",
+    "_postman_id": "b6e8361d-4eb4-4d5c-967d-188100373e57",
     "name": "aws-sso-extensions-for-enterprise",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
@@ -40,7 +40,53 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"root.all.CloudOperator-ps.team-CloudOperators.ssofile\"    \n}",
+              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"root.all.CloudOperator-ps.team-CloudOperators.GROUP.ssofile\"    \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{linksEndpoint}}postLinkData",
+              "host": ["{{linksEndpoint}}postLinkData"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Assign-BreakGlassUser-access",
+          "request": {
+            "auth": {
+              "type": "awsv4",
+              "awsv4": [
+                {
+                  "key": "sessionToken",
+                  "value": "{{links-sessionToken}}",
+                  "type": "string"
+                },
+                {
+                  "key": "secretKey",
+                  "value": "{{links-secretAccessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "accessKey",
+                  "value": "{{links-accessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "region",
+                  "value": "{{region}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"root.all.CloudOperator-ps.user-breakglass.USER.ssofile\"    \n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -86,7 +132,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"root.all.SysAdmin-ps.team-SysAdmins.ssofile\"    \n}",
+              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"root.all.SysAdmin-ps.team-SysAdmins.GROUP.ssofile\"    \n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -132,7 +178,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"ou_id.ou_id123435.SecurityAuditor-ps.team-SecurityAuditors.ssofile\"         \n}",
+              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"ou_id.ou_id123435.SecurityAuditor-ps.team-SecurityAuditors.GROUP.ssofile\"         \n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -178,7 +224,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"account.121111112211.Billing-ps.team-Accountants.ssofile\"    \n}",
+              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"account.121111112211.Billing-ps.team-Accountants.GROUP.ssofile\"    \n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -224,7 +270,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"account_tag.team^DataScientists.DataScientist-ps.team-DataScientists.ssofile\"    \n}",
+              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"account_tag.team^DataScientists.DataScientist-ps.team-DataScientists.GROUP.ssofile\"    \n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -270,7 +316,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"root.all.CloudOperator-ps.team-CloudOperators.ssofile\"    \n}",
+              "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"root.all.CloudOperator-ps.team-CloudOperators.GROUP.ssofile\"    \n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1017,6 +1063,52 @@
             "body": {
               "mode": "raw",
               "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"account.121111112211.Billing-ps.team-Accountants.ssofile\"    \n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{linksEndpoint}}postLinkData",
+              "host": ["{{linksEndpoint}}postLinkData"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unassign-BreakGlassUser-access",
+          "request": {
+            "auth": {
+              "type": "awsv4",
+              "awsv4": [
+                {
+                  "key": "sessionToken",
+                  "value": "{{links-sessionToken}}",
+                  "type": "string"
+                },
+                {
+                  "key": "secretKey",
+                  "value": "{{links-secretAccessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "accessKey",
+                  "value": "{{links-accessKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "region",
+                  "value": "{{region}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"root.all.CloudOperator-ps.user-breakglass.USER.ssofile\"    \n}",
               "options": {
                 "raw": {
                   "language": "json"

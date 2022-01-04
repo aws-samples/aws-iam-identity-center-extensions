@@ -1,0 +1,201 @@
+{
+  "Comment": "Handle account assignment import operations",
+  "StartAt": "ListAccountAssignments",
+  "States": {
+    "ListAccountAssignments": {
+      "Type": "Task",
+      "Parameters": {
+        "AccountId.$": "$.accountId",
+        "InstanceArn.$": "$.instanceArn",
+        "PermissionSetArn.$": "$.permissionSetArn",
+        "MaxResults.$": "$.pageSize"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:ssoadmin:listAccountAssignments",
+      "ResultPath": "$.listAccountAssignments",
+      "Next": "Loop through account assignments",
+      "Retry": [
+        {
+          "ErrorEquals": ["States.TaskFailed"],
+          "BackoffRate": 1.5,
+          "IntervalSeconds": 2,
+          "MaxAttempts": 2
+        }
+      ]
+    },
+    "Loop through account assignments": {
+      "Type": "Map",
+      "Iterator": {
+        "StartAt": "Determine Principal type",
+        "States": {
+          "Determine Principal type": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "Variable": "$.account-assignment.PrincipalType",
+                "StringEquals": "GROUP",
+                "Next": "DescribeGroup"
+              },
+              {
+                "Variable": "$.account-assignment.PrincipalType",
+                "StringEquals": "USER",
+                "Next": "DescribeUser"
+              }
+            ],
+            "Default": "Catchall when entityType does not match"
+          },
+          "Catchall when entityType does not match": {
+            "Type": "Pass",
+            "End": true
+          },
+          "DescribeGroup": {
+            "Type": "Task",
+            "Parameters": {
+              "GroupId.$": "$.account-assignment.PrincipalId",
+              "IdentityStoreId.$": "$.identityStoreId"
+            },
+            "Resource": "arn:aws:states:::aws-sdk:identitystore:describeGroup",
+            "ResultPath": "$.describeGroupResult",
+            "Next": "Set groupName as entityName",
+            "Retry": [
+              {
+                "ErrorEquals": ["States.TaskFailed"],
+                "BackoffRate": 1.5,
+                "IntervalSeconds": 2,
+                "MaxAttempts": 2
+              }
+            ]
+          },
+          "Set groupName as entityName": {
+            "Type": "Pass",
+            "Parameters": {
+              "entityType": "GROUP",
+              "entityName.$": "$.describeGroupResult.DisplayName",
+              "requestId.$": "$.requestId",
+              "triggerSource.$": "$.triggerSource",
+              "accounts-importTopicArn.$": "$.accounts-importTopicArn",
+              "linkPayload": {
+                "awsEntityData.$": "$.account-assignment.AccountId",
+                "permissionSetName.$": "$.permissionSetName",
+                "AccountId.$": "$.account-assignment.AccountId",
+                "PermissionSetArn.$": "$.account-assignment.PermissionSetArn"
+              },
+              "provisionedLinksPayload": {
+                "principalId.$": "$.account-assignment.PrincipalId",
+                "targetId.$": "$.account-assignment.AccountId"
+              }
+            },
+            "Next": "Publish to account import handling topic"
+          },
+          "Publish to account import handling topic": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::sns:publish",
+            "Parameters": {
+              "Message.$": "$",
+              "TopicArn.$": "$.accounts-importTopicArn"
+            },
+            "Retry": [
+              {
+                "ErrorEquals": ["States.TaskFailed"],
+                "BackoffRate": 1.5,
+                "IntervalSeconds": 2,
+                "MaxAttempts": 2
+              }
+            ],
+            "End": true
+          },
+          "DescribeUser": {
+            "Type": "Task",
+            "Parameters": {
+              "IdentityStoreId.$": "$.identityStoreId",
+              "UserId.$": "$.account-assignment.PrincipalId"
+            },
+            "Resource": "arn:aws:states:::aws-sdk:identitystore:describeUser",
+            "Next": "Set userName as entityName",
+            "ResultPath": "$.describeUserResult",
+            "Retry": [
+              {
+                "ErrorEquals": ["States.TaskFailed"],
+                "BackoffRate": 1.5,
+                "IntervalSeconds": 2,
+                "MaxAttempts": 2
+              }
+            ]
+          },
+          "Set userName as entityName": {
+            "Type": "Pass",
+            "Parameters": {
+              "entityType": "USER",
+              "entityName.$": "$.describeUserResult.UserName",
+              "requestId.$": "$.requestId",
+              "triggerSource.$": "$.triggerSource",
+              "accounts-importTopicArn.$": "$.accounts-importTopicArn",
+              "linkPayload": {
+                "awsEntityData.$": "$.account-assignment.AccountId",
+                "permissionSetName.$": "$.permissionSetName",
+                "AccountId.$": "$.account-assignment.AccountId",
+                "PermissionSetArn.$": "$.account-assignment.PermissionSetArn"
+              },
+              "provisionedLinksPayload": {
+                "principalId.$": "$.account-assignment.PrincipalId",
+                "targetId.$": "$.account-assignment.AccountId"
+              }
+            },
+            "Next": "Publish to account import handling topic"
+          }
+        }
+      },
+      "Parameters": {
+        "accounts-importTopicArn.$": "$.accounts-importTopicArn",
+        "account-assignment.$": "$$.Map.Item.Value",
+        "identityStoreId.$": "$.identityStoreId",
+        "permissionSetName.$": "$.permissionSetName",
+        "requestId.$": "$.requestId",
+        "triggerSource.$": "$.triggerSource"
+      },
+      "ItemsPath": "$.listAccountAssignments.AccountAssignments",
+      "ResultPath": null,
+      "Next": "Check For NextToken?"
+    },
+    "Check For NextToken?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.listAccountAssignments.NextToken",
+          "IsPresent": true,
+          "Next": "Wait"
+        }
+      ],
+      "Default": "Pass"
+    },
+    "Wait": {
+      "Type": "Wait",
+      "Next": "ListAccountAssignments with NextToken",
+      "SecondsPath": "$.waitSeconds"
+    },
+    "ListAccountAssignments with NextToken": {
+      "Type": "Task",
+      "Parameters": {
+        "AccountId.$": "$.accountId",
+        "InstanceArn.$": "$.instanceArn",
+        "PermissionSetArn.$": "$.permissionSetArn",
+        "MaxResults.$": "$.pageSize",
+        "NextToken.$": "$.listAccountAssignments.NextToken"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:ssoadmin:listAccountAssignments",
+      "ResultPath": "$.listAccountAssignments",
+      "Next": "Loop through account assignments",
+      "Retry": [
+        {
+          "ErrorEquals": ["States.TaskFailed"],
+          "BackoffRate": 1.5,
+          "IntervalSeconds": 2,
+          "MaxAttempts": 2
+        }
+      ]
+    },
+    "Pass": {
+      "Type": "Pass",
+      "End": true
+    }
+  }
+}

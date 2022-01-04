@@ -28,6 +28,7 @@ export interface UtilityProps {
 export class Utility extends Construct {
   public readonly orgEventsNotificationsTopic: ITopic;
   public readonly ssoGroupEventsNotificationsTopic: ITopic;
+  public readonly ssoUserEventsNotificationsTopic: ITopic;
   public readonly processTargetAccountSMTopic: ITopic;
 
   constructor(
@@ -59,12 +60,28 @@ export class Utility extends Construct {
       name(buildConfig, "ssoGroupEventsNotificationsTopic"),
       new SSMParamReader(
         this,
-        name(buildConfig, "ssoEventsNotificationTopicArnReader"),
+        name(buildConfig, "ssoGroupEventsNotificationTopicArnReader"),
         buildConfig,
         {
           ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
           ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
-          ParamNameKey: "ssoEventsNotificationTopicArn",
+          ParamNameKey: "ssoGroupEventsNotificationTopicArn",
+          LambdaLayers: utilityProps.nodeJsLayer,
+        }
+      ).paramValue
+    );
+
+    this.ssoUserEventsNotificationsTopic = Topic.fromTopicArn(
+      this,
+      name(buildConfig, "ssoUserEventsNotificationsTopic"),
+      new SSMParamReader(
+        this,
+        name(buildConfig, "ssoUserEventsNotificationsTopicArnReader"),
+        buildConfig,
+        {
+          ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
+          ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
+          ParamNameKey: "ssoUserEventsNotificationTopicArn",
           LambdaLayers: utilityProps.nodeJsLayer,
         }
       ).paramValue
@@ -101,6 +118,15 @@ export class Utility extends Construct {
       {
         parameterName: name(buildConfig, "ssoGroupEventNotificationsTopicArn"),
         stringValue: this.ssoGroupEventsNotificationsTopic.topicArn,
+      }
+    );
+
+    new StringParameter(
+      this,
+      name(buildConfig, "ssoUserEventsNotificationsTopicArn"),
+      {
+        parameterName: name(buildConfig, "ssoUserEventsNotificationsTopicArn"),
+        stringValue: this.ssoUserEventsNotificationsTopic.topicArn,
       }
     );
 

@@ -9,12 +9,10 @@ import { FetchCrossStackValues } from "./fetch-cross-stack-values";
 import { LinkProcessor } from "./link-processor";
 import { OrgEvents } from "./org-events";
 import { PermissionSetProcessor } from "./permission-set-processor";
-import { SSOGroupCRUD } from "./sso-group-crud";
 import { SSOGroupProcessor } from "./sso-group-processor";
 
 export interface AccessManagerProps {
   readonly FetchCrossStackValues: FetchCrossStackValues;
-  readonly SSOGroupCRUD: SSOGroupCRUD;
   readonly LinkProcessor: LinkProcessor;
   readonly PermissionSetProcessor: PermissionSetProcessor;
   readonly SSOGroupProcessor: SSOGroupProcessor;
@@ -68,27 +66,24 @@ export class AccessManager extends Construct {
 
     // Permission Set Topic Handler access
     accessManagerProps.FetchCrossStackValues.snsTopicsKey.grantEncryptDecrypt(
-      accessManagerProps.PermissionSetProcessor.permissionSetHandler
+      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor
     );
     accessManagerProps.FetchCrossStackValues.errorNotificationsTopic.grantPublish(
-      accessManagerProps.PermissionSetProcessor.permissionSetHandler
+      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor
     );
     accessManagerProps.PermissionSetProcessor.permissionSetSyncTopic.grantPublish(
-      accessManagerProps.PermissionSetProcessor.permissionSetHandler
+      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor
     );
     accessManagerProps.FetchCrossStackValues.ddbTablesKey.grantEncryptDecrypt(
-      accessManagerProps.PermissionSetProcessor.permissionSetHandler
+      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor
     );
     accessManagerProps.FetchCrossStackValues.permissionSetTable.grantReadWriteData(
-      accessManagerProps.PermissionSetProcessor.permissionSetHandler
+      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor
     );
     accessManagerProps.FetchCrossStackValues.permissionSetArnTable.grantReadWriteData(
-      accessManagerProps.PermissionSetProcessor.permissionSetHandler
+      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor
     );
-    accessManagerProps.SSOGroupCRUD.groupsTable.grantReadData(
-      accessManagerProps.PermissionSetProcessor.permissionSetHandler
-    );
-    accessManagerProps.PermissionSetProcessor.permissionSetHandler.addToRolePolicy(
+    accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor.addToRolePolicy(
       new PolicyStatement({
         resources: [
           accessManagerProps.FetchCrossStackValues
@@ -97,30 +92,13 @@ export class AccessManager extends Construct {
         actions: ["sts:AssumeRole"],
       })
     );
-    accessManagerProps.PermissionSetProcessor.permissionSetHandler.addToRolePolicy(
+    accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor.addToRolePolicy(
       new PolicyStatement({
         resources: [
           accessManagerProps.FetchCrossStackValues.waiterHandlerSSOAPIRoleArn,
         ],
         actions: ["sts:AssumeRole"],
       })
-    );
-
-    // Permission Set Stream Handler access
-    accessManagerProps.FetchCrossStackValues.snsTopicsKey.grantEncryptDecrypt(
-      accessManagerProps.PermissionSetProcessor.permissionSetStreamHandler
-    );
-    accessManagerProps.FetchCrossStackValues.errorNotificationsTopic.grantPublish(
-      accessManagerProps.PermissionSetProcessor.permissionSetStreamHandler
-    );
-    accessManagerProps.PermissionSetProcessor.permissionSetTopic.grantPublish(
-      accessManagerProps.PermissionSetProcessor.permissionSetStreamHandler
-    );
-    accessManagerProps.FetchCrossStackValues.ddbTablesKey.grantEncryptDecrypt(
-      accessManagerProps.PermissionSetProcessor.permissionSetStreamHandler
-    );
-    accessManagerProps.FetchCrossStackValues.permissionSetTable.grantStreamRead(
-      accessManagerProps.PermissionSetProcessor.permissionSetStreamHandler
     );
 
     // SSO Group Handler access
@@ -139,22 +117,51 @@ export class AccessManager extends Construct {
     accessManagerProps.FetchCrossStackValues.ddbTablesKey.grantEncryptDecrypt(
       accessManagerProps.SSOGroupProcessor.ssoGroupHandler
     );
-    accessManagerProps.SSOGroupCRUD.groupsTable.grantReadWriteData(
-      accessManagerProps.SSOGroupProcessor.ssoGroupHandler
-    );
     accessManagerProps.FetchCrossStackValues.linksTable.grantReadWriteData(
       accessManagerProps.SSOGroupProcessor.ssoGroupHandler
     );
     accessManagerProps.FetchCrossStackValues.permissionSetArnTable.grantReadData(
       accessManagerProps.SSOGroupProcessor.ssoGroupHandler
     );
-
     accessManagerProps.SSOGroupProcessor.ssoGroupHandler.addToRolePolicy(
       new PolicyStatement({
         resources: [
-          accessManagerProps.FetchCrossStackValues
-            .processTargetAccountSMInvokeRoleArn,
+          accessManagerProps.FetchCrossStackValues.orgListSMRoleArn,
           accessManagerProps.FetchCrossStackValues.listInstancesSSOAPIRoleArn,
+        ],
+        actions: ["sts:AssumeRole"],
+      })
+    );
+
+    // SSO User Handler access
+    accessManagerProps.FetchCrossStackValues.queuesKey.grantEncryptDecrypt(
+      accessManagerProps.SSOGroupProcessor.ssoUserHandler
+    );
+    accessManagerProps.FetchCrossStackValues.linkManagerQueue.grantSendMessages(
+      accessManagerProps.SSOGroupProcessor.ssoUserHandler
+    );
+    accessManagerProps.FetchCrossStackValues.snsTopicsKey.grantEncryptDecrypt(
+      accessManagerProps.SSOGroupProcessor.ssoUserHandler
+    );
+    accessManagerProps.FetchCrossStackValues.errorNotificationsTopic.grantPublish(
+      accessManagerProps.SSOGroupProcessor.ssoUserHandler
+    );
+    accessManagerProps.FetchCrossStackValues.ddbTablesKey.grantEncryptDecrypt(
+      accessManagerProps.SSOGroupProcessor.ssoUserHandler
+    );
+    accessManagerProps.FetchCrossStackValues.linksTable.grantReadWriteData(
+      accessManagerProps.SSOGroupProcessor.ssoUserHandler
+    );
+    accessManagerProps.FetchCrossStackValues.permissionSetArnTable.grantReadData(
+      accessManagerProps.SSOGroupProcessor.ssoUserHandler
+    );
+    accessManagerProps.SSOGroupProcessor.ssoUserHandler.addToRolePolicy(
+      new PolicyStatement({
+        resources: [
+          accessManagerProps.FetchCrossStackValues.orgListSMRoleArn,
+          accessManagerProps.FetchCrossStackValues.listInstancesSSOAPIRoleArn,
+          accessManagerProps.FetchCrossStackValues
+            .listGroupsIdentityStoreAPIRoleArn,
         ],
         actions: ["sts:AssumeRole"],
       })
@@ -179,9 +186,6 @@ export class AccessManager extends Construct {
     accessManagerProps.FetchCrossStackValues.linksTable.grantReadData(
       accessManagerProps.LinkProcessor.linkTopicProcessor
     );
-    accessManagerProps.SSOGroupCRUD.groupsTable.grantReadWriteData(
-      accessManagerProps.LinkProcessor.linkTopicProcessor
-    );
     accessManagerProps.FetchCrossStackValues.permissionSetArnTable.grantReadData(
       accessManagerProps.LinkProcessor.linkTopicProcessor
     );
@@ -191,8 +195,7 @@ export class AccessManager extends Construct {
           accessManagerProps.FetchCrossStackValues.listInstancesSSOAPIRoleArn,
           accessManagerProps.FetchCrossStackValues
             .listGroupsIdentityStoreAPIRoleArn,
-          accessManagerProps.FetchCrossStackValues
-            .processTargetAccountSMInvokeRoleArn,
+          accessManagerProps.FetchCrossStackValues.orgListSMRoleArn,
         ],
         actions: ["sts:AssumeRole"],
       })
@@ -212,9 +215,6 @@ export class AccessManager extends Construct {
       accessManagerProps.OrgEvents.orgEventsHandler
     );
     accessManagerProps.FetchCrossStackValues.ddbTablesKey.grantEncryptDecrypt(
-      accessManagerProps.OrgEvents.orgEventsHandler
-    );
-    accessManagerProps.SSOGroupCRUD.groupsTable.grantReadWriteData(
       accessManagerProps.OrgEvents.orgEventsHandler
     );
     accessManagerProps.FetchCrossStackValues.linksTable.grantReadData(
@@ -254,9 +254,6 @@ export class AccessManager extends Construct {
     accessManagerProps.FetchCrossStackValues.ddbTablesKey.grantEncryptDecrypt(
       accessManagerProps.PermissionSetProcessor.permissionSetSyncHandler
     );
-    accessManagerProps.SSOGroupCRUD.groupsTable.grantReadWriteData(
-      accessManagerProps.PermissionSetProcessor.permissionSetSyncHandler
-    );
     accessManagerProps.FetchCrossStackValues.linksTable.grantReadData(
       accessManagerProps.PermissionSetProcessor.permissionSetSyncHandler
     );
@@ -267,8 +264,7 @@ export class AccessManager extends Construct {
           accessManagerProps.FetchCrossStackValues.listInstancesSSOAPIRoleArn,
           accessManagerProps.FetchCrossStackValues
             .listGroupsIdentityStoreAPIRoleArn,
-          accessManagerProps.FetchCrossStackValues
-            .processTargetAccountSMInvokeRoleArn,
+          accessManagerProps.FetchCrossStackValues.orgListSMRoleArn,
         ],
         actions: ["sts:AssumeRole"],
       })

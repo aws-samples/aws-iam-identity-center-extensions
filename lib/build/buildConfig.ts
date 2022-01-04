@@ -1,7 +1,6 @@
 /*
-Re-usable construct to represent
-build parameters , enabling easier
-sharing between constructs and stacks as well as
+Build parameters interface definition
+To enable easier sharing between constructs and stacks as well as
 synth and deploy validations
 */
 
@@ -35,4 +34,5 @@ export interface Parameters {
   readonly NotificationEmail: string;
   readonly IsAdUsed: boolean;
   readonly DomainName: string;
+  readonly ImportCurrentSSOConfiguration: boolean;
 }

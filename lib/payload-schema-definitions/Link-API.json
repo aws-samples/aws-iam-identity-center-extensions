@@ -23,16 +23,28 @@
       "default": {},
       "oneOf": [
         {
-          "pattern": "root\\.all\\.[a-zA-Z0-9-@=,\\s]+\\.[a-zA-Z0-9-_\\s]+\\.ssofile"
+          "pattern": "root\\.all\\.[a-zA-Z0-9-@=,\\s]+\\.[a-zA-Z0-9-_\\s]+\\.GROUP\\.ssofile"
         },
         {
-          "pattern": "ou_id\\.ou-[a-z0-9]{4}-[a-z0-9]{8}\\.[a-zA-Z0-9-@=,\\s]{1,32}\\.[a-zA-Z0-9-_\\s]+\\.ssofile"
+          "pattern": "root\\.all\\.[a-zA-Z0-9-@=,\\s]+\\.[a-zA-Z0-9-_\\s]+\\.USER\\.ssofile"
         },
         {
-          "pattern": "account\\.[0-9]{12}\\.[a-zA-Z0-9-@=,\\s]{1,32}\\.[a-zA-Z0-9-_\\s]+\\.ssofile"
+          "pattern": "ou_id\\.ou-[a-z0-9]{4}-[a-z0-9]{8}\\.[a-zA-Z0-9-@=,\\s]{1,32}\\.[a-zA-Z0-9-_\\s]+\\.GROUP\\.ssofile"
         },
         {
-          "pattern": "account_tag\\.[\\w+=,.@-]{1,128}\\^[\\w+=,.@-]{1,256}\\.[\\w+=,.@-]{1,32}\\.[a-zA-Z0-9-_\\s]+\\.ssofile"
+          "pattern": "ou_id\\.ou-[a-z0-9]{4}-[a-z0-9]{8}\\.[a-zA-Z0-9-@=,\\s]{1,32}\\.[a-zA-Z0-9-_\\s]+\\.USER\\.ssofile"
+        },
+        {
+          "pattern": "account\\.[0-9]{12}\\.[a-zA-Z0-9-@=,\\s]{1,32}\\.[a-zA-Z0-9-_\\s]+\\.GROUP\\.ssofile"
+        },
+        {
+          "pattern": "account\\.[0-9]{12}\\.[a-zA-Z0-9-@=,\\s]{1,32}\\.[a-zA-Z0-9-_\\s]+\\.USER\\.ssofile"
+        },
+        {
+          "pattern": "account_tag\\.[\\w+=,.@-]{1,128}\\^[\\w+=,.@-]{1,256}\\.[\\w+=,.@-]{1,32}\\.[a-zA-Z0-9-_\\s]+\\.GROUP\\.ssofile"
+        },
+        {
+          "pattern": "account_tag\\.[\\w+=,.@-]{1,128}\\^[\\w+=,.@-]{1,256}\\.[\\w+=,.@-]{1,32}\\.[a-zA-Z0-9-_\\s]+\\.USER\\.ssofile"
         }
       ]
     }

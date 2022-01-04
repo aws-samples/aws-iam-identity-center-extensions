@@ -7,7 +7,12 @@ both created and change type events
 */
 
 // Environment configuration read
-const { DdbTable, errorNotificationsTopicArn, AWS_REGION } = process.env;
+const {
+  DdbTable,
+  errorNotificationsTopicArn,
+  AWS_REGION,
+  permissionSetProcessingTopicArn,
+} = process.env;
 
 // Lambda and other types import
 // SDK and third party client imports
@@ -18,13 +23,19 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
-import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
+import {
+  DynamoDBDocumentClient,
+  GetCommand,
+  GetCommandOutput,
+  PutCommand,
+} from "@aws-sdk/lib-dynamodb";
 //Import validator function and dependencies
 import Ajv from "ajv";
 import { S3Event, S3EventRecord } from "aws-lambda";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { Readable } from "stream";
+import { v4 as uuidv4 } from "uuid";
 //Import helper utilities and interfaces
 import {
   CreateUpdatePermissionSetPayload,
@@ -40,12 +51,14 @@ import {
   removeEmpty,
   streamToString,
 } from "../../helpers/src/utilities";
-import { v4 as uuidv4 } from "uuid";
 // SDK and third party client object initialistaion
-const ddbClientObject = new DynamoDBClient({ region: AWS_REGION });
+const ddbClientObject = new DynamoDBClient({
+  region: AWS_REGION,
+  maxAttempts: 2,
+});
 const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
-const snsClientObject = new SNSClient({ region: AWS_REGION });
-const s3clientObject = new S3Client({ region: AWS_REGION });
+const snsClientObject = new SNSClient({ region: AWS_REGION, maxAttempts: 2 });
+const s3clientObject = new S3Client({ region: AWS_REGION, maxAttempts: 2 });
 
 // Validator object initialisation
 const ajv = new Ajv({ allErrors: true });
@@ -88,6 +101,16 @@ export const handler = async (event: S3Event) => {
           createUpdateValidate
         );
         const upsertData = removeEmpty(payload);
+        const fetchPermissionSet: GetCommandOutput =
+          await ddbDocClientObject.send(
+            new GetCommand({
+              TableName: DdbTable,
+              Key: {
+                permissionSetName:
+                  upsertData.permissionSetData.permissionSetName,
+              },
+            })
+          );
         await ddbDocClientObject.send(
           new PutCommand({
             TableName: DdbTable,
@@ -96,6 +119,33 @@ export const handler = async (event: S3Event) => {
             },
           })
         );
+        if (fetchPermissionSet.Item) {
+          await snsClientObject.send(
+            new PublishCommand({
+              TopicArn: permissionSetProcessingTopicArn + "",
+              Message: JSON.stringify({
+                requestId: requestId,
+                action: "update",
+                permissionSetName:
+                  upsertData.permissionSetData.permissionSetName,
+                oldPermissionSetData: fetchPermissionSet.Item,
+              }),
+            })
+          );
+        } else {
+          await snsClientObject.send(
+            new PublishCommand({
+              TopicArn: permissionSetProcessingTopicArn + "",
+              Message: JSON.stringify({
+                requestId: requestId,
+                action: "create",
+                permissionSetName:
+                  upsertData.permissionSetData.permissionSetName,
+              }),
+            })
+          );
+        }
+
         logger({
           handler: "userInterface-permissionSetS3CreateUpdate",
           logMode: "info",

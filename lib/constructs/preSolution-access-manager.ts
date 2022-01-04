@@ -105,6 +105,12 @@ export class PreSolutionAccessManager extends Construct {
       preSolutionAccessManagerProps.IndependentUtility.ssoArtefactsBucket.grantReadWrite(
         preSolutionAccessManagerProps.PermissionSetCRUD.permissionSetAPIHandler
       );
+      preSolutionAccessManagerProps.IndependentUtility.snsTopicsKey.grantEncryptDecrypt(
+        preSolutionAccessManagerProps.PermissionSetCRUD.permissionSetAPIHandler
+      );
+      preSolutionAccessManagerProps.PermissionSetCRUD.permissionSetProcessingTopic.grantPublish(
+        preSolutionAccessManagerProps.PermissionSetCRUD.permissionSetAPIHandler
+      );
     } else {
       // PermissionSet - S3 interface mode
 
@@ -114,11 +120,16 @@ export class PreSolutionAccessManager extends Construct {
       preSolutionAccessManagerProps.IndependentUtility.errorNotificationsTopic.grantPublish(
         preSolutionAccessManagerProps.PermissionSetCRUD.permissionSetCuHandler
       );
-
+      preSolutionAccessManagerProps.PermissionSetCRUD.permissionSetProcessingTopic.grantPublish(
+        preSolutionAccessManagerProps.PermissionSetCRUD.permissionSetCuHandler
+      );
       preSolutionAccessManagerProps.IndependentUtility.snsTopicsKey.grantEncryptDecrypt(
         preSolutionAccessManagerProps.PermissionSetCRUD.permissionSetDelHandler
       );
       preSolutionAccessManagerProps.IndependentUtility.errorNotificationsTopic.grantPublish(
+        preSolutionAccessManagerProps.PermissionSetCRUD.permissionSetDelHandler
+      );
+      preSolutionAccessManagerProps.PermissionSetCRUD.permissionSetProcessingTopic.grantPublish(
         preSolutionAccessManagerProps.PermissionSetCRUD.permissionSetDelHandler
       );
       preSolutionAccessManagerProps.IndependentUtility.ddbTablesKey.grantEncryptDecrypt(

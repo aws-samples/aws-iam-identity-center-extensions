@@ -188,5 +188,10 @@ export class IndependentUtility extends Construct {
       parameterName: name(buildConfig, "linkQueueArn"),
       stringValue: this.linkManagerQueue.queueArn,
     });
+
+    new StringParameter(this, name(buildConfig, "ssoArtefactsBucketName"), {
+      parameterName: name(buildConfig, "ssoArtefactsBucketName"),
+      stringValue: this.ssoArtefactsBucket.bucketName,
+    });
   }
 }

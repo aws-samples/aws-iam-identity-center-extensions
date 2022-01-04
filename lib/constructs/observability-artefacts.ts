@@ -24,10 +24,23 @@ export class ObservabilityArtefacts extends Construct {
       `/aws/lambda/${buildConfig.Environment}-processTargetAccountSMListenerHandler`,
     ];
 
+    const permissionSetAPILogGroupNames: Array<string> = [
+      `/aws/lambda/${buildConfig.Environment}-permissionSetHandler`,
+      `/aws/lambda/${buildConfig.Environment}-permissionSetTopicProcessor`,
+      `/aws/lambda/${buildConfig.Environment}-processTargetAccountSMListenerHandler`,
+      `/aws/lambda/${buildConfig.Environment}-permissionSetSyncHandler`,
+    ];
+
     const ssoGroupLogGroupNames: Array<string> = [
       `/aws/lambda/${buildConfig.Environment}-linkManagerHandler`,
       `/aws/lambda/${buildConfig.Environment}-processTargetAccountSMListenerHandler`,
       `/aws/lambda/${buildConfig.Environment}-ssoGroupHandler`,
+    ];
+
+    const ssoUserLogGroupNames: Array<string> = [
+      `/aws/lambda/${buildConfig.Environment}-linkManagerHandler`,
+      `/aws/lambda/${buildConfig.Environment}-processTargetAccountSMListenerHandler`,
+      `/aws/lambda/${buildConfig.Environment}-ssoUserHandler`,
     ];
 
     const permissionSetSyncLogGroupNames: Array<string> = [
@@ -69,6 +82,33 @@ export class ObservabilityArtefacts extends Construct {
       }
     );
 
+    //Get RequestDetails for permissionSetAPI flows
+    new CfnQueryDefinition(
+      this,
+      name(buildConfig, "permissionSetAPIFlows-getRequestDetails"),
+      {
+        name: name(buildConfig, "permissionSetAPIFlows-getRequestDetails"),
+        queryString:
+          "filter requestId like '' | fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc",
+        logGroupNames: permissionSetAPILogGroupNames,
+      }
+    );
+
+    //Get Related RequestDetails for permissionSetAPI flows
+    new CfnQueryDefinition(
+      this,
+      name(buildConfig, "permissionSetAPIFlows-getRelateedRequestDetails"),
+      {
+        name: name(
+          buildConfig,
+          "permissionSetAPIFlows-getRelateedRequestDetails"
+        ),
+        queryString:
+          "filter sourceRequestId like '' | fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc",
+        logGroupNames: permissionSetAPILogGroupNames,
+      }
+    );
+
     //Get RequestDetails for SSO group trigger flows
     new CfnQueryDefinition(
       this,
@@ -93,6 +133,33 @@ export class ObservabilityArtefacts extends Construct {
         queryString:
           "filter sourceRequestId like '' | fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc",
         logGroupNames: ssoGroupLogGroupNames,
+      }
+    );
+
+    //Get RequestDetails for SSO user trigger flows
+    new CfnQueryDefinition(
+      this,
+      name(buildConfig, "ssoUserTriggerFlows-getRequestDetails"),
+      {
+        name: name(buildConfig, "ssoUserTriggerFlows-getRequestDetails"),
+        queryString:
+          "fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp desc | limit 30",
+        logGroupNames: ssoUserLogGroupNames,
+      }
+    );
+
+    //Get Related RequestDetails for SSO user trigger flows
+    new CfnQueryDefinition(
+      this,
+      name(buildConfig, "ssoUserTriggerFlows-getRelateedRequestDetails"),
+      {
+        name: name(
+          buildConfig,
+          "ssoUserTriggerFlows-getRelateedRequestDetails"
+        ),
+        queryString:
+          "filter sourceRequestId like '' | fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc",
+        logGroupNames: ssoUserLogGroupNames,
       }
     );
 

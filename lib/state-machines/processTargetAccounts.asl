@@ -27,7 +27,7 @@
             "Type": "Task",
             "Next": "Loop through all resources matching tag key value filter",
             "Parameters": {
-                "ResourcesPerPage": 10,
+                "ResourcesPerPage.$": "$.pageSize",
                 "ResourceTypeFilters.$": "States.Array($.resourceTypeFilters)",
                 "TagFilters": [
                     {
@@ -37,7 +37,15 @@
                 ]
             },
             "Resource": "arn:aws:states:::aws-sdk:resourcegroupstaggingapi:getResources",
-            "ResultPath": "$.getResources"
+            "ResultPath": "$.getResources",
+            "Retry": [
+                {
+                  "ErrorEquals": ["States.TaskFailed"],
+                  "BackoffRate": 1.5,
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 2
+                }
+              ]
         },
         "Loop through all resources matching tag key value filter": {
             "Type": "Map",
@@ -51,6 +59,14 @@
                             "Message.$": "$",
                             "TopicArn.$": "$.topicArn"
                         },
+                        "Retry": [
+                            {
+                              "ErrorEquals": ["States.TaskFailed"],
+                              "BackoffRate": 1.5,
+                              "IntervalSeconds": 2,
+                              "MaxAttempts": 2
+                            }
+                          ],
                         "End": true
                     }
                 }
@@ -100,21 +116,37 @@
         "Call ListAccounts": {
             "Type": "Task",
             "Parameters": {
-                "MaxResults": 10
+                "MaxResults.$": "$.pageSize"
             },
             "ResultPath": "$.listRootAccounts",
             "Resource": "arn:aws:states:::aws-sdk:organizations:listAccounts",
-            "Next": "Loop through all accounts in root"
+            "Next": "Loop through all accounts in root",
+            "Retry": [
+                {
+                  "ErrorEquals": ["States.TaskFailed"],
+                  "BackoffRate": 1.5,
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 2
+                }
+              ]
         },
         "Call ListAccounts with NextToken": {
             "Type": "Task",
             "Parameters": {
-                "MaxResults": 10,
+                "MaxResults.$": "$.pageSize",
                 "NextToken.$": "$.listRootAccounts.NextToken"
             },
             "ResultPath": "$.listRootAccounts",
             "Resource": "arn:aws:states:::aws-sdk:organizations:listAccounts",
-            "Next": "Loop through all accounts in root"
+            "Next": "Loop through all accounts in root",
+            "Retry": [
+                {
+                  "ErrorEquals": ["States.TaskFailed"],
+                  "BackoffRate": 1.5,
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 2
+                }
+              ]
         },
         "Loop through all accounts in root": {
             "Type": "Map",
@@ -129,6 +161,14 @@
                             "Message.$": "$",
                             "TopicArn.$": "$.topicArn"
                         },
+                        "Retry": [
+                            {
+                              "ErrorEquals": ["States.TaskFailed"],
+                              "BackoffRate": 1.5,
+                              "IntervalSeconds": 2,
+                              "MaxAttempts": 2
+                            }
+                          ],
                         "End": true
                     }
                 }
@@ -162,12 +202,20 @@
         "Call ListAccountsForParent": {
             "Type": "Task",
             "Parameters": {
-                "MaxResults": 10,
+                "MaxResults.$": "$.pageSize",
                 "ParentId.$": "$.ou_id"
             },
             "Resource": "arn:aws:states:::aws-sdk:organizations:listAccountsForParent",
             "Next": "Loop through all accounts in ou_id",
-            "ResultPath": "$.listAccountsForParent"
+            "ResultPath": "$.listAccountsForParent",
+            "Retry": [
+                {
+                  "ErrorEquals": ["States.TaskFailed"],
+                  "BackoffRate": 1.5,
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 2
+                }
+              ]
         },
         "Loop through all accounts in ou_id": {
             "Type": "Map",
@@ -181,6 +229,14 @@
                             "Message.$": "$",
                             "TopicArn.$": "$.topicArn"
                         },
+                        "Retry": [
+                            {
+                              "ErrorEquals": ["States.TaskFailed"],
+                              "BackoffRate": 1.5,
+                              "IntervalSeconds": 2,
+                              "MaxAttempts": 2
+                            }
+                          ],
                         "End": true
                     }
                 }
@@ -219,18 +275,26 @@
         "Call ListAccountsForParent with NextToken": {
             "Type": "Task",
             "Parameters": {
-                "MaxResults": 10,
+                "MaxResults.$": "$.pageSize",
                 "ParentId.$": "$.ou_id",
                 "NextToken.$": "$.listAccountsForParent.NextToken"
             },
             "Resource": "arn:aws:states:::aws-sdk:organizations:listAccountsForParent",
             "ResultPath": "$.listAccountsForParent",
-            "Next": "Loop through all accounts in ou_id"
+            "Next": "Loop through all accounts in ou_id",
+            "Retry": [
+                {
+                  "ErrorEquals": ["States.TaskFailed"],
+                  "BackoffRate": 1.5,
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 2
+                }
+              ]
         },
         "Call GetResources with PaginationToken": {
             "Type": "Task",
             "Parameters": {
-                "ResourcesPerPage": 10,
+                "ResourcesPerPage.$": "$.pageSize",
                 "ResourceTypeFilters.$": "States.Array($.resourceTypeFilters)",
                 "TagFilters": [
                     {
@@ -242,7 +306,15 @@
             },
             "Resource": "arn:aws:states:::aws-sdk:resourcegroupstaggingapi:getResources",
             "Next": "Loop through all resources matching tag key value filter",
-            "ResultPath": "$.getResources"
+            "ResultPath": "$.getResources",
+            "Retry": [
+                {
+                  "ErrorEquals": ["States.TaskFailed"],
+                  "BackoffRate": 1.5,
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 2
+                }
+              ]
         }
     }
 }

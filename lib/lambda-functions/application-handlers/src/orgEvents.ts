@@ -7,34 +7,7 @@ Trigger source: Org event notification topic which in turn
 - assumes role in SSO account for calling SSO admin API
 - determine the type of org event and resolve the
   relevant create and delete link operations
-- determine if there are related links
-    already provisioned by looking up
-    links table
-  - if there are related links, then
-    - for each related link
-    - determine if permission set referenced
-      in the link is already provisioned by
-      looking up permissionsetArn ddb table
-      - if the permission set exists, then
-        - look up in the groups ddb table,
-           if the group referenced in the record exists
-            - if the group exists
-              post the link operation message to
-              link manager topic
-            - if the group does not exist, verify if the
-              SSO configuration is using Active Directory
-                - if it uses AD configuration
-                     - resolve the group ID
-                       (as SSO generates this just-in-time)
-                       by calling identity store API
-                       and post link operation message to
-                       link manager topic
-                - if it does not use Active Directory configuration,
-                  stop processing as we won't be able to proceed
-                  without groupID which is the principal Arn
-      - if permission set does not exist, stop the process
-    - if there are no related links, then
-      stop the operation here
+- Process the appropriate link operation
 - Catch all failures in a generic exception block
   and post the error details to error notifications topics
 */
@@ -44,7 +17,6 @@ const {
   DdbTable,
   SSOAPIRoleArn,
   ISAPIRoleArn,
-  groupsTable,
   linkQueueUrl,
   adUsed,
   domainName,
@@ -55,14 +27,16 @@ const {
 } = process.env;
 
 // SDK and third party client imports
-import { DynamoDBClient, QueryCommandOutput } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   IdentitystoreClient,
   ListGroupsCommand,
   ListGroupsCommandOutput,
+  ListUsersCommand,
+  ListUsersCommandOutput,
 } from "@aws-sdk/client-identitystore";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
-import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
+import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
 import {
   ListInstancesCommand,
   ListInstancesCommandOutput,
@@ -73,22 +47,25 @@ import {
   DynamoDBDocumentClient,
   GetCommand,
   GetCommandOutput,
-  PutCommand,
   QueryCommand,
+  QueryCommandOutput,
 } from "@aws-sdk/lib-dynamodb";
 import { SNSEvent } from "aws-lambda";
+import { v4 as uuidv4 } from "uuid";
 import {
   ErrorMessage,
   requestStatus,
   StaticSSOPayload,
 } from "../../helpers/src/interfaces";
 import { logger } from "../../helpers/src/utilities";
-import { v4 as uuidv4 } from "uuid";
 // SDK and third party client object initialistaion
-const ddbClientObject = new DynamoDBClient({ region: AWS_REGION });
+const ddbClientObject = new DynamoDBClient({
+  region: AWS_REGION,
+  maxAttempts: 2,
+});
 const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
-const snsClientObject = new SNSClient({ region: AWS_REGION });
-const sqsClientObject = new SQSClient({ region: AWS_REGION });
+const snsClientObject = new SNSClient({ region: AWS_REGION, maxAttempts: 2 });
+const sqsClientObject = new SQSClient({ region: AWS_REGION, maxAttempts: 2 });
 const ssoAdminClientObject = new SSOAdminClient({
   region: ssoRegion,
   credentials: fromTemporaryCredentials({
@@ -96,6 +73,7 @@ const ssoAdminClientObject = new SSOAdminClient({
       RoleArn: SSOAPIRoleArn,
     },
   }),
+  maxAttempts: 2,
 });
 const identityStoreClientObject = new IdentitystoreClient({
   region: ssoRegion,
@@ -104,6 +82,7 @@ const identityStoreClientObject = new IdentitystoreClient({
       RoleArn: ISAPIRoleArn,
     },
   }),
+  maxAttempts: 2,
 });
 
 //Error notification
@@ -112,7 +91,7 @@ const errorMessage: ErrorMessage = {
 };
 
 export const tagBasedDeProvisioning = async (
-  staticssoPayload: StaticSSOPayload,
+  instanceArn: string,
   passedTagKey: string,
   targetId: string,
   requestId: string
@@ -141,12 +120,17 @@ export const tagBasedDeProvisioning = async (
       relatedProvisionedLinks.Items.map(async (Item) => {
         const parentLinkValue = Item.parentLink.toString();
         const parentLinkItems = parentLinkValue.split("@");
+        const staticSSOPayload: StaticSSOPayload = {
+          InstanceArn: instanceArn + "",
+          TargetType: "AWS_ACCOUNT",
+          PrincipalType: Item.principalType,
+        };
         await sqsClientObject.send(
           new SendMessageCommand({
             QueueUrl: linkQueueUrl,
             MessageBody: JSON.stringify({
               ssoParams: {
-                ...staticssoPayload,
+                ...staticSSOPayload,
                 PrincipalId: parentLinkItems[0],
                 PermissionSetArn: `arn:aws:sso:::permissionSet/${parentLinkItems[2]}/${parentLinkItems[3]}`,
                 TargetId: targetId,
@@ -184,7 +168,7 @@ export const tagBasedDeProvisioning = async (
 };
 
 export const orgEventProvisioning = async (
-  staticssoPayload: StaticSSOPayload,
+  instanceArn: string,
   targetId: string,
   actionType: string,
   entityData: string,
@@ -213,7 +197,7 @@ export const orgEventProvisioning = async (
   if (relatedLinks.Items && relatedLinks.Items?.length !== 0) {
     await Promise.all(
       relatedLinks.Items.map(async (Item) => {
-        const { groupName } = Item;
+        const { principalType, principalName } = Item;
         const permissionSetFetch: GetCommandOutput =
           await ddbDocClientObject.send(
             new GetCommand({
@@ -224,27 +208,61 @@ export const orgEventProvisioning = async (
             })
           );
         if (permissionSetFetch.Item) {
-          const relatedGroups: QueryCommandOutput =
-            await ddbDocClientObject.send(
-              // QueryCommand is a pagniated call, however the logic requires
-              // checking only if the result set is greater than 0
-              new QueryCommand({
-                TableName: groupsTable,
-                IndexName: "groupName",
-                KeyConditionExpression: "#groupname = :groupname",
-                ExpressionAttributeNames: { "#groupname": "groupName" },
-                ExpressionAttributeValues: { ":groupname": groupName },
-              })
-            );
+          // Compute user/group name based on whether Active Directory is the user store
+          let principalId = "0";
+          let principalNameToLookUp = principalName;
+          if (adUsed === "true" && domainName !== "") {
+            principalNameToLookUp = `${principalName}@${domainName}`;
+          }
 
-          if (relatedGroups.Items && relatedGroups.Items.length !== 0) {
+          if (principalType === "GROUP") {
+            const listGroupsResult: ListGroupsCommandOutput =
+              await identityStoreClientObject.send(
+                new ListGroupsCommand({
+                  IdentityStoreId: identityStoreId,
+                  Filters: [
+                    {
+                      AttributePath: "DisplayName",
+                      AttributeValue: principalNameToLookUp,
+                    },
+                  ],
+                })
+              );
+            if (listGroupsResult.Groups?.length !== 0) {
+              principalId = listGroupsResult.Groups?.[0].GroupId + "";
+            }
+          } else {
+            const listUsersResult: ListUsersCommandOutput =
+              await identityStoreClientObject.send(
+                new ListUsersCommand({
+                  IdentityStoreId: identityStoreId,
+                  Filters: [
+                    {
+                      AttributePath: "UserName",
+                      AttributeValue: principalNameToLookUp,
+                    },
+                  ],
+                })
+              );
+            if (listUsersResult.Users?.length !== 0) {
+              principalId = listUsersResult.Users?.[0].UserId + "";
+            }
+          }
+
+          if (principalId !== "0") {
+            // Resolved the principal ID and proceeding with the operation
+            const staticSSOPayload: StaticSSOPayload = {
+              InstanceArn: instanceArn + "",
+              TargetType: "AWS_ACCOUNT",
+              PrincipalType: principalType,
+            };
             await sqsClientObject.send(
               new SendMessageCommand({
                 QueueUrl: linkQueueUrl,
                 MessageBody: JSON.stringify({
                   ssoParams: {
-                    ...staticssoPayload,
-                    PrincipalId: relatedGroups.Items[0].groupId,
+                    ...staticSSOPayload,
+                    PrincipalId: principalId,
                     PermissionSetArn: permissionSetFetch.Item.permissionSetArn,
                     TargetId: targetId,
                   },
@@ -257,12 +275,12 @@ export const orgEventProvisioning = async (
                   permissionSetFetch.Item.permissionSetArn
                     .toString()
                     .split("/")[2]
-                }-${relatedGroups.Items[0].groupId}`,
+                }-${principalId}`,
                 MessageGroupId: `${targetId}-${
                   permissionSetFetch.Item.permissionSetArn
                     .toString()
                     .split("/")[2]
-                }-${relatedGroups.Items[0].groupId}`,
+                }-${principalId}`,
               })
             );
             logger({
@@ -273,93 +291,27 @@ export const orgEventProvisioning = async (
               requestId: requestId,
               statusMessage: `OrgEvents - link provisioned to link manager topic`,
             });
-          } else if (adUsed === "true" && domainName !== "") {
-            const listGroupsResult: ListGroupsCommandOutput =
-              await identityStoreClientObject.send(
-                new ListGroupsCommand({
-                  IdentityStoreId: identityStoreId,
-                  Filters: [
-                    {
-                      AttributePath: "DisplayName",
-                      AttributeValue: `${groupName}@${domainName}`,
-                    },
-                  ],
-                })
-              );
-            if (
-              listGroupsResult.Groups &&
-              listGroupsResult.Groups?.length !== 0
-            ) {
-              // Resolved the AD group ID and proceeding with the operation
-              const groupId = listGroupsResult.Groups[0].GroupId;
-              await ddbDocClientObject.send(
-                new PutCommand({
-                  TableName: groupsTable,
-                  Item: {
-                    groupName: groupName,
-                    groupId: groupId,
-                  },
-                })
-              );
-              await sqsClientObject.send(
-                new SendMessageCommand({
-                  QueueUrl: linkQueueUrl,
-                  MessageBody: JSON.stringify({
-                    ssoParams: {
-                      ...staticssoPayload,
-                      PrincipalId: groupId,
-                      PermissionSetArn:
-                        permissionSetFetch.Item.permissionSetArn,
-                      TargetId: targetId,
-                    },
-                    actionType: actionType,
-                    entityType: entityType,
-                    tagKeyLookUp: tagKeyLookupValue,
-                    sourceRequestId: requestId,
-                  }),
-                  MessageDeduplicationId: `${actionType}-${targetId}-${
-                    permissionSetFetch.Item.permissionSetArn
-                      .toString()
-                      .split("/")[2]
-                  }-${groupId}`,
-                  MessageGroupId: `${targetId}-${
-                    permissionSetFetch.Item.permissionSetArn
-                      .toString()
-                      .split("/")[2]
-                  }-${groupId}`,
-                })
-              );
-              logger({
-                handler: "orgEventsProcessor",
-                logMode: "info",
-                relatedData: `${entityData}`,
-                status: requestStatus.Completed,
-                requestId: requestId,
-                statusMessage: `OrgEvents - link provisioned to link manager topic`,
-              });
-            } else {
-              // No related groups found from AD sync for this link
-              logger({
-                handler: "orgEventsProcessor",
-                logMode: "info",
-                relatedData: `${entityData}`,
-                status: requestStatus.Aborted,
-                requestId: requestId,
-                statusMessage: `OrgEvents - no related groups found`,
-              });
-            }
           } else {
-            // Either the permissionset or the group
-            // pertaining to the link have not been provisioned yet
+            // No related principals found for this link
             logger({
               handler: "orgEventsProcessor",
               logMode: "info",
               relatedData: `${entityData}`,
               status: requestStatus.Aborted,
               requestId: requestId,
-              statusMessage: `OrgEvents - no related groups or permission set found`,
+              statusMessage: `OrgEvents - no related principals found`,
             });
           }
+        } else {
+          // No related permission sets found for this link
+          logger({
+            handler: "orgEventsProcessor",
+            logMode: "info",
+            relatedData: `${entityData}`,
+            status: requestStatus.Aborted,
+            requestId: requestId,
+            statusMessage: `OrgEvents - no related permission sets found`,
+          });
         }
       })
     );
@@ -375,7 +327,7 @@ export const orgEventProvisioning = async (
       statusMessage: `OrgEvents - conducting de-provsioning check for entityData ${entityData} on targetaccount ID ${targetId} as an account tag is now updated`,
     });
     await tagBasedDeProvisioning(
-      staticssoPayload,
+      instanceArn,
       entityData.split("^")[0],
       targetId,
       requestId
@@ -394,14 +346,9 @@ export const handler = async (event: SNSEvent) => {
     const instanceArn = resolvedInstances.Instances?.[0].InstanceArn + "";
     const identityStoreId =
       resolvedInstances.Instances?.[0].IdentityStoreId + "";
-    const staticSSOPayload: StaticSSOPayload = {
-      InstanceArn: instanceArn + "",
-      TargetType: "AWS_ACCOUNT",
-      PrincipalType: "GROUP",
-    };
     if (message.detail.eventName === "CreateAccountResult") {
       await orgEventProvisioning(
-        staticSSOPayload,
+        instanceArn,
         message.detail.serviceEventDetails.createAccountStatus.accountId,
         "create",
         "all",
@@ -411,7 +358,7 @@ export const handler = async (event: SNSEvent) => {
       );
     } else if (message.detail.eventName === "MoveAccount") {
       await orgEventProvisioning(
-        staticSSOPayload,
+        instanceArn,
         message.detail.requestParameters.accountId,
         "delete",
         message.detail.requestParameters.sourceParentId,
@@ -420,7 +367,7 @@ export const handler = async (event: SNSEvent) => {
         requestId
       );
       await orgEventProvisioning(
-        staticSSOPayload,
+        instanceArn,
         message.detail.requestParameters.accountId,
         "create",
         message.detail.requestParameters.destinationParentId,
@@ -463,7 +410,7 @@ export const handler = async (event: SNSEvent) => {
               statusMessage: `OrgEvents - tag change , delta is a delete operation`,
             });
             await tagBasedDeProvisioning(
-              staticSSOPayload,
+              instanceArn,
               changedTagKey,
               resources[0].split("/")[2],
               requestId
@@ -482,7 +429,7 @@ export const handler = async (event: SNSEvent) => {
             });
             const tagValue = tags[`${changedTagKey}`];
             await orgEventProvisioning(
-              staticSSOPayload,
+              instanceArn,
               resources[0].split("/")[2],
               "create",
               `${changedTagKey}^${tagValue}`,
