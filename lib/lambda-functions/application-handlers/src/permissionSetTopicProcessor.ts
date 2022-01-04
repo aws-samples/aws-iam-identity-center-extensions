@@ -446,7 +446,7 @@ export const handler = async (event: SNSEvent) => {
                     requestId: requestId,
                     relatedData: permissionSetName,
                     status: requestStatus.InProgress,
-                    statusMessage: `PermissionSet update operation - removed managed policies`,
+                    statusMessage: `PermissionSet update operation - removed managed policies from changeSet calculated`,
                   });
                   reProvision = true;
                 }
@@ -468,7 +468,7 @@ export const handler = async (event: SNSEvent) => {
                     requestId: requestId,
                     relatedData: permissionSetName,
                     status: requestStatus.InProgress,
-                    statusMessage: `PermissionSet update operation - added managed policies`,
+                    statusMessage: `PermissionSet update operation - added managed policies from changeSet calculated`,
                   });
                   reProvision = true;
                 }

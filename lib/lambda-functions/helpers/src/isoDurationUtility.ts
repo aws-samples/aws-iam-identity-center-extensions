@@ -42,12 +42,12 @@ const durationRegex = new RegExp(
   ].join("")
 );
 
-function parseNum(s: string): number | undefined {
-  if (s === "" || s === undefined || s === null) {
+function parseNum(stringValue: string): number | undefined {
+  if (stringValue === "" || stringValue === undefined || stringValue === null) {
     return undefined;
   }
 
-  return parseFloat(s.replace(",", "."));
+  return parseFloat(stringValue.replace(",", "."));
 }
 
 export const InvalidDurationError = new Error("Invalid duration");

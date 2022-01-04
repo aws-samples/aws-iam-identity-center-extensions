@@ -124,7 +124,7 @@ export const handler = async (event: SNSEvent) => {
       sessionDurationInMinutes: computedSessionDurationInMinutes,
       relayState: computedRelayState,
       tags: message.listTagsForResource.Tags,
-      managedPoliciesArnList: computedManagedPoliciesArnList.sort(),
+      managedPoliciesArnList: [...computedManagedPoliciesArnList].sort(),
       inlinePolicyDocument: computedInlinePolicy,
     });
 

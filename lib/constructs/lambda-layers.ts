@@ -1,5 +1,5 @@
 /*
-Lambda layers construct , uses node js 14.X runtime
+Lambda layers construct
 */
 
 import { Code, LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";

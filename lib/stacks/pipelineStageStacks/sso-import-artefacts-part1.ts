@@ -189,7 +189,12 @@ export class SSOImportArtefactsPart1 extends Stack {
     );
     importPermissionSetSMRole.addToPrincipalPolicy(
       new PolicyStatement({
-        actions: ["dynamodb:*"],
+        actions: [
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:GetItem",
+          "dynamodb:DeleteItem",
+        ],
         resources: [
           `arn:aws:dynamodb:${buildConfig.PipelineSettings.SSOServiceAccountRegion}:${buildConfig.PipelineSettings.SSOServiceAccountId}:table/${buildConfig.Environment}-temp-PermissionSets`,
           `arn:aws:dynamodb:${buildConfig.PipelineSettings.SSOServiceAccountRegion}:${buildConfig.PipelineSettings.SSOServiceAccountId}:table/${buildConfig.Environment}-temp-PermissionSets/index/*`,
@@ -244,7 +249,11 @@ export class SSOImportArtefactsPart1 extends Stack {
     );
     importCurrentConfigSMRole.addToPrincipalPolicy(
       new PolicyStatement({
-        actions: ["dynamodb:*"],
+        actions: [
+          "dynamodb:CreateTable",
+          "dynamodb:DeleteTable",
+          "dynamodb:DescribeTable",
+        ],
         resources: [
           `arn:aws:dynamodb:${buildConfig.PipelineSettings.SSOServiceAccountRegion}:${buildConfig.PipelineSettings.SSOServiceAccountId}:table/${buildConfig.Environment}-temp-PermissionSets`,
           `arn:aws:dynamodb:${buildConfig.PipelineSettings.SSOServiceAccountRegion}:${buildConfig.PipelineSettings.SSOServiceAccountId}:table/${buildConfig.Environment}-temp-PermissionSets/index/*`,
