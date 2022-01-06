@@ -33,7 +33,9 @@
       "ResultPath": "$.listInstancesResult",
       "Retry": [
         {
-          "ErrorEquals": ["States.TaskFailed"],
+          "ErrorEquals": [
+            "States.TaskFailed"
+          ],
           "BackoffRate": 1.5,
           "IntervalSeconds": 2,
           "MaxAttempts": 2
@@ -72,7 +74,9 @@
       "ResultPath": "$.createPermissionSetsTableResult",
       "Retry": [
         {
-          "ErrorEquals": ["States.TaskFailed"],
+          "ErrorEquals": [
+            "States.TaskFailed"
+          ],
           "BackoffRate": 1.5,
           "IntervalSeconds": 2,
           "MaxAttempts": 2
@@ -103,7 +107,9 @@
       "ResultPath": "$.describeTemporaryPermissionSetsTableResult",
       "Retry": [
         {
-          "ErrorEquals": ["States.TaskFailed"],
+          "ErrorEquals": [
+            "States.TaskFailed"
+          ],
           "BackoffRate": 1.5,
           "IntervalSeconds": 2,
           "MaxAttempts": 2
@@ -175,12 +181,34 @@
       "ResultPath": null,
       "Retry": [
         {
-          "ErrorEquals": ["States.TaskFailed"],
+          "ErrorEquals": [
+            "States.TaskFailed"
+          ],
           "BackoffRate": 1.5,
           "IntervalSeconds": 2,
           "MaxAttempts": 2
         }
       ],
+      "Next": "Check if StateMachine succeeded or failed?"
+    },
+    "Check if StateMachine succeeded or failed?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.stateMachineError",
+          "IsPresent": true,
+          "Next": "State machine failed"
+        }
+      ],
+      "Default": "State machine succeeded"
+    },
+    "State machine failed": {
+      "Type": "Fail",
+      "Error": "Import Current AWS SSO configuration failed",
+      "Cause": "Import Current AWS SSO configuration failed"
+    },
+    "State machine succeeded": {
+      "Type": "Pass",
       "End": true
     }
   }

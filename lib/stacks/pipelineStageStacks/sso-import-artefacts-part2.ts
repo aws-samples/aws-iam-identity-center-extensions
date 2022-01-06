@@ -185,6 +185,7 @@ export class SSOImportArtefactsPart2 extends Stack {
         environment: {
           smDescribeRoleArn:
             deployImportArtefacts.currentConfigSMDescribeRoleArn,
+          ssoAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         },
       }

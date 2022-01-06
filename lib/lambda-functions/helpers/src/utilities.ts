@@ -73,3 +73,9 @@ export function logger(logMessage: LogMessage) {
     }
   }
 }
+
+export class StateMachineError extends Error {
+  constructor(public errorMessage: { message: string }) {
+    super();
+  }
+}
