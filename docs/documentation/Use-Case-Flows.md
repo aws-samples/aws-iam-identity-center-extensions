@@ -1,7 +1,5 @@
 # Use Case Logical State Diagrams
 
-<!-- TODO Update to public link -->
-
 For more information on going through the use cases for this solution, see the workshop [here](https://catalog.us-east-1.prod.workshops.aws/v2/workshops/640b0bab-1f5e-494a-973e-4ed7919d397b/en-US/03-usecases)
 
 ## Account Assignment Life Cycle
