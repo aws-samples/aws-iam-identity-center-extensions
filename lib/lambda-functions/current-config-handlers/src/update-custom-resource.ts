@@ -106,7 +106,7 @@ export const handler = async (event: any) => {
       }
     }
   } catch (e) {
-    if (e instanceof StateMachineError) {      
+    if (e instanceof StateMachineError) {
       throw e;
     } else {
       logger({
