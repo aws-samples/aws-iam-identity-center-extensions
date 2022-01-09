@@ -43,13 +43,7 @@ const {
 
 // SDK and third party client imports
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import {
-  IdentitystoreClient,
-  ListGroupsCommand,
-  ListGroupsCommandOutput,
-  ListUsersCommand,
-  ListUsersCommandOutput,
-} from "@aws-sdk/client-identitystore";
+import { IdentitystoreClient } from "@aws-sdk/client-identitystore";
 import { SFNClient } from "@aws-sdk/client-sfn";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
@@ -71,7 +65,11 @@ import {
   StateMachinePayload,
   StaticSSOPayload,
 } from "../../helpers/src/interfaces";
-import { invokeStepFunction, logger } from "../../helpers/src/utilities";
+import {
+  invokeStepFunction,
+  logger,
+  resolvePrincipal,
+} from "../../helpers/src/utilities";
 
 // SDK and third party client object initialistaion
 const ddbClientObject = new DynamoDBClient({
@@ -122,7 +120,8 @@ export const handler = async (event: SNSEvent) => {
     // Instance Arn needed for SSO admin API's
     const instanceArn = resolvedInstances.Instances?.[0].InstanceArn;
     // Identity store ID needed for SSO Identity Store API's
-    const identityStoreId = resolvedInstances.Instances?.[0].IdentityStoreId;
+    const identityStoreId =
+      resolvedInstances.Instances?.[0].IdentityStoreId + "";
 
     // Because it's a stream handler, there
     // could be more than one link updates coming through, hence the proimse all
@@ -163,44 +162,16 @@ export const handler = async (event: SNSEvent) => {
     if (permissionSetRecord.Item) {
       const { permissionSetArn } = permissionSetRecord.Item;
       // Compute user/group name based on whether Active Directory is the user store
-      let principalId = "0";
       let principalNameToLookUp = principalName;
       if (adUsed === "true" && domainName !== "") {
         principalNameToLookUp = `${principalName}@${domainName}`;
       }
-      if (principalType === "GROUP") {
-        const listGroupsResult: ListGroupsCommandOutput =
-          await identityStoreClientObject.send(
-            new ListGroupsCommand({
-              IdentityStoreId: identityStoreId,
-              Filters: [
-                {
-                  AttributePath: "DisplayName",
-                  AttributeValue: principalNameToLookUp,
-                },
-              ],
-            })
-          );
-        if (listGroupsResult.Groups?.length !== 0) {
-          principalId = listGroupsResult.Groups?.[0].GroupId + "";
-        }
-      } else {
-        const listUsersResult: ListUsersCommandOutput =
-          await identityStoreClientObject.send(
-            new ListUsersCommand({
-              IdentityStoreId: identityStoreId,
-              Filters: [
-                {
-                  AttributePath: "UserName",
-                  AttributeValue: principalNameToLookUp,
-                },
-              ],
-            })
-          );
-        if (listUsersResult.Users?.length !== 0) {
-          principalId = listUsersResult.Users?.[0].UserId + "";
-        }
-      }
+      const principalId = await resolvePrincipal(
+        identityStoreId,
+        identityStoreClientObject,
+        principalType,
+        principalNameToLookUp
+      );
 
       if (principalId !== "0") {
         if (entityType === "account") {

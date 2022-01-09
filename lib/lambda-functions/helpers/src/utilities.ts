@@ -1,3 +1,10 @@
+import {
+  IdentitystoreClient,
+  ListGroupsCommand,
+  ListGroupsCommandOutput,
+  ListUsersCommand,
+  ListUsersCommandOutput,
+} from "@aws-sdk/client-identitystore";
 import { SFNClient, StartExecutionCommand } from "@aws-sdk/client-sfn";
 import { Readable } from "stream";
 import { LogMessage, StateMachinePayload } from "./interfaces";
@@ -79,3 +86,49 @@ export class StateMachineError extends Error {
     super();
   }
 }
+
+export const resolvePrincipal = async (
+  identityStoreId: string,
+  identityStoreClientObject: IdentitystoreClient,
+  principalType: string,
+  principalName: string
+): Promise<string> => {
+  if (principalType === "GROUP") {
+    const listGroupsResult: ListGroupsCommandOutput =
+      await identityStoreClientObject.send(
+        new ListGroupsCommand({
+          IdentityStoreId: identityStoreId,
+          Filters: [
+            {
+              AttributePath: "DisplayName",
+              AttributeValue: principalName,
+            },
+          ],
+        })
+      );
+    if (listGroupsResult.Groups?.length !== 0) {
+      return listGroupsResult.Groups?.[0].GroupId + "";
+    } else {
+      return "0";
+    }
+  } else if (principalType === "USER") {
+    const listUsersResult: ListUsersCommandOutput =
+      await identityStoreClientObject.send(
+        new ListUsersCommand({
+          IdentityStoreId: identityStoreId,
+          Filters: [
+            {
+              AttributePath: "UserName",
+              AttributeValue: principalName,
+            },
+          ],
+        })
+      );
+    if (listUsersResult.Users?.length !== 0) {
+      return listUsersResult.Users?.[0].UserId + "";
+    } else {
+      return "0";
+    }
+  }
+  return "0";
+};

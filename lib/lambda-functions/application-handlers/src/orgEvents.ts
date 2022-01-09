@@ -28,13 +28,7 @@ const {
 
 // SDK and third party client imports
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import {
-  IdentitystoreClient,
-  ListGroupsCommand,
-  ListGroupsCommandOutput,
-  ListUsersCommand,
-  ListUsersCommandOutput,
-} from "@aws-sdk/client-identitystore";
+import { IdentitystoreClient } from "@aws-sdk/client-identitystore";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
 import {
@@ -57,7 +51,7 @@ import {
   requestStatus,
   StaticSSOPayload,
 } from "../../helpers/src/interfaces";
-import { logger } from "../../helpers/src/utilities";
+import { logger, resolvePrincipal } from "../../helpers/src/utilities";
 // SDK and third party client object initialistaion
 const ddbClientObject = new DynamoDBClient({
   region: AWS_REGION,
@@ -209,45 +203,16 @@ export const orgEventProvisioning = async (
           );
         if (permissionSetFetch.Item) {
           // Compute user/group name based on whether Active Directory is the user store
-          let principalId = "0";
           let principalNameToLookUp = principalName;
           if (adUsed === "true" && domainName !== "") {
             principalNameToLookUp = `${principalName}@${domainName}`;
           }
-
-          if (principalType === "GROUP") {
-            const listGroupsResult: ListGroupsCommandOutput =
-              await identityStoreClientObject.send(
-                new ListGroupsCommand({
-                  IdentityStoreId: identityStoreId,
-                  Filters: [
-                    {
-                      AttributePath: "DisplayName",
-                      AttributeValue: principalNameToLookUp,
-                    },
-                  ],
-                })
-              );
-            if (listGroupsResult.Groups?.length !== 0) {
-              principalId = listGroupsResult.Groups?.[0].GroupId + "";
-            }
-          } else {
-            const listUsersResult: ListUsersCommandOutput =
-              await identityStoreClientObject.send(
-                new ListUsersCommand({
-                  IdentityStoreId: identityStoreId,
-                  Filters: [
-                    {
-                      AttributePath: "UserName",
-                      AttributeValue: principalNameToLookUp,
-                    },
-                  ],
-                })
-              );
-            if (listUsersResult.Users?.length !== 0) {
-              principalId = listUsersResult.Users?.[0].UserId + "";
-            }
-          }
+          const principalId = await resolvePrincipal(
+            identityStoreId,
+            identityStoreClientObject,
+            principalType,
+            principalNameToLookUp
+          );
 
           if (principalId !== "0") {
             // Resolved the principal ID and proceeding with the operation
