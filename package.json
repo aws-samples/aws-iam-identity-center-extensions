@@ -16,30 +16,30 @@
     "cdk-synth-env": "cdk synth env-aws-sso-extensions-for-enterprise -c config=env",
     "cdk-deploy-env": "cdk deploy env-aws-sso-extensions-for-enterprise -c config=env",
     "cdk-destroy-env": "cdk destroy env-aws-sso-extensions-for-enterprise -c config=env",
-    "postinstall": "yarn install --cwd ./lib/lambda-functions --frozen-lockfile"
+    "postinstall": "yarn install --cwd ./lib/lambda-functions --frozen-lockfile"    
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.89",
-    "@types/jest": "^27.0.3",
-    "@types/js-yaml": "^4.0.5",
-    "@types/node": "^17.0.5",
-    "@typescript-eslint/eslint-plugin": "^5.8.1",
-    "@typescript-eslint/parser": "^5.8.1",
-    "aws-cdk": "^2.3.0",
-    "esbuild": "^0.14.9",
-    "eslint": "^8.5.0",
-    "eslint-plugin-import": "^2.25.3",
-    "eslint-plugin-security": "^1.4.0",
-    "jest": "^27.4.5",
-    "prettier": "^2.5.1",
-    "ts-jest": "^27.1.2",
-    "ts-node": "^10.4.0",
-    "typescript": "^4.5.4"
+    "@types/aws-lambda": "8.10.89",
+    "@types/jest": "27.4.0",
+    "@types/js-yaml": "4.0.5",
+    "@types/node": "17.0.8",
+    "@typescript-eslint/eslint-plugin": "5.9.0",
+    "@typescript-eslint/parser": "5.9.0",
+    "aws-cdk": "2.5.0",
+    "esbuild": "0.14.11",
+    "eslint": "8.6.0",
+    "eslint-plugin-import": "2.25.4",
+    "eslint-plugin-security": "1.4.0",
+    "jest": "27.4.7",
+    "prettier": "2.5.1",
+    "ts-jest": "27.1.2",
+    "ts-node": "10.4.0",
+    "typescript": "4.5.4"
   },
   "dependencies": {
-    "aws-cdk-lib": "^2.3.0",
-    "constructs": "^10.0.17",
-    "js-yaml": "^4.1.0",
-    "source-map-support": "^0.5.21"
+    "aws-cdk-lib": "2.5.0",
+    "constructs": "10.0.29",
+    "js-yaml": "4.1.0",
+    "source-map-support": "0.5.21"
   }
 }
