@@ -18,7 +18,6 @@ function name(buildConfig: BuildConfig, resourcename: string): string {
 export interface OrgEventsProps {
   readonly linksTableName: string;
   readonly permissionSetArnTableName: string;
-  readonly groupsTableName: string;
   readonly linkQueueUrl: string;
   readonly errorNotificationsTopicArn: string;
   readonly nodeJsLayer: ILayerVersion;
@@ -69,7 +68,6 @@ export class OrgEvents extends Construct {
         layers: [orgEventsProps.nodeJsLayer],
         environment: {
           linkQueueUrl: orgEventsProps.linkQueueUrl,
-          groupsTable: orgEventsProps.groupsTableName,
           permissionSetArnTable: orgEventsProps.permissionSetArnTableName,
           DdbTable: orgEventsProps.linksTableName,
           errorNotificationsTopicArn: orgEventsProps.errorNotificationsTopicArn,

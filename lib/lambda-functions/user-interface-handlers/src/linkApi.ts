@@ -41,10 +41,13 @@ import {
 import { logger } from "../../helpers/src/utilities";
 
 // SDK and third party client object initialistaion
-const ddbClientObject = new DynamoDBClient({ region: AWS_REGION });
+const ddbClientObject = new DynamoDBClient({
+  region: AWS_REGION,
+  maxAttempts: 2,
+});
 const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
-const s3clientObject = new S3Client({ region: AWS_REGION });
-const snsClientObject = new SNSClient({ region: AWS_REGION });
+const s3clientObject = new S3Client({ region: AWS_REGION, maxAttempts: 2 });
+const snsClientObject = new SNSClient({ region: AWS_REGION, maxAttempts: 2 });
 // Validator object initialisation
 const ajv = new Ajv({ allErrors: true });
 const schemaDefinition = JSON.parse(
@@ -72,8 +75,9 @@ export const handler = async (
           awsEntityType: keyValue[0],
           awsEntityData: keyValue[1],
           permissionSetName: keyValue[2],
-          // Handle cases where groupName contains one or more delimeter characters
-          groupName: keyValue.slice(3, -1).join(delimeter),
+          // Handle cases where principalName contains one or more delimeter characters
+          principalName: keyValue.slice(3, -2).join(delimeter),
+          principalType: keyValue[4],
         };
         await s3clientObject.send(
           new PutObjectCommand({

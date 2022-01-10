@@ -6,7 +6,13 @@ Trigger source: Permission set API
 */
 
 // Environment configuration read
-const { linksTable, AWS_REGION, artefactsBucketName, DdbTable } = process.env;
+const {
+  linksTable,
+  AWS_REGION,
+  artefactsBucketName,
+  DdbTable,
+  permissionSetProcessingTopicArn,
+} = process.env;
 
 // Lambda types import
 // SDK and third party client imports
@@ -16,9 +22,12 @@ import {
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
+import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import {
   DeleteCommand,
   DynamoDBDocumentClient,
+  GetCommand,
+  GetCommandOutput,
   PutCommand,
   QueryCommand,
   QueryCommandOutput,
@@ -41,9 +50,13 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { logger } from "../../helpers/src/utilities";
 // SDK and third party client object initialistaion
-const ddbClientObject = new DynamoDBClient({ region: AWS_REGION });
+const ddbClientObject = new DynamoDBClient({
+  region: AWS_REGION,
+  maxAttempts: 2,
+});
 const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
-const s3clientObject = new S3Client({ region: AWS_REGION });
+const s3clientObject = new S3Client({ region: AWS_REGION, maxAttempts: 2 });
+const snsClientObject = new SNSClient({ region: AWS_REGION, maxAttempts: 2 });
 
 // Validator object initialisation
 const ajv = new Ajv({ allErrors: true });
@@ -94,6 +107,15 @@ export const handler = async (
             ServerSideEncryption: "AES256",
           })
         );
+        const fetchPermissionSet: GetCommandOutput =
+          await ddbDocClientObject.send(
+            new GetCommand({
+              TableName: DdbTable,
+              Key: {
+                permissionSetName: payload.permissionSetData.permissionSetName,
+              },
+            })
+          );
         await ddbDocClientObject.send(
           new PutCommand({
             TableName: DdbTable,
@@ -102,6 +124,31 @@ export const handler = async (
             },
           })
         );
+        if (fetchPermissionSet.Item) {
+          await snsClientObject.send(
+            new PublishCommand({
+              TopicArn: permissionSetProcessingTopicArn + "",
+              Message: JSON.stringify({
+                requestId: requestId,
+                action: "update",
+                permissionSetName: payload.permissionSetData.permissionSetName,
+                oldPermissionSetData: fetchPermissionSet.Item,
+              }),
+            })
+          );
+        } else {
+          await snsClientObject.send(
+            new PublishCommand({
+              TopicArn: permissionSetProcessingTopicArn + "",
+              Message: JSON.stringify({
+                requestId: requestId,
+                action: "create",
+                permissionSetName: payload.permissionSetData.permissionSetName,
+              }),
+            })
+          );
+        }
+
         logger({
           handler: "userInterface-permissionSetApi",
           logMode: "info",
@@ -167,6 +214,16 @@ export const handler = async (
               Key: {
                 permissionSetName: payload.permissionSetData.permissionSetName,
               },
+            })
+          );
+          await snsClientObject.send(
+            new PublishCommand({
+              TopicArn: permissionSetProcessingTopicArn + "",
+              Message: JSON.stringify({
+                requestId: requestId,
+                action: payload.action,
+                permissionSetName: payload.permissionSetData.permissionSetName,
+              }),
             })
           );
           logger({

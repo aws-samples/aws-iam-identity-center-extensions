@@ -24,7 +24,7 @@ import {
 export const handler = async (
   event: CloudFormationCustomResourceEvent
 ): Promise<CloudFormationCustomResourceResponse> => {
-  if (event.ResourceType !== "Delete") {
+  if (event.RequestType !== "Delete") {
     try {
       const { paramReaderRoleArn, paramName, paramRegion, paramAccount } =
         event.ResourceProperties;
@@ -36,6 +36,7 @@ export const handler = async (
             RoleArn: paramReaderRoleArn,
           },
         }),
+        maxAttempts: 2,
       });
 
       const parameterValue = await ssmClientObject.send(

@@ -90,6 +90,7 @@ export class PreSolutionArtefacts extends Stack {
         ssoArtefactsBucket: this.deployIndependentUtility.ssoArtefactsBucket,
         ddbTablesKey: this.deployIndependentUtility.ddbTablesKey,
         logsKey: this.deployIndependentUtility.logsKey,
+        snsTopicsKey: this.deployIndependentUtility.snsTopicsKey,
       }
     );
 

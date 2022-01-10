@@ -111,14 +111,19 @@ export class SSOApiRoles extends Stack {
 
     new CrossAccountRole(
       this,
-      name(buildConfig, "listgroups-identitystoreapi-role"),
+      name(buildConfig, "listPrincipals-identitystoreapi-role"),
       buildConfig,
       {
         assumeAccountID: buildConfig.PipelineSettings.TargetAccountId,
-        roleNameKey: "listgroups-identitystoreapi",
+        roleNameKey: "listPrincipals-identitystoreapi",
         policyStatement: new PolicyStatement({
           resources: ["*"],
-          actions: ["identitystore:ListGroups", "identitystore:DescribeGroup"],
+          actions: [
+            "identitystore:ListGroups",
+            "identitystore:ListUsers",
+            "identitystore:DescribeGroup",
+            "identitystore:DescribeUser",
+          ],
         }),
       }
     );

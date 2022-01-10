@@ -37,16 +37,20 @@ export class SSOEventsProcessor extends Stack {
       }
     );
 
-    const ssoEventsNotificationTopic = new Topic(
+    ssoArtefactsKey.grantEncryptDecrypt(
+      new ServicePrincipal("events.amazonaws.com")
+    );
+
+    const ssoGroupEventsNotificationTopic = new Topic(
       this,
-      name(buildConfig, "ssoEventsNotificationTopic"),
+      name(buildConfig, "ssoGroupEventsNotificationTopic"),
       {
         masterKey: ssoArtefactsKey,
-        displayName: name(buildConfig, "ssoEventsNotificationTopic"),
+        displayName: name(buildConfig, "ssoGroupEventsNotificationTopic"),
       }
     );
 
-    ssoEventsNotificationTopic.addToResourcePolicy(
+    ssoGroupEventsNotificationTopic.addToResourcePolicy(
       new PolicyStatement({
         actions: ["SNS:Subscribe", "SNS:Receive"],
         resources: ["*"],
@@ -58,11 +62,11 @@ export class SSOEventsProcessor extends Stack {
 
     new SSMParamWriter(
       this,
-      name(buildConfig, "ssoEventsNotificationTopicArn"),
+      name(buildConfig, "ssoGroupEventsNotificationTopicArn"),
       buildConfig,
       {
-        ParamNameKey: "ssoEventsNotificationTopicArn",
-        ParamValue: ssoEventsNotificationTopic.topicArn,
+        ParamNameKey: "ssoGroupEventsNotificationTopicArn",
+        ParamValue: ssoGroupEventsNotificationTopic.topicArn,
         ReaderAccountId: buildConfig.PipelineSettings.TargetAccountId,
       }
     );
@@ -84,12 +88,61 @@ export class SSOEventsProcessor extends Stack {
       }
     );
 
-    ssoArtefactsKey.grantEncryptDecrypt(
-      new ServicePrincipal("events.amazonaws.com")
+    ssoGroupHandlerTrigger.addTarget(
+      new SnsTopic(ssoGroupEventsNotificationTopic, {
+        message: RuleTargetInput,
+      })
     );
 
-    ssoGroupHandlerTrigger.addTarget(
-      new SnsTopic(ssoEventsNotificationTopic, {
+    const ssoUserEventsNotificationTopic = new Topic(
+      this,
+      name(buildConfig, "ssoUserEventsNotificationTopic"),
+      {
+        masterKey: ssoArtefactsKey,
+        displayName: name(buildConfig, "ssoUserEventsNotificationTopic"),
+      }
+    );
+
+    ssoUserEventsNotificationTopic.addToResourcePolicy(
+      new PolicyStatement({
+        actions: ["SNS:Subscribe", "SNS:Receive"],
+        resources: ["*"],
+        principals: [
+          new AccountPrincipal(buildConfig.PipelineSettings.TargetAccountId),
+        ],
+      })
+    );
+
+    new SSMParamWriter(
+      this,
+      name(buildConfig, "ssoUserEventsNotificationTopicArn"),
+      buildConfig,
+      {
+        ParamNameKey: "ssoUserEventsNotificationTopicArn",
+        ParamValue: ssoUserEventsNotificationTopic.topicArn,
+        ReaderAccountId: buildConfig.PipelineSettings.TargetAccountId,
+      }
+    );
+
+    const ssoUserHandlerTrigger = new Rule(
+      this,
+      name(buildConfig, "ssoUserHandlerTrigger"),
+      {
+        description: "Process SCIM User changes",
+        enabled: true,
+        eventPattern: {
+          account: [this.account],
+          detail: {
+            eventSource: ["sso-directory.amazonaws.com"],
+            eventName: ["CreateUser", "DeleteUser"],
+          },
+        },
+        ruleName: name(buildConfig, "ssoUserHandler"),
+      }
+    );
+
+    ssoUserHandlerTrigger.addTarget(
+      new SnsTopic(ssoUserEventsNotificationTopic, {
         message: RuleTargetInput,
       })
     );

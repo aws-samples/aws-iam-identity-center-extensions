@@ -1,0 +1,88 @@
+title Current AWS SSO configuration import flow
+
+Current config import StateMachine(SSO account)->Current config import StateMachine(SSO account): determineTriggerSource()
+alt triggerSource = "CloudFormation" and payload.eventType = "Delete"
+Current config import StateMachine(SSO account)->Current config import StateMachine(SSO account): do nothing
+else
+Current config import StateMachine(SSO account)->SSO account DynamoDB: create temporary permission set table
+Current config import StateMachine(SSO account)->Current config import StateMachine(SSO account): waitUntil temporary table is created
+Current config import StateMachine(SSO account)->Import Permission set stateMachine(SSO account): Invoke state machine passing the complete payload from the trigger source and wait
+Import Permission set stateMachine(SSO account)->AWS SSO Admin API: ListPermissionSets()
+AWS SSO Admin API->Import Permission set stateMachine(SSO account): return resultSet
+Import Permission set stateMachine(SSO account)->Import Permission set stateMachine(SSO account): Loop through the result set
+activate Import Permission set stateMachine(SSO account)
+Import Permission set stateMachine(SSO account)->AWS SSO Admin API: describePermissionSet()
+AWS SSO Admin API->Import Permission set stateMachine(SSO account): return result
+Import Permission set stateMachine(SSO account)->SSO account DynamoDB: upsert permissionSet object
+Import Permission set stateMachine(SSO account)->AWS SSO Admin API: listManagedPoliciesInPermissionSet()
+AWS SSO Admin API->Import Permission set stateMachine(SSO account): return resultSet
+Import Permission set stateMachine(SSO account)->Import Permission set stateMachine(SSO account): Loop through the result set
+activate Import Permission set stateMachine(SSO account)
+Import Permission set stateMachine(SSO account)->SSO account DynamoDB: upsert permissionSet object
+deactivate Import Permission set stateMachine(SSO account)
+Import Permission set stateMachine(SSO account)->AWS SSO Admin API: getInlinePolicyDocument()
+AWS SSO Admin API->Import Permission set stateMachine(SSO account): return result
+Import Permission set stateMachine(SSO account)->AWS SSO Admin API: listTagsForPermissionSet()
+AWS SSO Admin API->Import Permission set stateMachine(SSO account): return resultSet
+Import Permission set stateMachine(SSO account)->Import Permission set stateMachine(SSO account): Loop through the result set
+activate Import Permission set stateMachine(SSO account)
+Import Permission set stateMachine(SSO account)->SSO account DynamoDB: upsert permissionSet object
+deactivate Import Permission set stateMachine(SSO account)
+Import Permission set stateMachine(SSO account)->SSO account DynamoDB: fetchPermissionSet()
+SSO account DynamoDB->Import Permission set stateMachine(SSO account): return result
+Import Permission set stateMachine(SSO account)->Permission set import topic: Post payload
+Permission set import topic->Permission set import topic: determine TriggerSource?
+alt CloudFormation
+Permission set import topic->Permission set import topic: compute permission set object inline with user interface schema
+Permission set import topic->Solution Persistence(DynamoDB): lookup if permission set and permission set arn exist?
+Solution Persistence(DynamoDB)->Import Permission set stateMachine(SSO account): return result
+alt Permission set and permission set arn exists
+Permission set import topic->Permission set import topic: check if there's delta?
+alt delta exists
+Permission set import topic->Solution Persistence(DynamoDB): update permission set
+Permission set import topic->Solution Persistence(S3): update permission set
+else delta does not exist
+Permission set import topic->Permission set import topic: log and complete the operation
+end
+else Permission set/ permission set arn does not exist
+Permission set import topic->Permission set import topic: log and complete the operation
+end
+end
+Import Permission set stateMachine(SSO account)->SSO account DynamoDB: delete permission set
+Import Permission set stateMachine(SSO account)->AWS SSO Admin API: list accounts for provisioned permission set
+AWS SSO Admin API->Import Permission set stateMachine(SSO account): return resultSet
+Import Permission set stateMachine(SSO account)->Import Permission set stateMachine(SSO account): Loop through result set
+activate Import Permission set stateMachine(SSO account)
+Import Permission set stateMachine(SSO account)->Import Account assignment stateMachine(SSO account): Invoke state machine with permission set arn as payload and wait
+Import Account assignment stateMachine(SSO account)->AWS SSO Admin API: listAccountAssignments() for permission set
+AWS SSO Admin API->Import Account assignment stateMachine(SSO account): return resultSet
+Import Account assignment stateMachine(SSO account)->Import Account assignment stateMachine(SSO account): Loop through the result set
+activate Import Account assignment stateMachine(SSO account)
+Import Account assignment stateMachine(SSO account)->Import Account assignment stateMachine(SSO account):determine principal type
+alt USER
+Import Account assignment stateMachine(SSO account)->AWS Identity Store: describeUser()
+AWS Identity Store->Import Account assignment stateMachine(SSO account): return result
+Import Account assignment stateMachine(SSO account)->Account assignment import topic: Post account assignment payload
+Account assignment import topic->Account assignment import topic: determine TriggerSource?
+alt CloudFormation
+Account assignment import topic->Solution Persistence(DynamoDB): look up if there's a matching provisioned account assignment
+alt yes
+Account assignment import topic->Account assignment import topic: log and complete the operation
+else no
+Account assignment import topic->Solution Persistence(DynamoDB): upsert account assignment
+Account assignment import topic->Solution Persistence(S3): upsert account assignment
+end
+end
+else GROUP
+Import Account assignment stateMachine(SSO account)->AWS Identity Store: describeGroup()
+AWS Identity Store->Import Account assignment stateMachine(SSO account): return result
+note over Import Account assignment stateMachine(SSO account): from this point, the same sequence as USER principal type is followed
+end
+deactivate Import Account assignment stateMachine(SSO account)
+Import Account assignment stateMachine(SSO account)->Import Permission set stateMachine(SSO account): update stateMachine status
+deactivate Import Permission set stateMachine(SSO account)
+deactivate Import Permission set stateMachine(SSO account)
+Import Permission set stateMachine(SSO account)->Current config import StateMachine(SSO account): update stateMachine status
+Current config import StateMachine(SSO account)->SSO account DynamoDB: delete temporary permission set table
+end
+

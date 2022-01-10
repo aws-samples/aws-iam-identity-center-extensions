@@ -1,6 +1,6 @@
 /*
 composite construct that sets up all resources
-for links CRUD operations and handles both API
+for account assignment CRUD operations and handles both API
 and S3 interfaces
 */
 
@@ -103,6 +103,14 @@ export class LinkCRUD extends Construct {
     });
 
     this.linksTable.addGlobalSecondaryIndex({
+      indexName: "principalName",
+      partitionKey: {
+        name: "principalName",
+        type: AttributeType.STRING,
+      },
+    });
+
+    this.linksTable.addGlobalSecondaryIndex({
       indexName: "groupName",
       partitionKey: {
         name: "groupName",
@@ -149,6 +157,8 @@ export class LinkCRUD extends Construct {
               "@aws-sdk/lib-dynamodb",
               "ajv",
               "uuid",
+              "fs",
+              "path",
             ],
             minify: true,
           },

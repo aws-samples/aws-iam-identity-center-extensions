@@ -12,7 +12,6 @@ import { LinkProcessor } from "../../constructs/link-processor";
 import { ObservabilityArtefacts } from "../../constructs/observability-artefacts";
 import { OrgEvents } from "../../constructs/org-events";
 import { PermissionSetProcessor } from "../../constructs/permission-set-processor";
-import { SSOGroupCRUD } from "../../constructs/sso-group-crud";
 import { SSOGroupProcessor } from "../../constructs/sso-group-processor";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {
@@ -36,15 +35,6 @@ export class SolutionArtefacts extends Stack {
       buildConfig
     );
 
-    const deploySSOGroupCRUD = new SSOGroupCRUD(
-      this,
-      name(buildConfig, "ssoGroupCRUD"),
-      buildConfig,
-      {
-        ddbTablesKey: deployFetchCrossStackValues.ddbTablesKey,
-      }
-    );
-
     const deployLinkProcessor = new LinkProcessor(
       this,
       name(buildConfig, "linkProcessor"),
@@ -56,7 +46,6 @@ export class SolutionArtefacts extends Stack {
         nodeJsLayer: deployFetchCrossStackValues.nodeJsLayer,
         provisionedLinksTableName:
           deployFetchCrossStackValues.provisionedLinksTable.tableName,
-        groupsTableName: deploySSOGroupCRUD.groupsTable.tableName,
         permissionSetArnTableName:
           deployFetchCrossStackValues.permissionSetArnTable.tableName,
         linkManagerHandlerSSOAPIRoleArn:
@@ -65,8 +54,7 @@ export class SolutionArtefacts extends Stack {
           deployFetchCrossStackValues.listGroupsIdentityStoreAPIRoleArn,
         listInstancesSSOAPIRoleArn:
           deployFetchCrossStackValues.listInstancesSSOAPIRoleArn,
-        processTargetAccountSMInvokeRoleArn:
-          deployFetchCrossStackValues.processTargetAccountSMInvokeRoleArn,
+        orgListSMRoleArn: deployFetchCrossStackValues.orgListSMRoleArn,
         processTargetAccountSMTopic:
           deployFetchCrossStackValues.processTargetAccountSMTopic,
         linkProcessorTopic: deployFetchCrossStackValues.linkProcessorTopic,
@@ -83,9 +71,10 @@ export class SolutionArtefacts extends Stack {
       {
         ssoGroupEventNotificationsTopic:
           deployFetchCrossStackValues.ssoGroupEventNotificationsTopic,
+        ssoUserEventNotificationsTopic:
+          deployFetchCrossStackValues.ssoUserEventNotificationsTopic,
         errorNotificationsTopicArn:
           deployFetchCrossStackValues.errorNotificationsTopic.topicArn,
-        groupsTableName: deploySSOGroupCRUD.groupsTable.tableName,
         linkQueueUrl: deployFetchCrossStackValues.linkManagerQueue.queueUrl,
         linksTableName: deployFetchCrossStackValues.linksTable.tableName,
         permissionSetArnTableName:
@@ -93,8 +82,9 @@ export class SolutionArtefacts extends Stack {
         nodeJsLayer: deployFetchCrossStackValues.nodeJsLayer,
         listInstancesSSOAPIRoleArn:
           deployFetchCrossStackValues.listInstancesSSOAPIRoleArn,
-        processTargetAccountSMInvokeRoleArn:
-          deployFetchCrossStackValues.processTargetAccountSMInvokeRoleArn,
+        listGroupsIdentityStoreAPIRoleArn:
+          deployFetchCrossStackValues.listGroupsIdentityStoreAPIRoleArn,
+        orgListSMRoleArn: deployFetchCrossStackValues.orgListSMRoleArn,
         processTargetAccountSMTopic:
           deployFetchCrossStackValues.processTargetAccountSMTopic,
       }
@@ -113,20 +103,20 @@ export class SolutionArtefacts extends Stack {
         nodeJsLayer: deployFetchCrossStackValues.nodeJsLayer,
         permissionSetHandlerSSOAPIRoleArn:
           deployFetchCrossStackValues.permissionSetHandlerSSOAPIRoleArn,
-        groupsTableName: deploySSOGroupCRUD.groupsTable.tableName,
         linkQueueUrl: deployFetchCrossStackValues.linkManagerQueue.queueUrl,
         linksTableName: deployFetchCrossStackValues.linksTable.tableName,
         listGroupsIdentityStoreAPIRoleArn:
           deployFetchCrossStackValues.listGroupsIdentityStoreAPIRoleArn,
         listInstancesSSOAPIRoleArn:
           deployFetchCrossStackValues.listInstancesSSOAPIRoleArn,
-        processTargetAccountSMInvokeRoleArn:
-          deployFetchCrossStackValues.processTargetAccountSMInvokeRoleArn,
+        orgListSMRoleArn: deployFetchCrossStackValues.orgListSMRoleArn,
         processTargetAccountSMTopic:
           deployFetchCrossStackValues.processTargetAccountSMTopic,
         snsTopicsKey: deployFetchCrossStackValues.snsTopicsKey,
         waiterHandlerSSOAPIRoleArn:
           deployFetchCrossStackValues.waiterHandlerSSOAPIRoleArn,
+        permissionSetProcessorTopic:
+          deployFetchCrossStackValues.permissionSetProcessorTopic,
       }
     );
 
@@ -137,7 +127,6 @@ export class SolutionArtefacts extends Stack {
       {
         errorNotificationsTopicArn:
           deployFetchCrossStackValues.errorNotificationsTopic.topicArn,
-        groupsTableName: deploySSOGroupCRUD.groupsTable.tableName,
         linkQueueUrl: deployFetchCrossStackValues.linkManagerQueue.queueUrl,
         linksTableName: deployFetchCrossStackValues.linksTable.tableName,
         nodeJsLayer: deployFetchCrossStackValues.nodeJsLayer,
@@ -156,7 +145,6 @@ export class SolutionArtefacts extends Stack {
 
     new AccessManager(this, name(buildConfig, "accessManager"), {
       FetchCrossStackValues: deployFetchCrossStackValues,
-      SSOGroupCRUD: deploySSOGroupCRUD,
       LinkProcessor: deployLinkProcessor,
       PermissionSetProcessor: deployPermissionSetProcessor,
       SSOGroupProcessor: deploySSOGroupProcessor,

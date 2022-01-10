@@ -6,8 +6,13 @@ Trigger source: permission set S3 path object notification for removed type even
 */
 
 // Environment configuration read
-const { DdbTable, linksTable, errorNotificationsTopicArn, AWS_REGION } =
-  process.env;
+const {
+  DdbTable,
+  linksTable,
+  errorNotificationsTopicArn,
+  AWS_REGION,
+  permissionSetProcessingTopicArn,
+} = process.env;
 
 // SDK and third party client imports
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
@@ -27,9 +32,12 @@ import { JSONParserError } from "../../helpers/src/payload-validator";
 import { v4 as uuidv4 } from "uuid";
 import { logger } from "../../helpers/src/utilities";
 // SDK and third party client object initialistaion
-const ddbClientObject = new DynamoDBClient({ region: AWS_REGION });
+const ddbClientObject = new DynamoDBClient({
+  region: AWS_REGION,
+  maxAttempts: 2,
+});
 const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
-const snsClientObject = new SNSClient({ region: AWS_REGION });
+const snsClientObject = new SNSClient({ region: AWS_REGION, maxAttempts: 2 });
 
 const errorMessage: ErrorMessage = {
   Subject: "Error Processing Permission Set delete via S3 Interface",
@@ -85,6 +93,16 @@ export const handler = async (event: S3Event) => {
               Key: {
                 ...payload,
               },
+            })
+          );
+          await snsClientObject.send(
+            new PublishCommand({
+              TopicArn: permissionSetProcessingTopicArn + "",
+              Message: JSON.stringify({
+                requestId: requestId,
+                action: "delete",
+                permissionSetName: keyValue,
+              }),
             })
           );
           logger({

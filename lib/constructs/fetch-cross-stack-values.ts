@@ -1,8 +1,9 @@
 /*
-Construct to specifically read values from preSolutions
+Construct to read values from preSolutions
 Artefact stack. This is to avoid creating a circular 
 dependency through CFN exports and instead rely on SSM paramter
-store based reads
+store based reads.
+Used by solutionArtefacts stack.
 */
 
 import { ITable, Table } from "aws-cdk-lib/aws-dynamodb";
@@ -22,9 +23,11 @@ function name(buildConfig: BuildConfig, resourcename: string): string {
 export class FetchCrossStackValues extends Construct {
   public readonly errorNotificationsTopic: ITopic;
   public readonly ssoGroupEventNotificationsTopic: ITopic;
+  public readonly ssoUserEventNotificationsTopic: ITopic;
   public readonly orgEventsNotificationsTopic: ITopic;
   public readonly processTargetAccountSMTopic: ITopic;
   public readonly linkProcessorTopic: ITopic;
+  public readonly permissionSetProcessorTopic: ITopic;
   public readonly nodeJsLayer: lambda.ILayerVersion;
   public readonly linksTable: ITable;
   public readonly provisionedLinksTable: ITable;
@@ -38,7 +41,7 @@ export class FetchCrossStackValues extends Construct {
   public readonly linkManagerHandlerSSOAPIRoleArn: string;
   public readonly listInstancesSSOAPIRoleArn: string;
   public readonly listGroupsIdentityStoreAPIRoleArn: string;
-  public readonly processTargetAccountSMInvokeRoleArn: string;
+  public readonly orgListSMRoleArn: string;
   public readonly waiterHandlerSSOAPIRoleArn: string;
 
   constructor(scope: Construct, id: string, buildConfig: BuildConfig) {
@@ -59,6 +62,15 @@ export class FetchCrossStackValues extends Construct {
       StringParameter.valueForStringParameter(
         this,
         name(buildConfig, "ssoGroupEventNotificationsTopicArn")
+      )
+    );
+
+    this.ssoUserEventNotificationsTopic = Topic.fromTopicArn(
+      this,
+      name(buildConfig, "importedssoUserEventNotificationsTopic"),
+      StringParameter.valueForStringParameter(
+        this,
+        name(buildConfig, "ssoUserEventsNotificationsTopicArn")
       )
     );
 
@@ -89,6 +101,15 @@ export class FetchCrossStackValues extends Construct {
       )
     );
 
+    this.permissionSetProcessorTopic = Topic.fromTopicArn(
+      this,
+      name(buildConfig, "importedPermissionSetProcessorTopic"),
+      StringParameter.valueForStringParameter(
+        this,
+        name(buildConfig, "permissionSetProcessorTopicArn")
+      )
+    );
+
     this.linkManagerQueue = Queue.fromQueueArn(
       this,
       name(buildConfig, "importedLinkManagerQueue"),
@@ -115,11 +136,12 @@ export class FetchCrossStackValues extends Construct {
           this,
           name(buildConfig, "linksTableArn")
         ),
-        tableStreamArn: StringParameter.valueForStringParameter(
-          this,
-          name(buildConfig, "linksTableStreamArn")
-        ),
-        globalIndexes: ["awsEntityData", "groupName", "permissionSetName"],
+        globalIndexes: [
+          "awsEntityData",
+          "principalName",
+          "permissionSetName",
+          "principalType",
+        ],
       }
     );
 
@@ -142,10 +164,6 @@ export class FetchCrossStackValues extends Construct {
         tableArn: StringParameter.valueForStringParameter(
           this,
           name(buildConfig, "permissionSetTableArn")
-        ),
-        tableStreamArn: StringParameter.valueForStringParameter(
-          this,
-          name(buildConfig, "permissionSetTableStreamArn")
         ),
       }
     );
@@ -228,19 +246,19 @@ export class FetchCrossStackValues extends Construct {
       {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
-        ParamNameKey: "listgroups-identitystoreapi-roleArn",
+        ParamNameKey: "listPrincipals-identitystoreapi-roleArn",
         LambdaLayers: this.nodeJsLayer,
       }
     ).paramValue;
 
-    this.processTargetAccountSMInvokeRoleArn = new SSMParamReader(
+    this.orgListSMRoleArn = new SSMParamReader(
       this,
-      name(buildConfig, "processTargetAccountSMInvokeRoleArnpr"),
+      name(buildConfig, "orgListSMRoleArnpr"),
       buildConfig,
       {
         ParamAccountId: buildConfig.PipelineSettings.OrgMainAccountId,
         ParamRegion: "us-east-1", // Organizations discovery can only be done in us-east-1, hence the step functions and related roles are declared in that region
-        ParamNameKey: "processTargetAccountSMInvoke-orgapi-roleArn",
+        ParamNameKey: "orgListSM-orgapi-roleArn",
         LambdaLayers: this.nodeJsLayer,
       }
     ).paramValue;

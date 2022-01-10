@@ -1,6 +1,6 @@
 /*
 Custom cloudformation resource construct that 
-allows cross account read of SSM parameter value
+allows cross account/cross region read of SSM parameter value
 */
 
 import { CustomResource } from "aws-cdk-lib";
@@ -52,13 +52,14 @@ export class SSMParamReader extends Construct {
 
     const paramReaderFn = new NodejsFunction(
       this,
-      name(buildConfig, `paramReader-${ssmParamReaderprops.ParamNameKey}`),
+      name(
+        buildConfig,
+        `${id.slice(id.length - 5)}-paramReader-${
+          ssmParamReaderprops.ParamNameKey
+        }`
+      ),
       {
         runtime: Runtime.NODEJS_14_X,
-        functionName: name(
-          buildConfig,
-          `paramReader-${ssmParamReaderprops.ParamNameKey}`
-        ),
         layers: [ssmParamReaderprops.LambdaLayers],
         entry: join(
           __dirname,
@@ -85,7 +86,7 @@ export class SSMParamReader extends Construct {
 
     const paramReadResourceProvider = new Provider(
       this,
-      name(buildConfig, "paramReaderRP"),
+      name(buildConfig, `${id.slice(id.length - 5)}-paramReaderRP`),
       {
         onEventHandler: paramReaderFn,
       }
@@ -93,7 +94,7 @@ export class SSMParamReader extends Construct {
 
     const paramReadResource = new CustomResource(
       this,
-      name(buildConfig, "paramReadResource"),
+      name(buildConfig, `${id.slice(id.length - 5)}-paramReadResource`),
       {
         serviceToken: paramReadResourceProvider.serviceToken,
         properties: {

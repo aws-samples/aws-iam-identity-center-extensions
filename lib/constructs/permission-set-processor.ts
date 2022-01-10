@@ -7,11 +7,7 @@ import { Duration } from "aws-cdk-lib";
 import { ITable } from "aws-cdk-lib/aws-dynamodb"; // Importing external resources in CDK would use interfaces and not base objects
 import { IKey } from "aws-cdk-lib/aws-kms"; // Importing external resources in CDK would use interfaces and not base objects
 import * as lambda from "aws-cdk-lib/aws-lambda"; //Needed to avoid semgrep throwing up https://cwe.mitre.org/data/definitions/95.html
-import {
-  DynamoEventSource,
-  SnsDlq,
-  SnsEventSource,
-} from "aws-cdk-lib/aws-lambda-event-sources";
+import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { ITopic, Topic } from "aws-cdk-lib/aws-sns";
 import { Construct } from "constructs";
@@ -29,20 +25,18 @@ export interface PermissionSetProcessProps {
   readonly errorNotificationsTopic: ITopic;
   readonly permissionSetHandlerSSOAPIRoleArn: string;
   readonly linksTableName: string;
-  readonly groupsTableName: string;
   readonly linkQueueUrl: string;
   readonly listInstancesSSOAPIRoleArn: string;
   readonly listGroupsIdentityStoreAPIRoleArn: string;
-  readonly processTargetAccountSMInvokeRoleArn: string;
+  readonly orgListSMRoleArn: string;
   readonly waiterHandlerSSOAPIRoleArn: string;
   readonly processTargetAccountSMTopic: ITopic;
+  readonly permissionSetProcessorTopic: ITopic;
   readonly snsTopicsKey: IKey;
 }
 
 export class PermissionSetProcessor extends Construct {
-  public readonly permissionSetHandler: NodejsFunction;
-  public readonly permissionSetStreamHandler: lambda.Function;
-  public readonly permissionSetTopic: Topic;
+  public readonly permissionSetTopicProcessor: NodejsFunction;
   public readonly permissionSetSyncTopic: Topic;
   public readonly permissionSetSyncHandler: NodejsFunction;
 
@@ -54,15 +48,6 @@ export class PermissionSetProcessor extends Construct {
   ) {
     super(scope, id);
 
-    this.permissionSetTopic = new Topic(
-      this,
-      name(buildConfig, "permissionSetTopic"),
-      {
-        displayName: name(buildConfig, "permissionSetTopic"),
-        masterKey: permissionSetProcessorProps.snsTopicsKey,
-      }
-    );
-
     this.permissionSetSyncTopic = new Topic(
       this,
       name(buildConfig, "permissionSetSyncTopic"),
@@ -72,48 +57,11 @@ export class PermissionSetProcessor extends Construct {
       }
     );
 
-    this.permissionSetStreamHandler = new lambda.Function(
+    this.permissionSetTopicProcessor = new NodejsFunction(
       this,
-      name(buildConfig, "permissionSetStreamHandler"),
+      name(buildConfig, "permissionSetTopicProcessor"),
       {
-        runtime: lambda.Runtime.NODEJS_14_X,
-        functionName: name(buildConfig, "permissionSetStreamHandler"),
-        handler: "permissionSet.handler",
-        code: lambda.Code.fromAsset(
-          join(
-            __dirname,
-            "../",
-            "lambda-functions",
-            "ddb-stream-handlers",
-            "src"
-          )
-        ),
-        layers: [permissionSetProcessorProps.nodeJsLayer],
-        environment: {
-          topicArn: this.permissionSetTopic.topicArn,
-          errorNotificationsTopicArn:
-            permissionSetProcessorProps.errorNotificationsTopic.topicArn,
-        },
-      }
-    );
-
-    this.permissionSetStreamHandler.addEventSource(
-      new DynamoEventSource(permissionSetProcessorProps.permissionSetTable, {
-        startingPosition: lambda.StartingPosition.TRIM_HORIZON,
-        batchSize: 5,
-        bisectBatchOnError: true,
-        onFailure: new SnsDlq(
-          permissionSetProcessorProps.errorNotificationsTopic
-        ),
-        retryAttempts: 3,
-      })
-    );
-
-    this.permissionSetHandler = new NodejsFunction(
-      this,
-      name(buildConfig, "permissionSetHandler"),
-      {
-        functionName: name(buildConfig, "permissionSetHandler"),
+        functionName: name(buildConfig, "permissionSetTopicProcessor"),
         runtime: lambda.Runtime.NODEJS_14_X,
         entry: join(
           __dirname,
@@ -121,7 +69,7 @@ export class PermissionSetProcessor extends Construct {
           "lambda-functions",
           "application-handlers",
           "src",
-          "permissionSetTopic.ts"
+          "permissionSetTopicProcessor.ts"
         ),
         bundling: {
           externalModules: [
@@ -131,6 +79,8 @@ export class PermissionSetProcessor extends Construct {
             "@aws-sdk/credential-providers",
             "@aws-sdk/lib-dynamodb",
             "@aws-sdk/util-waiter",
+            "json-diff",
+            "uuid",
           ],
           minify: true,
         },
@@ -152,8 +102,10 @@ export class PermissionSetProcessor extends Construct {
       }
     );
 
-    this.permissionSetHandler.addEventSource(
-      new SnsEventSource(this.permissionSetTopic)
+    this.permissionSetTopicProcessor.addEventSource(
+      new SnsEventSource(
+        permissionSetProcessorProps.permissionSetProcessorTopic
+      )
     );
 
     this.permissionSetSyncHandler = new NodejsFunction(
@@ -187,7 +139,6 @@ export class PermissionSetProcessor extends Construct {
         layers: [permissionSetProcessorProps.nodeJsLayer],
         environment: {
           linksTableName: permissionSetProcessorProps.linksTableName,
-          groupsTableName: permissionSetProcessorProps.groupsTableName,
           AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
           errorNotificationsTopicArn:
             permissionSetProcessorProps.errorNotificationsTopic.topicArn,
@@ -199,8 +150,7 @@ export class PermissionSetProcessor extends Construct {
           domainName: buildConfig.Parameters.DomainName,
           processTargetAccountSMTopicArn:
             permissionSetProcessorProps.processTargetAccountSMTopic.topicArn,
-          processTargetAccountSMInvokeRoleArn:
-            permissionSetProcessorProps.processTargetAccountSMInvokeRoleArn,
+          orgListSMRoleArn: permissionSetProcessorProps.orgListSMRoleArn,
           processTargetAccountSMArn: `arn:aws:states:us-east-1:${buildConfig.PipelineSettings.OrgMainAccountId}:stateMachine:${buildConfig.Environment}-processTargetAccountSM`,
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         },

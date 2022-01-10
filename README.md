@@ -1,7 +1,5 @@
 # AWS SSO Extensions For Enterprise
 
-![High level design](docs/images/aws-sso-extensions-for-enterprise-overview.png)
-
 ## Table of Contents
 
 - [Overview](#Overview)
@@ -11,12 +9,11 @@
   - [The Composite Permission Set API](#the-composite-permission-set-api)
   - [Enterprise friendly account assignment life cycle](#enterprise-friendly-account-assignment-life-cycle)
   - [Automated access change management for root, ou_id and account_tag scopes](#automated-access-change-management-for-root-ou_id-and-account_tag-scopes)
+  - [Import existing AWS SSO access entitlements for management through the solution](#import-existing-aws-sso-access-entitlements-for-management-through-the-solution)
   - [De-couple life cycle management of different SSO objects and other features](#de-couple-life-cycle-management-of-different-sso-objects-and-other-features)
 
 - [Detailed Building Blocks Overview](docs/documentation/Building-Blocks.md)
-- [Solution Overview diagrams](docs/documentation/Overview-diagrams.md)
-- [Use case Logical State Flows](docs/documentation/Use-Case-Logical-State-Flows.md)
-- [Example: aws-sso-extensions-for-enterprise with SailPoint and ADFS](docs/documentation/Example-Use-case.md)
+- [Use case Flows](docs/documentation/Use-Case-Flows.md)
 - [Security](#security)
 - [License](#license)
 
@@ -183,20 +180,20 @@ This solution provides a composite API for managing permission set lifecycles, a
 
 This solution enables enterprise friendly account assignment lifecycles through the following features:
 
-- Using groups as the mechanism for the principal type, instead of an individual user
-- Friendly names for groups and permission sets when creating account assignments
+- Using users/groups as the mechanism for the principal type
+- Friendly names for users/groups and permission sets when creating account assignments
 - Based on the configuration parameter, you can use either an S3 based interface/ Rest API interface to create/delete account assignments
 - Create & delete account assignments with scope set to **account, root, ou_id or account_tag**
 - Using the entity value passed in the payload, the solution calculates the account list and processes the account assignment operations on all the accounts automatically
 
 <details>
-<summary>Example payload to provision permission set <b>CloudOperator-ps</b> for <b>all accounts in your organization</b> and provide access to <b>team-CloudOperators</b></summary>
+<summary>Example payload to provision permission set <b>CloudOperator-ps</b> for <b>all accounts in your organization</b> and provide access to <b>team-CloudOperators user group</b></summary>
 <p>
 
 ```json
 {
   "action": "create",
-  "linkData": "root.all.CloudOperator-ps.team-CloudOperators.ssofile"
+  "linkData": "root.all.CloudOperator-ps.team-CloudOperators.GROUP.ssofile"
 }
 ```
 
@@ -204,13 +201,13 @@ This solution enables enterprise friendly account assignment lifecycles through 
 </details>
 
 <details>
-<summary>Example payload to provision permission set <b>SecurityAuditor-ps</b> for <b>all accounts in your organization unit with ID ou-id12345</b> and provide access to <b>team-SecurityAuditors</b></summary>
+<summary>Example payload to provision permission set <b>SecurityAuditor-ps</b> for <b>all accounts in your organization unit with ID ou-id12345</b> and provide access to <b>team-SecurityAuditors user group</b></summary>
 <p>
 
 ```json
 {
   "action": "create",
-  "linkData": "ou_id.ou-id12345.SecurityAuditor-ps.team-SecurityAuditors.ssofile"
+  "linkData": "ou_id.ou-id12345.SecurityAuditor-ps.team-SecurityAuditors.GROUP.ssofile"
 }
 ```
 
@@ -218,13 +215,13 @@ This solution enables enterprise friendly account assignment lifecycles through 
 </details>
 
 <details>
-<summary>Example payload to provision permission set <b>DataScientist-ps</b> for <b>all accounts that have tagkey team set to value DataScientists</b> and provide access to <b>team-DataScientists</b></summary>
+<summary>Example payload to provision permission set <b>DataScientist-ps</b> for <b>all accounts that have tagkey team set to value DataScientists</b> and provide access to <b>team-DataScientists user group</b></summary>
 <p>
 
 ```json
 {
   "action": "create",
-  "linkData": "account_tag.team^DataScientists.DataScientist-ps.team-DataScientists.ssofile"
+  "linkData": "account_tag.team^DataScientists.DataScientist-ps.team-DataScientists.GROUP.ssofile"
 }
 ```
 
@@ -232,18 +229,33 @@ This solution enables enterprise friendly account assignment lifecycles through 
 </details>
 
 <details>
-<summary>Example payload to provision permission set <b>Billing-ps</b> for <b>account 123456789012</b> and provide access to <b>team-Accountants</b></summary>
+<summary>Example payload to provision permission set <b>Billing-ps</b> for <b>account 123456789012</b> and provide access to <b>team-Accountants user group</b></summary>
 <p>
 
 ```json
 {
   "action": "create",
-  "linkData": "account.123456789012.Billing-ps.team-Accountants.ssofile"
+  "linkData": "account.123456789012.Billing-ps.team-Accountants.GROUP.ssofile"
 }
 ```
 
 </p>
 </details>
+
+<details>
+<summary>Example payload to provision permission set <b>Breakglass-ps</b> for <b>all accounts in your organization</b> and provide access to <b>break-glass user</b></summary>
+<p>
+
+```json
+{
+  "action": "create",
+  "linkData": "root.all.Breakglass-ps.break-glass.USER.ssofile"
+}
+```
+
+</p>
+</details>
+<br/>
 
 ### Automated access change management for root, ou_id and account_tag scopes
 
@@ -252,6 +264,13 @@ The solution provides automated change access management through the following f
 - If an account assignment has been created through the solution with scope set to root, and if a new account has been created at a later time, this new account is automatically provisioned with the account assignment.
 - If an account assignment has been created through the solution with scope set to ou_id, and an existing account moves out of this ou, this account assignment is automatically deleted from the account by the solution. If a new account is moved in to the ou, this account assignment is automatically created for the account by the solution.
 - If an account assignment has been created through the solution with scope set to account_tag, and an account is updated with this tag key value at a later time, this account assignment is automatically created for the new account by the solution. Additionally, when this tag key value is removed from the account/when this tag key is updated to a different value on the account at a later time, this account assignment is automatically deleted from the account by the solution.
+
+### Import existing AWS SSO access entitlements for management through the solution
+
+- The solution enables importing existing AWS SSO access entitlements for management through the solution
+- Based on the `ImportCurrentSSOConfiguration` flag in the configuration file, the solution would import all existing permission sets and account assignments so that they could be updated/deleted through the solution interfaces
+- The solution ensures that all related attributes of permission sets/account assignments are imported in a format that would allow you to manage them through the solution interfaces
+- All account assignments would be imported as `account` scope types
 
 ### De-couple life cycle management of different SSO objects and other features
 

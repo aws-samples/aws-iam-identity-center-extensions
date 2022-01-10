@@ -10,6 +10,8 @@ import { PreSolutionArtefacts } from "../pipelineStageStacks/pre-solution-artefa
 import { SolutionArtefacts } from "../pipelineStageStacks/solution-artefacts";
 import { SSOApiRoles } from "../pipelineStageStacks/sso-api-roles";
 import { SSOEventsProcessor } from "../pipelineStageStacks/sso-events-processor";
+import { SSOImportArtefactsPart1 } from "../pipelineStageStacks/sso-import-artefacts-part1";
+import { SSOImportArtefactsPart2 } from "../pipelineStageStacks/sso-import-artefacts-part2";
 
 function fullname(buildConfig: BuildConfig, name: string): string {
   return buildConfig.Environment + "-" + buildConfig.App + "-" + name;
@@ -70,6 +72,20 @@ export class SSOArtefactsDeploymentStage extends Stage {
       },
       buildConfig
     );
+
+    if (buildConfig.Parameters.ImportCurrentSSOConfiguration) {
+      new SSOImportArtefactsPart1(
+        this,
+        fullname(buildConfig, "ssoImportArtefactsPart1stack"),
+        {
+          stackName: fullname(buildConfig, "ssoImportArtefactsPart1stack"),
+          synthesizer: new DefaultStackSynthesizer({
+            qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
+          }),
+        },
+        buildConfig
+      );
+    }
   }
 }
 
@@ -107,5 +123,21 @@ export class SolutionArtefactsDeploymentStage extends Stage {
     );
 
     solutionartefactsStack.node.addDependency(preSolutionArtefactsStack);
+
+    if (buildConfig.Parameters.ImportCurrentSSOConfiguration) {
+      const ssoImportArtefactsPart2Stack = new SSOImportArtefactsPart2(
+        this,
+        fullname(buildConfig, "ssoImportArtefactsPart2Stack"),
+        {
+          stackName: fullname(buildConfig, "ssoImportArtefactsPart2Stack"),
+          synthesizer: new DefaultStackSynthesizer({
+            qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
+          }),
+        },
+        buildConfig
+      );
+
+      ssoImportArtefactsPart2Stack.node.addDependency(solutionartefactsStack);
+    }
   }
 }

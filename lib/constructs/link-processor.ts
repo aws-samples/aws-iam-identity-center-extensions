@@ -1,6 +1,6 @@
 /*
 composite construct that sets up all resources
-for links life cycle provisionings
+for account assignments creation/deletion
 */
 
 import { Duration } from "aws-cdk-lib";
@@ -24,14 +24,13 @@ function name(buildConfig: BuildConfig, resourcename: string): string {
 export interface LinkProcessProps {
   readonly linksTable: ITable;
   readonly provisionedLinksTableName: string;
-  readonly groupsTableName: string;
   readonly permissionSetArnTableName: string;
   readonly errorNotificationsTopic: ITopic;
   readonly linkManagerHandlerSSOAPIRoleArn: string;
   readonly waiterHandlerSSOAPIRoleArn: string;
   readonly listInstancesSSOAPIRoleArn: string;
   readonly listGroupsIdentityStoreAPIRoleArn: string;
-  readonly processTargetAccountSMInvokeRoleArn: string;
+  readonly orgListSMRoleArn: string;
   readonly processTargetAccountSMTopic: ITopic;
   readonly linkProcessorTopic: ITopic;
   readonly nodeJsLayer: ILayerVersion;
@@ -163,7 +162,6 @@ export class LinkProcessor extends Construct {
         layers: [linkprocessProps.nodeJsLayer],
         environment: {
           linkQueueUrl: linkprocessProps.linkManagerQueue.queueUrl,
-          groupsTable: linkprocessProps.groupsTableName,
           permissionSetArnTable: linkprocessProps.permissionSetArnTableName,
           errorNotificationsTopicArn:
             linkprocessProps.errorNotificationsTopic.topicArn,
@@ -173,8 +171,7 @@ export class LinkProcessor extends Construct {
           ISAPIRoleArn: linkprocessProps.listGroupsIdentityStoreAPIRoleArn,
           processTargetAccountSMTopicArn:
             linkprocessProps.processTargetAccountSMTopic.topicArn,
-          processTargetAccountSMInvokeRoleArn:
-            linkprocessProps.processTargetAccountSMInvokeRoleArn,
+          orgListSMRoleArn: linkprocessProps.orgListSMRoleArn,
           processTargetAccountSMArn: `arn:aws:states:us-east-1:${buildConfig.PipelineSettings.OrgMainAccountId}:stateMachine:${buildConfig.Environment}-processTargetAccountSM`,
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         },

@@ -1,0 +1,47 @@
+title Account Assignment Life cycle
+
+actor Solution User
+
+Solution User->User Interface Handler: Post account assignment operation
+note over User Interface Handler: API / S3 based interfaces
+User Interface Handler->User Interface Handler: validatePayloadSchema()
+alt valid payload:
+activate User Interface Handler
+User Interface Handler->Solution Persistence(DynamoDB): Create/Update/Delete payload
+User Interface Handler->Solution Persistence(S3): Create/Update/Delete payload
+User Interface Handler->Topic Processor: Post payload and action
+User Interface Handler->Solution User: return success with requestId for tracing
+activate Topic Processor
+Topic Processor->Solution Persistence(DynamoDB): doesPermissionSetExist() ?
+alt Permission set exists
+Topic Processor->AWS SSO Identity Store: doesPrincipalExist()?
+AWS SSO Identity Store->Topic Processor: return principal list result
+alt Principal exists
+Topic Processor->Topic Processor: checkScopeType?
+alt scopeType=account
+Topic Processor->Account assignment FIFO queue: Post account assignment creation/deletion payload
+Account assignment FIFO queue->Account assignment queue processor: Pull latest message for the message_group_id
+activate Account assignment queue processor
+Account assignment queue processor->AWS SSO Admin API: Process account assignment operation
+Account assignment queue processor->AWS SSO Admin API: waitUntilAccountAssignment create/delete
+AWS SSO Admin API->Account assignment queue processor: respond AccountAssignment operation status
+Account assignment queue processor->Account assignment queue processor: determine if success/fail/time out and log the results
+Account assignment queue processor->Solution Persistence(DynamoDB): upsert/delete the provisioned/de-provisioned account assignment details
+deactivate Account assignment queue processor
+else scopeType=root/ou_id/account_tag
+Topic Processor->Org entities State Machine(Org account): Post account assignment operation details
+Org entities State Machine(Org account)->Org entitites processor: Resolve final list of target accounts
+Org entitites processor->Account assignment FIFO queue: Post account assignment creation/deletion payload
+note over Account assignment FIFO queue: same sequence as above for processing messages in the queue
+end
+else Principal does not exist
+Topic Processor->Topic Processor: log and complete the process
+end
+else Permission set does not exist
+Topic Processor->Topic Processor:  log and complete the process
+end
+deactivate Topic Processor
+deactivate User Interface Handler
+else invalid payload:
+User Interface Handler->Solution User: Return validation error
+end

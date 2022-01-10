@@ -1,0 +1,15 @@
+title SSO Events flow
+
+SSO events EventBridge Rule(SSO account)->SSO Events Processor: trigger matching SSO event
+SSO Events Processor->SSO Events Processor: determineEventType()
+alt Group creation event
+SSO Events Processor->SSO Events Processor: calculate displayName of the group based on received event
+note over SSO Events Processor: from this point, the same sequence as account\n assignment flow is followed
+else Group deletion event
+SSO Events Processor->SSO Events Processor: log and complete the operation
+else User creation event
+SSO Events Processor->AWS Identity Store: lookup userName from the userId in the event
+note over SSO Events Processor: from this point, the same sequence as account\n assignment flow is followed
+else User deletion event
+SSO Events Processor->SSO Events Processor: log and complete the operation
+end
