@@ -1,6 +1,6 @@
 {
   "name": "aws-sso-extensions-for-enterprise",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "bin": {
     "aws-sso-extensions-for-enterprise": "bin/aws-sso-extensions-for-enterprise.js"
   },

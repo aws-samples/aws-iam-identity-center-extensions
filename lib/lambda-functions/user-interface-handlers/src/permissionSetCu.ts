@@ -68,7 +68,7 @@ const createUpdateSchemaDefinition = JSON.parse(
       "/opt",
       "nodejs",
       "payload-schema-definitions",
-      "PermissionSet-createUpdateAPI.json"
+      "PermissionSet-createUpdateS3.json"
     )
   )
     .valueOf()
@@ -106,8 +106,7 @@ export const handler = async (event: S3Event) => {
             new GetCommand({
               TableName: DdbTable,
               Key: {
-                permissionSetName:
-                  upsertData.permissionSetData.permissionSetName,
+                permissionSetName: upsertData.permissionSetName,
               },
             })
           );
@@ -126,8 +125,7 @@ export const handler = async (event: S3Event) => {
               Message: JSON.stringify({
                 requestId: requestId,
                 action: "update",
-                permissionSetName:
-                  upsertData.permissionSetData.permissionSetName,
+                permissionSetName: upsertData.permissionSetName,
                 oldPermissionSetData: fetchPermissionSet.Item,
               }),
             })
@@ -139,8 +137,7 @@ export const handler = async (event: S3Event) => {
               Message: JSON.stringify({
                 requestId: requestId,
                 action: "create",
-                permissionSetName:
-                  upsertData.permissionSetData.permissionSetName,
+                permissionSetName: upsertData.permissionSetName,
               }),
             })
           );
@@ -149,7 +146,7 @@ export const handler = async (event: S3Event) => {
         logger({
           handler: "userInterface-permissionSetS3CreateUpdate",
           logMode: "info",
-          relatedData: upsertData.permissionSetData.permissionSetName,
+          relatedData: upsertData.permissionSetName,
           requestId: requestId,
           status: requestStatus.InProgress,
           statusMessage: `Permission Set operation is being processed`,

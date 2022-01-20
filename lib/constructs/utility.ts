@@ -105,9 +105,12 @@ export class Utility extends Construct {
 
     new StringParameter(
       this,
-      name(buildConfig, "processTargetAccountSMTopicArn"),
+      name(buildConfig, "importedProcessTargetAccountSMTopicArn"),
       {
-        parameterName: name(buildConfig, "processTargetAccountSMTopicArn"),
+        parameterName: name(
+          buildConfig,
+          "importedProcessTargetAccountSMTopicArn"
+        ),
         stringValue: this.processTargetAccountSMTopic.topicArn,
       }
     );
@@ -134,7 +137,10 @@ export class Utility extends Construct {
       this,
       name(buildConfig, "orgEventsNotificationsTopicArn"),
       {
-        parameterName: name(buildConfig, "orgEventsNotificationsTopicArn"),
+        parameterName: name(
+          buildConfig,
+          "importedOrgEventsNotificationsTopicArn"
+        ),
         stringValue: this.orgEventsNotificationsTopic.topicArn,
       }
     );

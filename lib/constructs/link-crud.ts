@@ -285,7 +285,7 @@ export class LinkCRUD extends Construct {
       );
 
       new CfnOutput(this, name(buildConfig, "links-data-location"), {
-        exportName: name(buildConfig, "links-data-location"),
+        exportName: name(buildConfig, "account-assignments-location"),
         value: `s3://${linkCRUDProps.ssoArtefactsBucket.bucketName}/links_data/`,
       });
     }

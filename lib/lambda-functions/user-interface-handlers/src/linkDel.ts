@@ -78,7 +78,7 @@ export const handler = async (event: S3Event) => {
               TopicArn: linkProcessingTopicArn + "",
               Message: JSON.stringify({
                 linkData: fileName,
-                action: "create",
+                action: "delete",
                 requestId: requestId,
               }),
             })

@@ -14,6 +14,10 @@
 
 - [Detailed Building Blocks Overview](docs/documentation/Building-Blocks.md)
 - [Use case Flows](docs/documentation/Use-Case-Flows.md)
+- [Schema Details for account assignment and permission set operations](#schema-details-for-account-assignment-and-permission-set-operations)
+- [Using API interface for your use cases](#using-api-interface-for-your-use-cases)
+- [Using S3 interface for your use cases](#using-s3-interface-for-your-use-cases)
+- [Unicorn Rides use cases](https://catalog.us-east-1.prod.workshops.aws/v2/workshops/640b0bab-1f5e-494a-973e-4ed7919d397b/en-US/03-usecases)
 - [Security](#security)
 - [License](#license)
 
@@ -278,6 +282,44 @@ The solution provides automated change access management through the following f
 - The solution enables usage of friendly names in managing permission set, account assignment life cycles and would handle the translation of friendly names into internal AWS SSO GUID's automatically
 - The solution enables deployment in a distributed model i.e. orgmain, deployment and target account (or) in a single account model i.e. orgmain only. It's recommended that single account model of deployment be used only for demonstration purposes
 - The solution assumes that AWS SSO is enabled in a different account other than orgmain account and has the required cross-account permissions setup to enable the functionalities. This future-proofs the solution to support the scenario when AWS SSO service releases delegated admin support similar to other services such as GuardDuty
+
+## Schema details for account assignment and permission set operations
+
+- For account assignment operations with API interface
+  - _action_ should be exactly one of **create, delete**
+  - _linkData_ should match this format: `scopetype-scopevalue-permissionsetname-principalname-principaltype.ssofile`
+- For account assignment operations with S3 interface
+  - file name should match this format: `scopetype-scopevalue-permissionsetname-principalname-principaltype.ssofile`
+  - file contents are empty i.e. empty file
+- For both interface types,
+  - `scopetype` should be exactly one of **root, ou_id, account_tag, account**
+  - `scopevalue` sould match the keyword `all` if scopetype is set to root
+  - `scopevalue` should match the organisational unit ID if scopetype is set to ou_id
+  - `scopevalue` should match `tagkey^tagvalue` convention if scopetype is set to account_tag
+  - `scopevalue` should have account number if scopetype is set to account
+  - `permissionsetname` should match permission set name
+  - `principalname` should match `displayname` if principal type is group , else it should match `username` if principal type is user
+  - `principaltype` should be exactly one of **GROUP, USER**
+- For permission set operations with API interface
+  - _action_ should be exactly one of **create, update, delete**
+- For permission set operations with S3 interface
+  - file name should match this format: `permisssionsetname.json`
+
+## Using API interface for your use cases
+
+If you chose to use `API` interface for managing your permission sets and account assignments i.e. set `LinksProvisioningMode` or `PermissionSetProvisioningMode` to `api`, then read below for usage instructions:
+
+- Refer to postman collection sample under `docs\samples\postman-collection` for account assignment and permission set operation examples
+- More details on using `API` interface are documented [here](https://catalog.us-east-1.prod.workshops.aws/v2/workshops/640b0bab-1f5e-494a-973e-4ed7919d397b/en-US/02-api)
+
+## Using S3 interface for your use cases
+
+If you chose to use `S3` interface for managing your permission sets and account assignments i.e. set `LinksProvisioningMode` or `PermissionSetProvisioningMode` to `s3`, then read below for usage instructions:
+
+- Refer to sample files under `docs\samples\links_data` for account assignment operations and `docs\samples\permission_sets` for permission set operations
+- After deploying the solution with S3 interface, navigate to `target` account and under `env-aws-sso-extensions-for-enterprise-preSolutionArtefactsStack` outputs , you will have the S3 locations for uploading your permission sets and account assignments
+- For account assignment operations, uploading a file to the S3 prefix path would map to creating an account assignment and deleting a file from the S3 prefix path would map to deleting an account assignment
+- For permission set operations, uploading a new file to the S3 prefix path would map to creating a permission set, uploading a new copy of the file would map to updating the permission set, and deleting the file would map to deleting the permission set
 
 ## Security
 

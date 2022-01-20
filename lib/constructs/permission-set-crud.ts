@@ -267,7 +267,7 @@ export class PermissionSetCRUD extends Construct {
       );
 
       new CfnOutput(this, name(buildConfig, "permission-sets-location"), {
-        exportName: "permission-sets-location",
+        exportName: name(buildConfig, "permission-sets-location"),
         value: `s3://${PermissionSetCRUDProps.ssoArtefactsBucket.bucketName}/permission_sets/`,
       });
     }
