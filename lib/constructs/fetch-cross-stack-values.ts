@@ -79,7 +79,7 @@ export class FetchCrossStackValues extends Construct {
       name(buildConfig, "importedOrgEventNotificationsTopic"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "orgEventsNotificationsTopicArn")
+        name(buildConfig, "importedOrgEventsNotificationsTopicArn")
       )
     );
 
@@ -88,7 +88,7 @@ export class FetchCrossStackValues extends Construct {
       name(buildConfig, "importedprocessTargetAccountSMTopic"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "processTargetAccountSMTopicArn")
+        name(buildConfig, "importedProcessTargetAccountSMTopicArn")
       )
     );
 

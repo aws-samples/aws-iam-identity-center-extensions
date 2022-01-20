@@ -25,9 +25,8 @@ export class ObservabilityArtefacts extends Construct {
     ];
 
     const permissionSetAPILogGroupNames: Array<string> = [
-      `/aws/lambda/${buildConfig.Environment}-permissionSetHandler`,
+      `/aws/lambda/${buildConfig.Environment}-psApiHandler`,
       `/aws/lambda/${buildConfig.Environment}-permissionSetTopicProcessor`,
-      `/aws/lambda/${buildConfig.Environment}-processTargetAccountSMListenerHandler`,
       `/aws/lambda/${buildConfig.Environment}-permissionSetSyncHandler`,
     ];
 
@@ -116,7 +115,7 @@ export class ObservabilityArtefacts extends Construct {
       {
         name: name(buildConfig, "ssoGroupTriggerFlows-getRequestDetails"),
         queryString:
-          "fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp desc | limit 30",
+          "fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp desc | limit 100 | filter ispresent(requestId)",
         logGroupNames: ssoGroupLogGroupNames,
       }
     );
@@ -143,7 +142,7 @@ export class ObservabilityArtefacts extends Construct {
       {
         name: name(buildConfig, "ssoUserTriggerFlows-getRequestDetails"),
         queryString:
-          "fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp desc | limit 30",
+          "fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp desc | limit 100 | filter ispresent(requestId)",
         logGroupNames: ssoUserLogGroupNames,
       }
     );
@@ -173,7 +172,7 @@ export class ObservabilityArtefacts extends Construct {
           "permissionSetSyncTriggerFlows-getRequestDetails"
         ),
         queryString:
-          "fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp desc | limit 30",
+          "fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp desc | limit 100  | filter ispresent(requestId)",
         logGroupNames: permissionSetSyncLogGroupNames,
       }
     );
@@ -203,7 +202,7 @@ export class ObservabilityArtefacts extends Construct {
       {
         name: name(buildConfig, "orgEventsTriggerFlows-getRequestDetails"),
         queryString:
-          "fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp desc | limit 30",
+          "fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp desc | limit 100 | filter ispresent(requestId)",
         logGroupNames: orgEventsLogGroupNames,
       }
     );
