@@ -14,7 +14,7 @@
 
 - [Detailed Building Blocks Overview](docs/documentation/Building-Blocks.md)
 - [Use case Flows](docs/documentation/Use-Case-Flows.md)
-- [Payload Schema Details](#payload-schema-details)
+- [Payload Schema Details for account assignments and permission sets](#payload-schema-details-for-account-assignments-and-permission-sets)
 - [Using API interface for your use cases](#using-api-interface-for-your-use-cases)
 - [Using S3 interface for your use cases](#using-s3-interface-for-your-use-cases)
 - [Unicorn Rides use cases](https://catalog.us-east-1.prod.workshops.aws/v2/workshops/640b0bab-1f5e-494a-973e-4ed7919d397b/en-US/03-usecases)
@@ -283,7 +283,7 @@ The solution provides automated change access management through the following f
 - The solution enables deployment in a distributed model i.e. orgmain, deployment and target account (or) in a single account model i.e. orgmain only. It's recommended that single account model of deployment be used only for demonstration purposes
 - The solution assumes that AWS SSO is enabled in a different account other than orgmain account and has the required cross-account permissions setup to enable the functionalities. This future-proofs the solution to support the scenario when AWS SSO service releases delegated admin support similar to other services such as GuardDuty
 
-## Payload schema details
+## Payload schema details for account assignments and permission sets
 
 - For account assignment operations with API interface
   - _action_ should be exactly one of **create, delete**
