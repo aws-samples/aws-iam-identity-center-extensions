@@ -190,6 +190,8 @@ This solution enables enterprise friendly account assignment lifecycles through 
 - Create & delete account assignments with scope set to **account, root, ou_id or account_tag**
 - Using the entity value passed in the payload, the solution calculates the account list and processes the account assignment operations on all the accounts automatically
 
+<b>NOTE:</b> Permission sets and user/group assignments cannot be applied to the Organization Main account (also known as the Master Payer) due to a design constraint of the AWS API. There is no available mechanism to programmatically manage the permission sets and user/group assignments of the Organization Main account.
+
 <details>
 <summary>Example payload to provision permission set <b>CloudOperator-ps</b> for <b>all accounts in your organization</b> and provide access to <b>team-CloudOperators user group</b></summary>
 <p>
