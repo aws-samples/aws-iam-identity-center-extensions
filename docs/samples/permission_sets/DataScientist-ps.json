@@ -1,22 +1,19 @@
 {
-  "action": "create",
-  "permissionSetData": {
-    "permissionSetName": "DataScientist-ps",
-    "sessionDurationInMinutes": "300",
-    "relayState": "https://eu-west-1.console.aws.amazon.com/console/home?region=eu-west-1#",
-    "tags": [
-      {
-        "Key": "versionid",
-        "Value": "01"
-      },
-      {
-        "Key": "team",
-        "Value": "DataScientists"
-      }
-    ],
-    "managedPoliciesArnList": [
-      "arn:aws:iam::aws:policy/job-function/DataScientist"
-    ],
-    "inlinePolicyDocument": {}
-  }
+  "permissionSetName": "DataScientist-ps",
+  "sessionDurationInMinutes": "300",
+  "relayState": "https://eu-west-1.console.aws.amazon.com/console/home?region=eu-west-1#",
+  "tags": [
+    {
+      "Key": "versionid",
+      "Value": "01"
+    },
+    {
+      "Key": "team",
+      "Value": "DataScientists"
+    }
+  ],
+  "managedPoliciesArnList": [
+    "arn:aws:iam::aws:policy/job-function/DataScientist"
+  ],
+  "inlinePolicyDocument": {}
 }
