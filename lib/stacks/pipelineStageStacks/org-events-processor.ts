@@ -142,6 +142,7 @@ export class OrgEventsProcessor extends Stack {
           detail: {
             eventSource: ["organizations.amazonaws.com"],
             eventName: ["MoveAccount"],
+            errorCode: [{ exists: false }],
           },
         },
         ruleName: name(buildConfig, "moveAccountTrigger"),
@@ -166,6 +167,7 @@ export class OrgEventsProcessor extends Stack {
           detail: {
             service: ["organizations"],
             "resource-type": ["account"],
+            errorCode: [{ exists: false }],
           },
         },
         ruleName: name(buildConfig, "accountTagChangeTrigger"),

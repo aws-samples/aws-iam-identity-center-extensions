@@ -82,6 +82,7 @@ export class SSOEventsProcessor extends Stack {
           detail: {
             eventSource: ["sso-directory.amazonaws.com"],
             eventName: ["CreateGroup", "DeleteGroup"],
+            errorCode: [{ exists: false }],
           },
         },
         ruleName: name(buildConfig, "ssoGroupHandler"),
@@ -135,6 +136,7 @@ export class SSOEventsProcessor extends Stack {
           detail: {
             eventSource: ["sso-directory.amazonaws.com"],
             eventName: ["CreateUser", "DeleteUser"],
+            errorCode: [{ exists: false }],
           },
         },
         ruleName: name(buildConfig, "ssoUserHandler"),
