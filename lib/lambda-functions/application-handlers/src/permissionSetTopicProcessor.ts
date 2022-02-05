@@ -349,17 +349,15 @@ export const handler = async (event: SNSEvent) => {
                 case "sortedManagedPoliciesArnList-add": {
                   const changeSettoAdd: Array<string> =
                     sortedManagedPoliciesArnList;
-                  await Promise.all(
-                    changeSettoAdd.map(async (managedPolicyArn: string) => {
-                      await ssoAdminClientObject.send(
-                        new AttachManagedPolicyToPermissionSetCommand({
-                          InstanceArn: instanceArn,
-                          PermissionSetArn: permissionSetArn,
-                          ManagedPolicyArn: managedPolicyArn,
-                        })
-                      );
-                    })
-                  );
+                  for (const managedPolicyArn of changeSettoAdd) {
+                    await ssoAdminClientObject.send(
+                      new AttachManagedPolicyToPermissionSetCommand({
+                        InstanceArn: instanceArn,
+                        PermissionSetArn: permissionSetArn,
+                        ManagedPolicyArn: managedPolicyArn,
+                      })
+                    );
+                  }
                   reProvision = true;
                   logger({
                     handler: "permissionSetTopicProcessor",
@@ -374,17 +372,16 @@ export const handler = async (event: SNSEvent) => {
                 case "sortedManagedPoliciesArnList-remove": {
                   const changeSettoRemove: Array<string> =
                     oldItem.sortedManagedPoliciesArnList;
-                  await Promise.all(
-                    changeSettoRemove.map(async (managedPolicyArn: string) => {
-                      await ssoAdminClientObject.send(
-                        new DetachManagedPolicyFromPermissionSetCommand({
-                          InstanceArn: instanceArn,
-                          PermissionSetArn: permissionSetArn,
-                          ManagedPolicyArn: managedPolicyArn,
-                        })
-                      );
-                    })
-                  );
+                  for (const managedPolicyArn of changeSettoRemove) {
+                    await ssoAdminClientObject.send(
+                      new DetachManagedPolicyFromPermissionSetCommand({
+                        InstanceArn: instanceArn,
+                        PermissionSetArn: permissionSetArn,
+                        ManagedPolicyArn: managedPolicyArn,
+                      })
+                    );
+                  }
+                  reProvision = true;
                   logger({
                     handler: "permissionSetTopicProcessor",
                     logMode: "info",
@@ -393,7 +390,7 @@ export const handler = async (event: SNSEvent) => {
                     status: requestStatus.InProgress,
                     statusMessage: `PermissionSet update operation - removed managed policies`,
                   });
-                  reProvision = true;
+
                   break;
                 }
                 case "sortedManagedPoliciesArnList-update": {
@@ -421,19 +418,17 @@ export const handler = async (event: SNSEvent) => {
                     })
                   );
                   if (changeSettoRemove.length > 0) {
-                    await Promise.all(
-                      changeSettoRemove.map(
-                        async (managedPolicyArn: string) => {
-                          await ssoAdminClientObject.send(
-                            new DetachManagedPolicyFromPermissionSetCommand({
-                              InstanceArn: instanceArn,
-                              PermissionSetArn: permissionSetArn,
-                              ManagedPolicyArn: managedPolicyArn,
-                            })
-                          );
-                        }
-                      )
-                    );
+                    for (const managedPolicyArn of changeSettoRemove) {
+                      await ssoAdminClientObject.send(
+                        new DetachManagedPolicyFromPermissionSetCommand({
+                          InstanceArn: instanceArn,
+                          PermissionSetArn: permissionSetArn,
+                          ManagedPolicyArn: managedPolicyArn,
+                        })
+                      );
+                    }
+
+                    reProvision = true;
                     logger({
                       handler: "permissionSetTopicProcessor",
                       logMode: "info",
@@ -442,20 +437,18 @@ export const handler = async (event: SNSEvent) => {
                       status: requestStatus.InProgress,
                       statusMessage: `PermissionSet update operation - removed managed policies from changeSet calculated`,
                     });
-                    reProvision = true;
                   }
                   if (changeSettoAdd.length > 0) {
-                    await Promise.all(
-                      changeSettoAdd.map(async (managedPolicyArn: string) => {
-                        await ssoAdminClientObject.send(
-                          new AttachManagedPolicyToPermissionSetCommand({
-                            InstanceArn: instanceArn,
-                            PermissionSetArn: permissionSetArn,
-                            ManagedPolicyArn: managedPolicyArn,
-                          })
-                        );
-                      })
-                    );
+                    for (const managedPolicyArn of changeSettoAdd) {
+                      await ssoAdminClientObject.send(
+                        new AttachManagedPolicyToPermissionSetCommand({
+                          InstanceArn: instanceArn,
+                          PermissionSetArn: permissionSetArn,
+                          ManagedPolicyArn: managedPolicyArn,
+                        })
+                      );
+                    }
+
                     logger({
                       handler: "permissionSetTopicProcessor",
                       logMode: "info",
