@@ -1,20 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
-  "$id": "Link-API",
+  "$id": "Link-S3",
   "type": "object",
-  "title": "Link-API",
-  "description": "Schemea for link create/delete.",
+  "title": "Link-S3",
+  "description": "Schemea for link create/delete through S3 interface.",
   "default": {},
-  "required": ["action", "linkData"],
+  "required": ["linkData"],
   "properties": {
-    "action": {
-      "$id": "#/properties/action",
-      "type": "string",
-      "title": "Link operation type",
-      "description": "Link operation type",
-      "default": "",
-      "enum": ["create", "delete"]
-    },
     "linkData": {
       "$id": "#/properties/linkData",
       "type": "string",

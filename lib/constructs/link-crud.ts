@@ -207,6 +207,9 @@ export class LinkCRUD extends Construct {
               "@aws-sdk/lib-dynamodb",
               "@aws-sdk/client-sns",
               "uuid",
+              "ajv",
+              "fs",
+              "path",
             ],
             minify: true,
           },
@@ -226,7 +229,6 @@ export class LinkCRUD extends Construct {
         new LambdaDestination(this.linkCuHandler),
         {
           prefix: "links_data/",
-          suffix: ".ssofile",
         }
       );
 
@@ -250,6 +252,9 @@ export class LinkCRUD extends Construct {
               "@aws-sdk/lib-dynamodb",
               "@aws-sdk/client-sns",
               "uuid",
+              "ajv",
+              "fs",
+              "path",
             ],
             minify: true,
           },
@@ -269,7 +274,6 @@ export class LinkCRUD extends Construct {
         new LambdaDestination(this.linkDelHandler),
         {
           prefix: "links_data/",
-          suffix: ".ssofile",
         }
       );
 

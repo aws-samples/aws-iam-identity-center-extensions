@@ -35,4 +35,5 @@ export interface Parameters {
   readonly IsAdUsed: boolean;
   readonly DomainName: string;
   readonly ImportCurrentSSOConfiguration: boolean;
+  readonly UpgradeFromVersionLessThanV303: boolean;
 }

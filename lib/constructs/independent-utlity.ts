@@ -193,5 +193,10 @@ export class IndependentUtility extends Construct {
       parameterName: name(buildConfig, "ssoArtefactsBucketName"),
       stringValue: this.ssoArtefactsBucket.bucketName,
     });
+
+    new StringParameter(this, name(buildConfig, "ssoArtefactsBucketKeyArn"), {
+      parameterName: name(buildConfig, "ssoArtefactsBucketKeyArn"),
+      stringValue: this.s3ArtefactsKey.keyArn,
+    });
   }
 }

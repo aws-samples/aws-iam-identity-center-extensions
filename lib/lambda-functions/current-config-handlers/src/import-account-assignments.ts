@@ -70,7 +70,7 @@ export const handler = async (event: SNSEvent) => {
         });
       } else {
         const linkParams: LinkData = {
-          awsEntityId: `account.${message.linkPayload.awsEntityData}.${message.linkPayload.permissionSetName}.${message.entityName}.${message.entityType}.ssofile`,
+          awsEntityId: `account%${message.linkPayload.awsEntityData}%${message.linkPayload.permissionSetName}%${message.entityName}%${message.entityType}%ssofile`,
           awsEntityType: "account",
           awsEntityData: message.linkPayload.awsEntityData,
           permissionSetName: message.linkPayload.permissionSetName,

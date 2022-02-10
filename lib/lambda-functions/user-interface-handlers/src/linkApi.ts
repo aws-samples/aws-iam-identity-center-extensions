@@ -66,7 +66,7 @@ export const handler = async (
   if (event.body !== null && event.body !== undefined) {
     try {
       const payload: LinkPayload = imperativeParseJSON(event.body, validate);
-      const delimeter = ".";
+      const delimeter = "%";
       const { linkData } = payload;
       if (payload.action === "create") {
         const keyValue = linkData.split(delimeter);
@@ -76,7 +76,8 @@ export const handler = async (
           awsEntityData: keyValue[1],
           permissionSetName: keyValue[2],
           // Handle cases where principalName contains one or more delimeter characters
-          principalName: keyValue.slice(3, -2).join(delimeter),
+          //principalName: keyValue.slice(3, -2).join(delimeter),
+          principalName: keyValue[3],
           principalType: keyValue[4],
         };
         await s3clientObject.send(

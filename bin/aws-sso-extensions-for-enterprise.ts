@@ -149,6 +149,10 @@ function getConfig() {
         unparsedEnv["Parameters"],
         "ImportCurrentSSOConfiguration"
       ),
+      UpgradeFromVersionLessThanV303: ensureBoolean(
+        unparsedEnv["Parameters"],
+        "UpgradeFromVersionLessThanV303"
+      ),
     },
   };
 

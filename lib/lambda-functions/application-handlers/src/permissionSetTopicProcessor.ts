@@ -704,6 +704,14 @@ export const handler = async (event: SNSEvent) => {
           );
           await ddbDocClientObject.send(
             new DeleteCommand({
+              TableName: DdbTable,
+              Key: {
+                permissionSetName,
+              },
+            })
+          );
+          await ddbDocClientObject.send(
+            new DeleteCommand({
               TableName: Arntable,
               Key: {
                 permissionSetName,

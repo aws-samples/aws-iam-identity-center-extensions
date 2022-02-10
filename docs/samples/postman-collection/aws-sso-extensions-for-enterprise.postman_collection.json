@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "b6e8361d-4eb4-4d5c-967d-188100373e57",
+    "_postman_id": "25f8008e-1995-4ca9-82b9-fc0a4fa2fea3",
     "name": "aws-sso-extensions-for-enterprise",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
@@ -40,7 +40,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"root.all.CloudOperator-ps.team-CloudOperators.GROUP.ssofile\"    \n}",
+              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"root%all%CloudOperator-ps%team-CloudOperators%GROUP%ssofile\"    \n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -86,7 +86,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"root.all.CloudOperator-ps.user-breakglass.USER.ssofile\"    \n}",
+              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"root%all%CloudOperator-ps%user-breakglass%USER%ssofile\"    \n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -132,7 +132,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"root.all.SysAdmin-ps.team-SysAdmins.GROUP.ssofile\"    \n}",
+              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"root%all%SysAdmin-ps%team-SysAdmins%GROUP%ssofile\"    \n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -178,7 +178,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"ou_id.ou_id123435.SecurityAuditor-ps.team-SecurityAuditors.GROUP.ssofile\"         \n}",
+              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"ou_id%ou_id123435%SecurityAuditor-ps%team-SecurityAuditors%GROUP%ssofile\"         \n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -224,7 +224,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"account.121111112211.Billing-ps.team-Accountants.GROUP.ssofile\"    \n}",
+              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"account%121111112211%Billing-ps%team-Accountants%GROUP%ssofile\"    \n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -270,7 +270,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"account_tag.team^DataScientists.DataScientist-ps.team-DataScientists.GROUP.ssofile\"    \n}",
+              "raw": "{\n    \"action\": \"create\",\n    \"linkData\": \"account_tag%team^DataScientists%DataScientist-ps%team-DataScientists%GROUP%ssofile\"    \n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -316,7 +316,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"root.all.CloudOperator-ps.team-CloudOperators.GROUP.ssofile\"    \n}",
+              "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"root%all%CloudOperator-ps%team-CloudOperators%GROUP%ssofile\"    \n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -924,7 +924,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"root.all.SysAdmin-ps.team-SysAdmins.ssofile\"    \n}",
+              "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"root%all%SysAdmin-ps%team-SysAdmins%GROUP%ssofile\"    \n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -970,7 +970,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"account_tag.team^DataScientists.DataScientist-ps.team-DataScientists.ssofile\"    \n}",
+              "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"account_tag%team^DataScientists%DataScientist-ps%team-DataScientists%GROUP%ssofile\"    \n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1016,7 +1016,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"ou_id.ou_id123435.SecurityAuditor-ps.team-SecurityAuditors.ssofile\"    \n}",
+              "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"ou_id%ou_id123435%SecurityAuditor-ps%team-SecurityAuditors%GROUP%ssofile\"    \n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1062,7 +1062,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"account.121111112211.Billing-ps.team-Accountants.ssofile\"    \n}",
+              "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"account%121111112211%Billing-ps%team-Accountants%GROUP%ssofile\"    \n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1108,7 +1108,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"root.all.CloudOperator-ps.user-breakglass.USER.ssofile\"    \n}",
+              "raw": "{\n    \"action\": \"delete\",\n    \"linkData\": \"root%all%CloudOperator-ps%user-breakglass%USER%ssofile\"    \n}",
               "options": {
                 "raw": {
                   "language": "json"

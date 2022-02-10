@@ -7,7 +7,6 @@ Trigger source: permission set S3 path object notification for removed type even
 
 // Environment configuration read
 const {
-  DdbTable,
   linksTable,
   errorNotificationsTopicArn,
   AWS_REGION,
@@ -17,19 +16,11 @@ const {
 // SDK and third party client imports
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
-import {
-  DeleteCommand,
-  DynamoDBDocumentClient,
-  QueryCommand,
-} from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { S3Event, S3EventRecord } from "aws-lambda";
-import {
-  DeletePermissionSetDataProps,
-  ErrorMessage,
-  requestStatus,
-} from "../../helpers/src/interfaces";
-import { JSONParserError } from "../../helpers/src/payload-validator";
 import { v4 as uuidv4 } from "uuid";
+import { ErrorMessage, requestStatus } from "../../helpers/src/interfaces";
+import { JSONParserError } from "../../helpers/src/payload-validator";
 import { logger } from "../../helpers/src/utilities";
 // SDK and third party client object initialistaion
 const ddbClientObject = new DynamoDBClient({
@@ -49,9 +40,6 @@ export const handler = async (event: S3Event) => {
       try {
         const requestId = uuidv4().toString();
         const keyValue = record.s3.object.key.split("/")[1].split(".")[0];
-        const payload: DeletePermissionSetDataProps = {
-          permissionSetName: keyValue,
-        };
         const relatedLinks = await ddbDocClientObject.send(
           // QueryCommand is a pagniated call, however the logic requires
           // checking only if the result set is greater than 0
@@ -86,15 +74,6 @@ export const handler = async (event: S3Event) => {
             statusMessage: `Permission Set delete operation aborted as there are existing account assignments referencing the permission set`,
           });
         } else {
-          // Delete from DynamoDB
-          await ddbDocClientObject.send(
-            new DeleteCommand({
-              TableName: DdbTable,
-              Key: {
-                ...payload,
-              },
-            })
-          );
           await snsClientObject.send(
             new PublishCommand({
               TopicArn: permissionSetProcessingTopicArn + "",
