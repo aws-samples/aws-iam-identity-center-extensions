@@ -109,7 +109,7 @@ const identityStoreClientObject = new IdentitystoreClient({
 
 //Error notification
 const errorMessage: ErrorMessage = {
-  Subject: "Error Processing link stream handler",
+  Subject: "Error Processing link topic processor",
 };
 
 export const handler = async (event: SNSEvent) => {
@@ -136,12 +136,13 @@ export const handler = async (event: SNSEvent) => {
       statusMessage: `Link topic processor ${action} operation in progress`,
     });
     // Deconstruct and get the values for the SSO Admin API operations
-    const delimeter = ".";
+    const delimeter = "%";
     const linkKeyArray = linkData.split(delimeter);
     const entityType = linkKeyArray?.[0];
     const entityValue = linkKeyArray?.[1];
     const permissionsetName = linkKeyArray?.[2];
-    const principalName = linkKeyArray?.slice(3, -2).join(delimeter);
+    //const principalName = linkKeyArray?.slice(3, -2).join(delimeter);
+    const principalName = linkKeyArray?.[3];
     const principalType = linkKeyArray?.[4];
 
     const staticSSOPayload: StaticSSOPayload = {

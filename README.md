@@ -199,7 +199,7 @@ This solution enables enterprise friendly account assignment lifecycles through 
 ```json
 {
   "action": "create",
-  "linkData": "root.all.CloudOperator-ps.team-CloudOperators.GROUP.ssofile"
+  "linkData": "root%all%CloudOperator-ps%team-CloudOperators%GROUP%ssofile"
 }
 ```
 
@@ -213,7 +213,7 @@ This solution enables enterprise friendly account assignment lifecycles through 
 ```json
 {
   "action": "create",
-  "linkData": "ou_id.ou-id12345.SecurityAuditor-ps.team-SecurityAuditors.GROUP.ssofile"
+  "linkData": "ou_id%ou-id12345%SecurityAuditor-ps%team-SecurityAuditors%GROUP%ssofile"
 }
 ```
 
@@ -227,7 +227,7 @@ This solution enables enterprise friendly account assignment lifecycles through 
 ```json
 {
   "action": "create",
-  "linkData": "account_tag.team^DataScientists.DataScientist-ps.team-DataScientists.GROUP.ssofile"
+  "linkData": "account_tag%team^DataScientists%DataScientist-ps%team-DataScientists%GROUP%ssofile"
 }
 ```
 
@@ -241,7 +241,7 @@ This solution enables enterprise friendly account assignment lifecycles through 
 ```json
 {
   "action": "create",
-  "linkData": "account.123456789012.Billing-ps.team-Accountants.GROUP.ssofile"
+  "linkData": "account%123456789012%Billing-ps%team-Accountants%GROUP%ssofile"
 }
 ```
 
@@ -255,7 +255,7 @@ This solution enables enterprise friendly account assignment lifecycles through 
 ```json
 {
   "action": "create",
-  "linkData": "root.all.Breakglass-ps.break-glass.USER.ssofile"
+  "linkData": "root%all%Breakglass-ps%break-glass%USER%ssofile"
 }
 ```
 
@@ -289,9 +289,9 @@ The solution provides automated change access management through the following f
 
 - For account assignment operations with API interface
   - _action_ should be exactly one of **create, delete**
-  - _linkData_ should match this format: `scopetype-scopevalue-permissionsetname-principalname-principaltype.ssofile`
+  - _linkData_ should match this format: `scopetype%scopevalue%permissionsetname%principalname%principaltype%ssofile`
 - For account assignment operations with S3 interface
-  - file name should match this format: `scopetype-scopevalue-permissionsetname-principalname-principaltype.ssofile`
+  - file name should match this format: `scopetype%scopevalue%permissionsetname%principalname%principaltype%ssofile`
   - file contents are empty i.e. empty file
 - For both interface types,
   - `scopetype` should be exactly one of **root, ou_id, account_tag, account**

@@ -148,6 +148,10 @@ test("Empty Stack", () => {
           unparsedEnv["Parameters"],
           "ImportCurrentSSOConfiguration"
         ),
+        UpgradeFromVersionLessThanV303: ensureBoolean(
+          unparsedEnv["Parameters"],
+          "UpgradeFromVersionLessThanV303"
+        ),
       },
     };
   }

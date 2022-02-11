@@ -22,7 +22,7 @@
       "default": "",
       "minLength": 1,
       "maxLength": 32,
-      "pattern": "^[a-zA-Z0-9-@=,\\s]*$"
+      "pattern": "[\\w+=,.@-]+"
     },
     "sessionDurationInMinutes": {
       "$id": "#/properties/sessionDurationInMinutes",
@@ -40,7 +40,8 @@
       "description": "relayState",
       "default": "",
       "minLength": 0,
-      "maxLength": 240
+      "maxLength": 240,
+      "pattern": "[A-Za-z0-9_:/=\\+\\-@#]+"
     },
     "tags": {
       "$id": "#/properties/tags",

@@ -2,6 +2,10 @@ export interface LinkPayload {
   readonly linkData: string;
   readonly action: string;
 }
+
+export interface LinkS3Payload {
+  readonly linkData: string;
+}
 export interface Tag {
   readonly Key: string;
   readonly Value: string;

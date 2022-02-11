@@ -246,7 +246,6 @@ export class PermissionSetCRUD extends Construct {
           },
           layers: [PermissionSetCRUDProps.nodeJsLayer],
           environment: {
-            DdbTable: this.permissionSetTable.tableName,
             AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
             errorNotificationsTopicArn:
               PermissionSetCRUDProps.errorNotificationsTopicArn,

@@ -12,6 +12,7 @@ import { SSOApiRoles } from "../pipelineStageStacks/sso-api-roles";
 import { SSOEventsProcessor } from "../pipelineStageStacks/sso-events-processor";
 import { SSOImportArtefactsPart1 } from "../pipelineStageStacks/sso-import-artefacts-part1";
 import { SSOImportArtefactsPart2 } from "../pipelineStageStacks/sso-import-artefacts-part2";
+import { UpgradeToV303 } from "../pipelineStageStacks/upgrade-to-v303";
 
 function fullname(buildConfig: BuildConfig, name: string): string {
   return buildConfig.Environment + "-" + buildConfig.App + "-" + name;
@@ -138,6 +139,21 @@ export class SolutionArtefactsDeploymentStage extends Stage {
       );
 
       ssoImportArtefactsPart2Stack.node.addDependency(solutionartefactsStack);
+    }
+
+    if (buildConfig.Parameters.UpgradeFromVersionLessThanV303) {
+      const upgradeToV303Stack = new UpgradeToV303(
+        this,
+        fullname(buildConfig, "upgradeToV303Stack"),
+        {
+          stackName: fullname(buildConfig, "upgradeToV303Stack"),
+          synthesizer: new DefaultStackSynthesizer({
+            qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
+          }),
+        },
+        buildConfig
+      );
+      upgradeToV303Stack.node.addDependency(solutionartefactsStack);
     }
   }
 }

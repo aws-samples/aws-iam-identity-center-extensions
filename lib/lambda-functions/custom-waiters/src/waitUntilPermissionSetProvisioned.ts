@@ -62,7 +62,7 @@ export const waitUntilPermissionSetProvisioned = async (
     checkState
   );
   logger({
-    handler: "accountAssignmentCreationWaiter",
+    handler: "permissionSetProvisioningWaiter",
     logMode: "info",
     relatedData: `${input.ProvisionPermissionSetRequestId}`,
     requestId: requestId,
