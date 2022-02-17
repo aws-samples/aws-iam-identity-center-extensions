@@ -1,10 +1,8 @@
 //Import Libraries
 import { mockClient } from "aws-sdk-client-mock";
-import { GetParameterCommand, SSM, SSMClient } from "@aws-sdk/client-ssm";
-import { SNSClient } from "@aws-sdk/client-sns";
+import { GetParameterCommand, SSMClient } from "@aws-sdk/client-ssm";
 import { handler } from "../src/ssmParamReader";
 import {
-  CloudFormationCustomResourceEvent,
   CloudFormationCustomResourceCreateEvent,
   CloudFormationCustomResourceResponse,
 } from "aws-lambda";
