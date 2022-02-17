@@ -7,24 +7,27 @@
   },
   "keywords": [],
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "3.52.0",
-    "@aws-sdk/client-identitystore": "3.52.0",
-    "@aws-sdk/client-s3": "3.52.0",
-    "@aws-sdk/client-sfn": "3.52.0",
-    "@aws-sdk/client-sns": "3.52.0",
-    "@aws-sdk/client-sqs": "3.52.0",
-    "@aws-sdk/client-ssm": "3.52.0",
-    "@aws-sdk/client-sso-admin": "3.52.0",
-    "@aws-sdk/credential-providers": "3.52.0",
-    "@aws-sdk/lib-dynamodb": "3.52.0",
-    "@aws-sdk/util-dynamodb": "3.52.0",
-    "@aws-sdk/util-waiter": "3.52.0",
-    "ajv": "8.10.0",
+    "@aws-sdk/types": "^3.46.0",
+    "@aws-sdk/client-dynamodb": "3.46.0",
+    "@aws-sdk/client-identitystore": "3.46.0",
+    "@aws-sdk/client-s3": "3.46.0",
+    "@aws-sdk/client-sfn": "3.46.0",
+    "@aws-sdk/client-sns": "3.46.0",
+    "@aws-sdk/client-sqs": "3.46.0",
+    "@aws-sdk/client-ssm": "3.46.0",
+    "@aws-sdk/client-sso-admin": "3.46.0",
+    "@aws-sdk/credential-providers": "3.46.0",
+    "@aws-sdk/lib-dynamodb": "3.46.0",
+    "@aws-sdk/util-waiter": "3.46.0",
+    "ajv": "8.8.2",
     "json-diff": "0.7.1",
     "uuid": "8.3.2"
   },
   "devDependencies": {
     "@types/json-diff": "0.7.0",
     "@types/uuid": "8.3.4"
+  },
+  "resolutions": {
+    "@aws-sdk/types": "^3.49.0"
   }
 }

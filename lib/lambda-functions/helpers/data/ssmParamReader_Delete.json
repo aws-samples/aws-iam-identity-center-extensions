@@ -1,0 +1,16 @@
+{
+  "RequestType": "Delete",
+  "ServiceToken": "<redacted>",
+  "ResponseURL": "<redacted>",
+  "StackId": "<redacted>",
+  "RequestId": "<redacted>",
+  "LogicalResourceId": "<redacted>",
+  "ResourceType": "AWS::CloudFormation::CustomResource",
+  "ResourceProperties": {
+    "ServiceToken": "<redacted>",
+    "paramName": "tony/test",
+    "paramReaderRoleArn": "testARN",
+    "paramRegion": "us-east-1",
+    "paramAccount": "1234567890123"
+  }
+}
