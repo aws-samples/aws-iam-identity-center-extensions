@@ -7,6 +7,7 @@
   },
   "keywords": [],
   "dependencies": {
+    "@aws-sdk/types": "^3.46.0",
     "@aws-sdk/client-dynamodb": "3.46.0",
     "@aws-sdk/client-identitystore": "3.46.0",
     "@aws-sdk/client-s3": "3.46.0",
@@ -25,5 +26,8 @@
   "devDependencies": {
     "@types/json-diff": "0.7.0",
     "@types/uuid": "8.3.4"
+  },
+  "resolutions": {
+    "@aws-sdk/types": "^3.49.0"
   }
 }
