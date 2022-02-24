@@ -16,7 +16,7 @@ import { Provider } from "aws-cdk-lib/custom-resources";
 import { Construct } from "constructs";
 import { join } from "path";
 import { BuildConfig } from "../../build/buildConfig";
-import * as upgradeV303SMJson from "../../state-machines/upgrade-to-v303.json";
+import * as upgradeV303SMJson from "../../state-machines/upgrade-to-v303-asl.json";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {
   return buildConfig.Environment + "-" + resourcename;
