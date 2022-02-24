@@ -1,0 +1,5 @@
+---
+BootstrapQualifier: "ssoutility"
+SSOServiceAccountId: "<your-sso-account-id>"
+SSOServiceAccountRegion: "<your-sso-service-region>"
+SSOServiceTargetAccountRegion: "<your-new-sso-service-region>"

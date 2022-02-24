@@ -16,9 +16,9 @@ import { CfnStateMachine } from "aws-cdk-lib/aws-stepfunctions";
 import { Construct } from "constructs";
 import { BuildConfig } from "../../build/buildConfig";
 import { SSMParamWriter } from "../../constructs/ssm-param-writer";
-import * as importAccountAssignmentsSMJSON from "../../state-machines/import-account-assignments.json";
-import * as importPermissionSetsSMJSON from "../../state-machines/import-permission-sets.json";
-import * as importCurrentConfigSMJSON from "../../state-machines/import-current-config.json";
+import * as importAccountAssignmentsSMJSON from "../../state-machines/import-account-assignments-asl.json";
+import * as importPermissionSetsSMJSON from "../../state-machines/import-permission-sets-asl.json";
+import * as importCurrentConfigSMJSON from "../../state-machines/import-current-config-asl.json";
 import { CrossAccountRole } from "../../constructs/cross-account-role";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {

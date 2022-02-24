@@ -17,7 +17,7 @@ import { Construct } from "constructs";
 import { BuildConfig } from "../../build/buildConfig";
 import { CrossAccountRole } from "../../constructs/cross-account-role";
 import { SSMParamWriter } from "../../constructs/ssm-param-writer";
-import * as processTargetAccountSMJSON from "../../state-machines/processTargetAccounts.json";
+import * as processTargetAccountSMJSON from "../../state-machines/processTargetAccounts-asl.json";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {
   return buildConfig.Environment + "-" + resourcename;

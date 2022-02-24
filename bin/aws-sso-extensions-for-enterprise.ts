@@ -7,6 +7,9 @@ import { BuildConfig } from "../lib/build/buildConfig";
 import { AwsSsoExtensionsForEnterprise } from "../lib/stacks/pipeline/aws-sso-extensions-for-enterprise";
 
 import yaml = require("js-yaml");
+import { RegionSwitchBuildConfig } from "../lib/build/regionSwitchBuildConfig";
+import { AwsSsoExtensionsRegionSwitchDiscover } from "../lib/stacks/region-switch/aws-sso-extensions-region-switch-discover";
+import { AwsSsoExtensionsRegionSwitchDeploy } from "../lib/stacks/region-switch/aws-sso-extensions-region-switch-deploy";
 const app = new App();
 
 function ensureString(
@@ -159,31 +162,96 @@ function getConfig() {
   return buildConfig;
 }
 
+function getRegionSwitchConfig() {
+  /* eslint-disable  @typescript-eslint/no-explicit-any */
+  const unparsedEnv: any = yaml.load(
+    readFileSync(resolve("./config/" + "region-switch" + ".yaml"), "utf8")
+  );
+
+  const buildConfig: RegionSwitchBuildConfig = {
+    SSOServiceAccountId: ensureString(unparsedEnv, "SSOServiceAccountId"),
+    BootstrapQualifier: ensureString(unparsedEnv, "BootstrapQualifier"),
+    SSOServiceAccountRegion: ensureString(
+      unparsedEnv,
+      "SSOServiceAccountRegion"
+    ),
+    SSOServiceTargetAccountRegion: ensureString(
+      unparsedEnv,
+      "SSOServiceTargetAccountRegion"
+    ),
+  };
+
+  return buildConfig;
+}
+
 async function DeploySSOForEnterprise() {
-  const buildConfig: BuildConfig = getConfig();
+  const env: string = app.node.tryGetContext("config");
+  if (!env)
+    throw new Error(
+      "Context variable missing on CDK command. Pass in as `-c config=XXX`"
+    );
 
-  const AwsSsoExtensionsForEnterpriseAppName =
-    buildConfig.Environment + "-" + buildConfig.App;
-  const AwsSsoExtensionsForEnterpriseStack = new AwsSsoExtensionsForEnterprise(
-    app,
-    AwsSsoExtensionsForEnterpriseAppName,
-    {
-      env: {
-        region: buildConfig.PipelineSettings.DeploymentAccountRegion,
-        account: buildConfig.PipelineSettings.DeploymentAccountId,
+  if (env.toUpperCase() === "REGION-SWITCH-DISCOVER") {
+    const buildConfig: RegionSwitchBuildConfig = getRegionSwitchConfig();
+    const AwsSsoExtensionsRegionSwitchDiscoverAppName = `aws-sso-extensions-region-switch-discover`;
+    new AwsSsoExtensionsRegionSwitchDiscover(
+      app,
+      AwsSsoExtensionsRegionSwitchDiscoverAppName,
+      {
+        env: {
+          region: buildConfig.SSOServiceAccountRegion,
+          account: buildConfig.SSOServiceAccountId,
+        },
+        synthesizer: new DefaultStackSynthesizer({
+          qualifier: buildConfig.BootstrapQualifier,
+        }),
       },
-      synthesizer: new DefaultStackSynthesizer({
-        qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
-      }),
-    },
-    buildConfig
-  );
+      buildConfig
+    );
+  } else if (env.toUpperCase() === "REGION-SWITCH-DEPLOY") {
+    const buildConfig: RegionSwitchBuildConfig = getRegionSwitchConfig();
+    const AwsSsoExtensionsRegionSwitchDeployAppName = `aws-sso-extensions-region-switch-deploy`;
+    new AwsSsoExtensionsRegionSwitchDeploy(
+      app,
+      AwsSsoExtensionsRegionSwitchDeployAppName,
+      {
+        env: {
+          region: buildConfig.SSOServiceTargetAccountRegion,
+          account: buildConfig.SSOServiceAccountId,
+        },
+        synthesizer: new DefaultStackSynthesizer({
+          qualifier: buildConfig.BootstrapQualifier,
+        }),
+      },
+      buildConfig
+    );
+  } else {
+    const buildConfig: BuildConfig = getConfig();
 
-  Tags.of(AwsSsoExtensionsForEnterpriseStack).add("App", buildConfig.App);
-  Tags.of(AwsSsoExtensionsForEnterpriseStack).add(
-    "Environment",
-    buildConfig.Environment
-  );
+    const AwsSsoExtensionsForEnterpriseAppName =
+      buildConfig.Environment + "-" + buildConfig.App;
+    const AwsSsoExtensionsForEnterpriseStack =
+      new AwsSsoExtensionsForEnterprise(
+        app,
+        AwsSsoExtensionsForEnterpriseAppName,
+        {
+          env: {
+            region: buildConfig.PipelineSettings.DeploymentAccountRegion,
+            account: buildConfig.PipelineSettings.DeploymentAccountId,
+          },
+          synthesizer: new DefaultStackSynthesizer({
+            qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
+          }),
+        },
+        buildConfig
+      );
+
+    Tags.of(AwsSsoExtensionsForEnterpriseStack).add("App", buildConfig.App);
+    Tags.of(AwsSsoExtensionsForEnterpriseStack).add(
+      "Environment",
+      buildConfig.Environment
+    );
+  }
 }
 
 DeploySSOForEnterprise();

@@ -1,0 +1,453 @@
+{
+  "Comment": "Deploys discovered permission sets and account assignments from the discover phase in the new SSO region. Part of region switching use case",
+  "StartAt": "Check if eventype is delete",
+  "States": {
+    "Check if eventype is delete": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.eventType ",
+          "StringEquals": "Delete",
+          "Next": "Ignore Op"
+        }
+      ],
+      "Default": "ListInstances"
+    },
+    "ListInstances": {
+      "Type": "Task",
+      "Next": "Scan global permission sets table",
+      "Parameters": {},
+      "Resource": "arn:aws:states:::aws-sdk:ssoadmin:listInstances",
+      "ResultPath": "$.listInstancesResult",
+      "Retry": [
+        {
+          "ErrorEquals": ["States.TaskFailed"],
+          "BackoffRate": 1.5,
+          "IntervalSeconds": 2,
+          "MaxAttempts": 2
+        }
+      ]
+    },
+    "Scan global permission sets table": {
+      "Type": "Task",
+      "Parameters": {
+        "TableName.$": "$.globalPermissionSetsTableName",
+        "Limit.$": "$.pageSize"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:dynamodb:scan",
+      "Next": "Loop through permission sets",
+      "ResultPath": "$.listPermissionSets",
+      "Retry": [
+        {
+          "ErrorEquals": ["States.TaskFailed"],
+          "BackoffRate": 1.5,
+          "IntervalSeconds": 2,
+          "MaxAttempts": 2
+        }
+      ]
+    },
+    "Loop through permission sets": {
+      "Type": "Map",
+      "Iterator": {
+        "StartAt": "Create the permission set object",
+        "States": {
+          "Create the permission set object": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "Parameters": {
+              "FunctionName.$": "$.CreatePSFunctionName",
+              "Payload.$": "$"
+            },
+            "Retry": [
+              {
+                "ErrorEquals": [
+                  "Lambda.ServiceException",
+                  "Lambda.AWSLambdaException",
+                  "Lambda.SdkClientException"
+                ],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 6,
+                "BackoffRate": 2
+              }
+            ],
+            "Next": "Verify if permission set creation lambda threw an exception",
+            "OutputPath": "$.Payload",
+            "Catch": [
+              {
+                "ErrorEquals": ["States.TaskFailed"],
+                "Next": "Error op"
+              }
+            ]
+          },
+          "Verify if permission set creation lambda threw an exception": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "Variable": "$.Payload.lambdaException",
+                "IsPresent": true,
+                "Next": "Error op"
+              }
+            ],
+            "Default": "Look up account assignments for this permission set"
+          },
+          "Error op": {
+            "Type": "Pass",
+            "End": true
+          },
+          "Look up account assignments for this permission set": {
+            "Type": "Task",
+            "Parameters": {
+              "TableName.$": "$.globalAccountAssignmentsTable",
+              "Limit.$": "$.pageSize",
+              "IndexName": "permissionSetName",
+              "KeyConditionExpression": "#permissionSetName = :permissionSetName",
+              "ExpressionAttributeNames": {
+                "#permissionSetName": "permissionSetName"
+              },
+              "ExpressionAttributeValues": {
+                ":permissionSetName": {
+                  "S.$": "$.permissionSetName"
+                }
+              }
+            },
+            "Resource": "arn:aws:states:::aws-sdk:dynamodb:query",
+            "ResultPath": "$.listAccountAssignments",
+            "Next": "Loop through acccount assignments",
+            "Retry": [
+              {
+                "ErrorEquals": ["States.TaskFailed"],
+                "BackoffRate": 1.5,
+                "IntervalSeconds": 2,
+                "MaxAttempts": 2
+              }
+            ]
+          },
+          "Loop through acccount assignments": {
+            "Type": "Map",
+            "Iterator": {
+              "StartAt": "Determine Principal type",
+              "States": {
+                "Determine Principal type": {
+                  "Type": "Choice",
+                  "Choices": [
+                    {
+                      "Variable": "$.principalType",
+                      "StringEquals": "USER",
+                      "Next": "ListUsers"
+                    },
+                    {
+                      "Variable": "$.principalType",
+                      "StringEquals": "GROUP",
+                      "Next": "ListGroups"
+                    }
+                  ],
+                  "Default": "Catchall"
+                },
+                "ListUsers": {
+                  "Type": "Task",
+                  "Parameters": {
+                    "IdentityStoreId.$": "$.identityStoreId",
+                    "Filters": [
+                      {
+                        "AttributePath": "UserName",
+                        "AttributeValue.$": "$.principalName"
+                      }
+                    ]
+                  },
+                  "Resource": "arn:aws:states:::aws-sdk:identitystore:listUsers",
+                  "ResultPath": "$.listUsersResult",
+                  "Next": "Check if the user exists?",
+                  "Retry": [
+                    {
+                      "ErrorEquals": ["States.TaskFailed"],
+                      "BackoffRate": 1.5,
+                      "IntervalSeconds": 2,
+                      "MaxAttempts": 2
+                    }
+                  ]
+                },
+                "Check if the user exists?": {
+                  "Type": "Choice",
+                  "Choices": [
+                    {
+                      "Variable": "$.listUsersResult.Users[0].UserId",
+                      "IsPresent": true,
+                      "Next": "Format uesr payload"
+                    }
+                  ],
+                  "Default": "Catchall"
+                },
+                "Format uesr payload": {
+                  "Type": "Pass",
+                  "Parameters": {
+                    "principalId.$": "$.listUsersResult.Users[0].UserId",
+                    "instanceArn.$": "$.instanceArn",
+                    "principalType.$": "$.principalType",
+                    "targetId.$": "$.target",
+                    "permissionSetArn.$": "$.permissionSetArn",
+                    "waitSeconds.$": "$.waitSeconds"
+                  },
+                  "Next": "CreateAccountAssignment"
+                },
+                "CreateAccountAssignment": {
+                  "Type": "Task",
+                  "Parameters": {
+                    "InstanceArn.$": "$.instanceArn",
+                    "PermissionSetArn.$": "$.permissionSetArn",
+                    "PrincipalId.$": "$.principalId",
+                    "PrincipalType.$": "$.principalType",
+                    "TargetId.$": "$.targetId",
+                    "TargetType": "AWS_ACCOUNT"
+                  },
+                  "Resource": "arn:aws:states:::aws-sdk:ssoadmin:createAccountAssignment",
+                  "ResultPath": "$.createAccountAssignmentResult",
+                  "Next": "Wait for async account assignment operation to complete",
+                  "Retry": [
+                    {
+                      "ErrorEquals": ["States.TaskFailed"],
+                      "BackoffRate": 1.5,
+                      "IntervalSeconds": 2,
+                      "MaxAttempts": 2
+                    }
+                  ]
+                },
+                "Wait for async account assignment operation to complete": {
+                  "Type": "Wait",
+                  "SecondsPath": "$.waitSeconds",
+                  "Next": "DescribeAccountAssignmentCreationStatus"
+                },
+                "DescribeAccountAssignmentCreationStatus": {
+                  "Type": "Task",
+                  "Parameters": {
+                    "AccountAssignmentCreationRequestId.$": "$.createAccountAssignmentResult.AccountAssignmentCreationStatus.RequestId",
+                    "InstanceArn.$": "$.instanceArn"
+                  },
+                  "Resource": "arn:aws:states:::aws-sdk:ssoadmin:describeAccountAssignmentCreationStatus",
+                  "ResultPath": "$.accountAssignmentCreationStatus",
+                  "Next": "Check if account assignment creation is complete?",
+                  "Retry": [
+                    {
+                      "ErrorEquals": ["States.TaskFailed"],
+                      "BackoffRate": 1.5,
+                      "IntervalSeconds": 2,
+                      "MaxAttempts": 2
+                    }
+                  ]
+                },
+                "Check if account assignment creation is complete?": {
+                  "Type": "Choice",
+                  "Choices": [
+                    {
+                      "Variable": "$.accountAssignmentCreationStatus.AccountAssignmentCreationStatus.Status",
+                      "StringEquals": "IN_PROGRESS",
+                      "Next": "Wait before trying status of account assignment creation"
+                    }
+                  ],
+                  "Default": "Creation complete"
+                },
+                "Wait before trying status of account assignment creation": {
+                  "Type": "Wait",
+                  "Seconds": 2,
+                  "Next": "DescribeAccountAssignmentCreationStatus"
+                },
+                "Creation complete": {
+                  "Type": "Pass",
+                  "End": true
+                },
+                "ListGroups": {
+                  "Type": "Task",
+                  "Parameters": {
+                    "IdentityStoreId.$": "$.identityStoreId",
+                    "Filters": [
+                      {
+                        "AttributePath": "DisplayName",
+                        "AttributeValue.$": "$.principalName"
+                      }
+                    ]
+                  },
+                  "Resource": "arn:aws:states:::aws-sdk:identitystore:listGroups",
+                  "ResultPath": "$.listGroupsResult",
+                  "Next": "Check if the group exists?",
+                  "Retry": [
+                    {
+                      "ErrorEquals": ["States.TaskFailed"],
+                      "BackoffRate": 1.5,
+                      "IntervalSeconds": 2,
+                      "MaxAttempts": 2
+                    }
+                  ]
+                },
+                "Check if the group exists?": {
+                  "Type": "Choice",
+                  "Choices": [
+                    {
+                      "Variable": "$.listGroupsResult.Groups[0].GroupId",
+                      "IsPresent": true,
+                      "Next": "Format group payload"
+                    }
+                  ],
+                  "Default": "Catchall"
+                },
+                "Format group payload": {
+                  "Type": "Pass",
+                  "Parameters": {
+                    "principalId.$": "$.listGroupsResult.Groups[0].GroupId",
+                    "instanceArn.$": "$.instanceArn",
+                    "principalType.$": "$.principalType",
+                    "targetId.$": "$.target",
+                    "permissionSetArn.$": "$.permissionSetArn",
+                    "waitSeconds.$": "$.waitSeconds"
+                  },
+                  "Next": "CreateAccountAssignment"
+                },
+                "Catchall": {
+                  "Type": "Pass",
+                  "End": true
+                }
+              }
+            },
+            "ItemsPath": "$.listAccountAssignments.Items",
+            "Next": "Wait for account assignment throttling",
+            "ResultPath": null,
+            "Parameters": {
+              "instanceArn.$": "$.instanceArn",
+              "identityStoreId.$": "$.identityStoreId",
+              "principalType.$": "$$.Map.Item.Value.principalType.S",
+              "target.$": "$$.Map.Item.Value.awsEntityData.S",
+              "principalName.$": "$$.Map.Item.Value.principalName.S",
+              "permissionSetArn.$": "$.permissionSetArn",
+              "waitSeconds.$": "$.waitSeconds"
+            }
+          },
+          "Wait for account assignment throttling": {
+            "Type": "Wait",
+            "Next": "Check if LastEvaluatedKey is present in account assignments result?",
+            "SecondsPath": "$.waitSeconds"
+          },
+          "Check if LastEvaluatedKey is present in account assignments result?": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "Variable": "$.listAccountAssignments.LastEvaluatedKey",
+                "IsPresent": true,
+                "Next": "Format for last account assignment last exclusive key"
+              }
+            ],
+            "Default": "account assignment ignore op"
+          },
+          "Format for last account assignment last exclusive key": {
+            "Type": "Pass",
+            "Parameters": {
+              "globalAccountAssignmentsTable.$": "$.globalAccountAssignmentsTable",
+              "pageSize.$": "$.pageSize",
+              "waitSeconds.$": "$.waitSeconds",
+              "ExclusiveStartKey.$": "$.listAccountAssignments.LastEvaluatedKey",
+              "permissionSetName.$": "$.permissionSetName",
+              "instanceArn.$": "$.instanceArn",
+              "identityStoreId.$": "$.identityStoreId",
+              "permissionSetArn.$": "$.permissionSetArn"
+            },
+            "Next": "Look up account assignments with exclusivestartkey"
+          },
+          "Look up account assignments with exclusivestartkey": {
+            "Type": "Task",
+            "Next": "Loop through acccount assignments",
+            "Parameters": {
+              "TableName.$": "$.globalAccountAssignmentsTable",
+              "Limit.$": "$.pageSize",
+              "ExclusiveStartKey.$": "$.ExclusiveStartKey",
+              "IndexName": "permissionSetName",
+              "KeyConditionExpression": "#permissionSetName = :permissionSetName",
+              "ExpressionAttributeNames": {
+                "#permissionSetName": "permissionSetName"
+              },
+              "ExpressionAttributeValues": {
+                ":permissionSetName": {
+                  "S.$": "$.permissionSetName"
+                }
+              }
+            },
+            "Resource": "arn:aws:states:::aws-sdk:dynamodb:query",
+            "ResultPath": "$.listAccountAssignments",
+            "Retry": [
+              {
+                "ErrorEquals": ["States.TaskFailed"],
+                "BackoffRate": 1.5,
+                "IntervalSeconds": 2,
+                "MaxAttempts": 2
+              }
+            ]
+          },
+          "account assignment ignore op": {
+            "Type": "Pass",
+            "End": true
+          }
+        }
+      },
+      "ItemsPath": "$.listPermissionSets.Items",
+      "Next": "Wait for permission set throttling",
+      "ResultPath": null,
+      "Parameters": {
+        "PermissionSetObject.$": "$$.Map.Item.Value",
+        "IdentityStoreId.$": "$.listInstancesResult.Instances[0].IdentityStoreId",
+        "InstanceArn.$": "$.listInstancesResult.Instances[0].InstanceArn",
+        "CreatePSFunctionName.$": "$.CreatePSFunctionName",
+        "globalAccountAssignmentsTable.$": "$.globalAccountAssignmentsTable",
+        "pageSize.$": "$.pageSize",
+        "waitSeconds.$": "$.waitSeconds"
+      }
+    },
+    "Wait for permission set throttling": {
+      "Type": "Wait",
+      "Next": "Check if lastEvaluatedKey is present?",
+      "SecondsPath": "$.waitSeconds"
+    },
+    "Check if lastEvaluatedKey is present?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.listPermissionSets.LastEvaluatedKey",
+          "IsPresent": true,
+          "Next": "Format for last exclusive key"
+        }
+      ],
+      "Default": "Ignore Op"
+    },
+    "Format for last exclusive key": {
+      "Type": "Pass",
+      "Next": "Scan global permission sets table with ExclusiveStartKey",
+      "Parameters": {
+        "globalPermissionSetsTableName.$": "$.globalPermissionSetsTableName",
+        "pageSize.$": "$.pageSize",
+        "waitSeconds.$": "$.waitSeconds",
+        "listInstancesResult.$": "$.listInstancesResult",
+        "ExclusiveStartKey.$": "$.listPermissionSets.LastEvaluatedKey",
+        "CreatePSFunctionName.$": "$.CreatePSFunctionName",
+        "globalAccountAssignmentsTable.$": "$.globalAccountAssignmentsTable"
+      }
+    },
+    "Scan global permission sets table with ExclusiveStartKey": {
+      "Type": "Task",
+      "Parameters": {
+        "TableName.$": "$.globalPermissionSetsTableName",
+        "Limit.$": "$.pageSize",
+        "ExclusiveStartKey.$": "$.ExclusiveStartKey"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:dynamodb:scan",
+      "ResultPath": "$.listPermissionSets",
+      "Next": "Loop through permission sets",
+      "Retry": [
+        {
+          "ErrorEquals": ["States.TaskFailed"],
+          "BackoffRate": 1.5,
+          "IntervalSeconds": 2,
+          "MaxAttempts": 2
+        }
+      ]
+    },
+    "Ignore Op": {
+      "Type": "Pass",
+      "End": true
+    }
+  }
+}
