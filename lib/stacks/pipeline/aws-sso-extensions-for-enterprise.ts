@@ -33,6 +33,7 @@ export class AwsSsoExtensionsForEnterprise extends Stack {
     const pipeline = new CodePipeline(this, fullname(buildConfig, "pipeline"), {
       pipelineName: fullname(buildConfig, "pipeline"),
       crossAccountKeys: true,
+      publishAssetsInParallel: false,
       synth: new ShellStep(fullname(buildConfig, "synth"), {
         input: CodePipelineSource.codeCommit(
           Repository.fromRepositoryArn(
