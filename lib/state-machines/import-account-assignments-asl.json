@@ -20,7 +20,18 @@
           "IntervalSeconds": 2,
           "MaxAttempts": 2
         }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "Catchall error",
+          "ResultPath": "$.solutionError"
+        }
       ]
+    },
+    "Catchall error": {
+      "Type": "Pass",
+      "End": true
     },
     "Loop through account assignments": {
       "Type": "Map",
@@ -63,7 +74,18 @@
                 "IntervalSeconds": 2,
                 "MaxAttempts": 2
               }
+            ],
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall error within Map",
+                "ResultPath": "$.solutionError"
+              }
             ]
+          },
+          "Catchall error within Map": {
+            "Type": "Pass",
+            "End": true
           },
           "Set groupName as entityName": {
             "Type": "Pass",
@@ -101,7 +123,14 @@
                 "MaxAttempts": 2
               }
             ],
-            "End": true
+            "End": true,
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall error within Map",
+                "ResultPath": "$.solutionError"
+              }
+            ]
           },
           "DescribeUser": {
             "Type": "Task",
@@ -118,6 +147,13 @@
                 "BackoffRate": 1.5,
                 "IntervalSeconds": 2,
                 "MaxAttempts": 2
+              }
+            ],
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall error within Map",
+                "ResultPath": "$.solutionError"
               }
             ]
           },
@@ -154,7 +190,14 @@
       },
       "ItemsPath": "$.listAccountAssignments.AccountAssignments",
       "ResultPath": null,
-      "Next": "Check For NextToken?"
+      "Next": "Check For NextToken?",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "Catchall error",
+          "ResultPath": "$.solutionError"
+        }
+      ]
     },
     "Check For NextToken?": {
       "Type": "Choice",
@@ -190,6 +233,13 @@
           "BackoffRate": 1.5,
           "IntervalSeconds": 2,
           "MaxAttempts": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "Catchall error",
+          "ResultPath": "$.solutionError"
         }
       ]
     },

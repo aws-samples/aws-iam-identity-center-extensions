@@ -9,6 +9,11 @@ import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { Key } from "aws-cdk-lib/aws-kms";
 import { LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
+import {
+  CfnQueryDefinition,
+  LogGroup,
+  RetentionDays,
+} from "aws-cdk-lib/aws-logs";
 import { Bucket } from "aws-cdk-lib/aws-s3";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { CfnStateMachine } from "aws-cdk-lib/aws-stepfunctions";
@@ -104,9 +109,33 @@ export class UpgradeToV303 extends Stack {
       }
     );
 
+    /** Log group to attach to upgrade state machine for capturing logs */
+    const upgradeSMLogGroup = new LogGroup(
+      this,
+      name(buildConfig, "upgradeSMLogGroup"),
+      {
+        retention: RetentionDays.ONE_MONTH,
+      }
+    );
+
     const upgradeSMRole = new Role(this, name(buildConfig, "upgradeSMRole"), {
       assumedBy: new ServicePrincipal("states.amazonaws.com"),
     });
+    upgradeSMRole.addToPrincipalPolicy(
+      new PolicyStatement({
+        actions: [
+          "logs:CreateLogDelivery",
+          "logs:GetLogDelivery",
+          "logs:UpdateLogDelivery",
+          "logs:DeleteLogDelivery",
+          "logs:ListLogDeliveries",
+          "logs:PutResourcePolicy",
+          "logs:DescribeResourcePolicies",
+          "logs:DescribeLogGroups",
+        ],
+        resources: ["*"],
+      })
+    );
 
     tablesKey.grantEncryptDecrypt(upgradeSMRole);
     bucketKey.grantEncryptDecrypt(upgradeSMRole);
@@ -121,6 +150,17 @@ export class UpgradeToV303 extends Stack {
         roleArn: upgradeSMRole.roleArn,
         definitionString: JSON.stringify(upgradeV303SMJson),
         stateMachineName: name(buildConfig, "upgradeV303SM"),
+        loggingConfiguration: {
+          destinations: [
+            {
+              cloudWatchLogsLogGroup: {
+                logGroupArn: upgradeSMLogGroup.logGroupArn,
+              },
+            },
+          ],
+          includeExecutionData: true,
+          level: "ALL",
+        },
       }
     );
 
@@ -215,5 +255,13 @@ export class UpgradeToV303 extends Stack {
     upgradeV303Resource.node.addDependency(triggerUpgradeSM);
     upgradeV303Resource.node.addDependency(updateCustomResource);
     upgradeV303Resource.node.addDependency(processLinkData);
+
+    /** CloudWatch insights query to debug errors, if any */
+    new CfnQueryDefinition(this, name(buildConfig, "-errors"), {
+      name: name(buildConfig, "-errors"),
+      queryString:
+        "filter @message like 'solutionError' and details.name not like 'Catchall'| sort id asc",
+      logGroupNames: [upgradeSMLogGroup.logGroupName],
+    });
   }
 }

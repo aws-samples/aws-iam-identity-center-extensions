@@ -5,25 +5,30 @@ import {
   Stack,
   StackProps,
 } from "aws-cdk-lib";
-import { Construct } from "constructs";
-import { RegionSwitchBuildConfig } from "../../build/regionSwitchBuildConfig";
 import {
   AttributeType,
   BillingMode,
   Table,
   TableEncryption,
 } from "aws-cdk-lib/aws-dynamodb";
-import { Topic } from "aws-cdk-lib/aws-sns";
 import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
-import { CfnStateMachine } from "aws-cdk-lib/aws-stepfunctions";
-import * as importAccountAssignmentsSMJSON from "../../state-machines/import-account-assignments-asl.json";
-import * as importPermissionSetsSMJSON from "../../state-machines/import-permission-sets-asl.json";
-import * as importCurrentConfigSMJSON from "../../state-machines/import-current-config-asl.json";
 import { Code, LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
-import { join } from "path";
-import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
+import {
+  CfnQueryDefinition,
+  LogGroup,
+  RetentionDays,
+} from "aws-cdk-lib/aws-logs";
+import { Topic } from "aws-cdk-lib/aws-sns";
+import { CfnStateMachine } from "aws-cdk-lib/aws-stepfunctions";
 import { Provider } from "aws-cdk-lib/custom-resources";
+import { Construct } from "constructs";
+import { join } from "path";
+import { RegionSwitchBuildConfig } from "../../build/regionSwitchBuildConfig";
+import * as importAccountAssignmentsSMJSON from "../../state-machines/import-account-assignments-asl.json";
+import * as importCurrentConfigSMJSON from "../../state-machines/import-current-config-asl.json";
+import * as importPermissionSetsSMJSON from "../../state-machines/import-permission-sets-asl.json";
 
 function fullname(name: string): string {
   return `aws-sso-extensions-region-switch-discover-${name}`;
@@ -121,11 +126,21 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
      * machine discovers all the current account assignments for a given permission set
      */
 
+    /** Log group to attach to discover state machine for capturing logs */
+    const discoverSMLogGroup = new LogGroup(
+      this,
+      fullname("discoverSMLogGroup"),
+      {
+        retention: RetentionDays.ONE_MONTH,
+      }
+    );
+
     /**
      * IAM role used by the account assignment discovery state machine. Trust
      * policy tied to state machine service Permissions policy allows read
      * permissions to discover SSO account assignments Also, grants publish
-     * permissions to post account assignment paylaods to the import topic
+     * permissions to post account assignment paylaods to the import topic and
+     * permissions to write to cloud watch logs
      */
     const rsImportAccountAssignmentsSMRole = new Role(
       this,
@@ -151,9 +166,25 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
         ],
       })
     );
+    rsImportAccountAssignmentsSMRole.addToPrincipalPolicy(
+      new PolicyStatement({
+        actions: [
+          "logs:CreateLogDelivery",
+          "logs:GetLogDelivery",
+          "logs:UpdateLogDelivery",
+          "logs:DeleteLogDelivery",
+          "logs:ListLogDeliveries",
+          "logs:PutResourcePolicy",
+          "logs:DescribeResourcePolicies",
+          "logs:DescribeLogGroups",
+        ],
+        resources: ["*"],
+      })
+    );
     rsAccountAssignmentImportTopic.grantPublish(
       rsImportAccountAssignmentsSMRole
     );
+
     /**
      * State machine definition Load the def from JSON file and add dependency
      * to ensure the state machine's IAM role is created prior to the state
@@ -166,11 +197,23 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
         roleArn: rsImportAccountAssignmentsSMRole.roleArn,
         definitionString: JSON.stringify(importAccountAssignmentsSMJSON),
         stateMachineName: fullname("rsImportAccountAssignmentSM"),
+        loggingConfiguration: {
+          destinations: [
+            {
+              cloudWatchLogsLogGroup: {
+                logGroupArn: discoverSMLogGroup.logGroupArn,
+              },
+            },
+          ],
+          includeExecutionData: true,
+          level: "ALL",
+        },
       }
     );
     rsImportAccountAssignmentSM.node.addDependency(
       rsImportAccountAssignmentsSMRole
     );
+    rsImportAccountAssignmentSM.node.addDependency(discoverSMLogGroup);
 
     /**
      * Permission set discovery state machine related artefacts This state
@@ -185,7 +228,8 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
      * stage permission set related data Also, specific permissions granted so
      * that this state machine can invoke and orchestrate invocation of account
      * discovery state machine Also, grants publish permissions to post
-     * permission set paylaods to the import topic
+     * permission set paylaods to the import topic and permissions to write to
+     * cloud watch logs
      */
     const rsImportPermissionSetSMRole = new Role(
       this,
@@ -241,6 +285,21 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
         ],
       })
     );
+    rsImportPermissionSetSMRole.addToPrincipalPolicy(
+      new PolicyStatement({
+        actions: [
+          "logs:CreateLogDelivery",
+          "logs:GetLogDelivery",
+          "logs:UpdateLogDelivery",
+          "logs:DeleteLogDelivery",
+          "logs:ListLogDeliveries",
+          "logs:PutResourcePolicy",
+          "logs:DescribeResourcePolicies",
+          "logs:DescribeLogGroups",
+        ],
+        resources: ["*"],
+      })
+    );
     rsPermissionSetImportTopic.grantPublish(rsImportPermissionSetSMRole);
 
     /**
@@ -255,9 +314,21 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
         roleArn: rsImportPermissionSetSMRole.roleArn,
         definitionString: JSON.stringify(importPermissionSetsSMJSON),
         stateMachineName: fullname("rsImportPermissionSetSM"),
+        loggingConfiguration: {
+          destinations: [
+            {
+              cloudWatchLogsLogGroup: {
+                logGroupArn: discoverSMLogGroup.logGroupArn,
+              },
+            },
+          ],
+          includeExecutionData: true,
+          level: "ALL",
+        },
       }
     );
     rsImportPermissionSetSM.node.addDependency(rsImportPermissionSetSMRole);
+    rsImportPermissionSetSM.node.addDependency(discoverSMLogGroup);
 
     /**
      * Current config import state machine related artefacts This state machine
@@ -272,7 +343,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
      * privileges on temporary dynamo DB table used to stage permission set
      * related data Also, specific permissions granted so that this state
      * machine can invoke and orchestrate invocation of permission set discovery
-     * state machine
+     * state machine and permissions to write to logs
      */
     const rsImportCurrentConfigSMRole = new Role(
       this,
@@ -320,6 +391,21 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
         ],
       })
     );
+    rsImportCurrentConfigSMRole.addToPrincipalPolicy(
+      new PolicyStatement({
+        actions: [
+          "logs:CreateLogDelivery",
+          "logs:GetLogDelivery",
+          "logs:UpdateLogDelivery",
+          "logs:DeleteLogDelivery",
+          "logs:ListLogDeliveries",
+          "logs:PutResourcePolicy",
+          "logs:DescribeResourcePolicies",
+          "logs:DescribeLogGroups",
+        ],
+        resources: ["*"],
+      })
+    );
 
     /**
      * State machine definition Load the def from JSON file and add dependency
@@ -333,9 +419,21 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
         roleArn: rsImportCurrentConfigSMRole.roleArn,
         definitionString: JSON.stringify(importCurrentConfigSMJSON),
         stateMachineName: fullname("rsImportCurrentConfigSM"),
+        loggingConfiguration: {
+          destinations: [
+            {
+              cloudWatchLogsLogGroup: {
+                logGroupArn: discoverSMLogGroup.logGroupArn,
+              },
+            },
+          ],
+          includeExecutionData: true,
+          level: "ALL",
+        },
       }
     );
     rsImportCurrentConfigSM.node.addDependency(rsImportCurrentConfigSMRole);
+    rsImportCurrentConfigSM.node.addDependency(discoverSMLogGroup);
 
     /**
      * Permission set import handler, triggered by permission set import topic.
@@ -545,5 +643,13 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
     parentSMResource.node.addDependency(rsImportAccountAssignmentsHandler);
     parentSMResource.node.addDependency(rsImportPermissionSetsHandler);
     parentSMResource.node.addDependency(updateCustomResourceHandler);
+
+    /** CloudWatch insights query to debug errors, if any */
+    new CfnQueryDefinition(this, fullname("-errors"), {
+      name: fullname("-errors"),
+      queryString:
+        "filter @message like 'solutionError' and details.name not like 'Catchall'| sort id asc",
+      logGroupNames: [discoverSMLogGroup.logGroupName],
+    });
   }
 }

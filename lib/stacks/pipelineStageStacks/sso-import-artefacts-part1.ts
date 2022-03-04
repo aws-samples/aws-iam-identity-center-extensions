@@ -20,6 +20,11 @@ import * as importAccountAssignmentsSMJSON from "../../state-machines/import-acc
 import * as importPermissionSetsSMJSON from "../../state-machines/import-permission-sets-asl.json";
 import * as importCurrentConfigSMJSON from "../../state-machines/import-current-config-asl.json";
 import { CrossAccountRole } from "../../constructs/cross-account-role";
+import {
+  CfnQueryDefinition,
+  LogGroup,
+  RetentionDays,
+} from "aws-cdk-lib/aws-logs";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {
   return buildConfig.Environment + "-" + resourcename;
@@ -104,6 +109,15 @@ export class SSOImportArtefactsPart1 extends Stack {
       }
     );
 
+    /** Log group to attach to all the state machines for capturing logs */
+    const importArtefactsSMLogGroup = new LogGroup(
+      this,
+      name(buildConfig, "importArtefactsSMLogGroup"),
+      {
+        retention: RetentionDays.ONE_MONTH,
+      }
+    );
+
     // State Machine 01 - Import Account Assignments
 
     const importAccountAssignmentsSMRole = new Role(
@@ -150,6 +164,21 @@ export class SSOImportArtefactsPart1 extends Stack {
         ],
       })
     );
+    importAccountAssignmentsSMRole.addToPrincipalPolicy(
+      new PolicyStatement({
+        actions: [
+          "logs:CreateLogDelivery",
+          "logs:GetLogDelivery",
+          "logs:UpdateLogDelivery",
+          "logs:DeleteLogDelivery",
+          "logs:ListLogDeliveries",
+          "logs:PutResourcePolicy",
+          "logs:DescribeResourcePolicies",
+          "logs:DescribeLogGroups",
+        ],
+        resources: ["*"],
+      })
+    );
 
     const importAccountAssignmentSM = new CfnStateMachine(
       this,
@@ -158,6 +187,17 @@ export class SSOImportArtefactsPart1 extends Stack {
         roleArn: importAccountAssignmentsSMRole.roleArn,
         definitionString: JSON.stringify(importAccountAssignmentsSMJSON),
         stateMachineName: name(buildConfig, "importAccountAssignmentSM"),
+        loggingConfiguration: {
+          destinations: [
+            {
+              cloudWatchLogsLogGroup: {
+                logGroupArn: importArtefactsSMLogGroup.logGroupArn,
+              },
+            },
+          ],
+          includeExecutionData: true,
+          level: "ALL",
+        },
       }
     );
     importAccountAssignmentSM.node.addDependency(
@@ -222,6 +262,21 @@ export class SSOImportArtefactsPart1 extends Stack {
         ],
       })
     );
+    importPermissionSetSMRole.addToPrincipalPolicy(
+      new PolicyStatement({
+        actions: [
+          "logs:CreateLogDelivery",
+          "logs:GetLogDelivery",
+          "logs:UpdateLogDelivery",
+          "logs:DeleteLogDelivery",
+          "logs:ListLogDeliveries",
+          "logs:PutResourcePolicy",
+          "logs:DescribeResourcePolicies",
+          "logs:DescribeLogGroups",
+        ],
+        resources: ["*"],
+      })
+    );
 
     permissionSetImportTopic.grantPublish(importPermissionSetSMRole);
     ssoArtefactsKeyforImport.grantEncryptDecrypt(importPermissionSetSMRole);
@@ -233,6 +288,17 @@ export class SSOImportArtefactsPart1 extends Stack {
         roleArn: importPermissionSetSMRole.roleArn,
         definitionString: JSON.stringify(importPermissionSetsSMJSON),
         stateMachineName: name(buildConfig, "importPermissionSetSM"),
+        loggingConfiguration: {
+          destinations: [
+            {
+              cloudWatchLogsLogGroup: {
+                logGroupArn: importArtefactsSMLogGroup.logGroupArn,
+              },
+            },
+          ],
+          includeExecutionData: true,
+          level: "ALL",
+        },
       }
     );
     importPermissionSetSM.node.addDependency(importPermissionSetSMRole);
@@ -287,6 +353,21 @@ export class SSOImportArtefactsPart1 extends Stack {
         ],
       })
     );
+    importCurrentConfigSMRole.addToPrincipalPolicy(
+      new PolicyStatement({
+        actions: [
+          "logs:CreateLogDelivery",
+          "logs:GetLogDelivery",
+          "logs:UpdateLogDelivery",
+          "logs:DeleteLogDelivery",
+          "logs:ListLogDeliveries",
+          "logs:PutResourcePolicy",
+          "logs:DescribeResourcePolicies",
+          "logs:DescribeLogGroups",
+        ],
+        resources: ["*"],
+      })
+    );
 
     const importCurrentConfigSM = new CfnStateMachine(
       this,
@@ -295,6 +376,17 @@ export class SSOImportArtefactsPart1 extends Stack {
         roleArn: importCurrentConfigSMRole.roleArn,
         definitionString: JSON.stringify(importCurrentConfigSMJSON),
         stateMachineName: name(buildConfig, "importCurrentConfigSM"),
+        loggingConfiguration: {
+          destinations: [
+            {
+              cloudWatchLogsLogGroup: {
+                logGroupArn: importArtefactsSMLogGroup.logGroupArn,
+              },
+            },
+          ],
+          includeExecutionData: true,
+          level: "ALL",
+        },
       }
     );
 
@@ -322,5 +414,13 @@ export class SSOImportArtefactsPart1 extends Stack {
         }),
       }
     );
+
+    /** CloudWatch insights query to debug errors, if any */
+    new CfnQueryDefinition(this, name(buildConfig, "-errors"), {
+      name: name(buildConfig, "-errors"),
+      queryString:
+        "filter @message like 'solutionError' and details.name not like 'Catchall'| sort id asc",
+      logGroupNames: [importArtefactsSMLogGroup.logGroupName],
+    });
   }
 }
