@@ -416,11 +416,15 @@ export class SSOImportArtefactsPart1 extends Stack {
     );
 
     /** CloudWatch insights query to debug errors, if any */
-    new CfnQueryDefinition(this, name(buildConfig, "-errors"), {
-      name: name(buildConfig, "-errors"),
-      queryString:
-        "filter @message like 'solutionError' and details.name not like 'Catchall'| sort id asc",
-      logGroupNames: [importArtefactsSMLogGroup.logGroupName],
-    });
+    new CfnQueryDefinition(
+      this,
+      name(buildConfig, "importCurrentSSOConfiguration-errors"),
+      {
+        name: name(buildConfig, "importCurrentSSOConfiguration-errors"),
+        queryString:
+          "filter @message like 'solutionError' and details.name not like 'Catchall'| sort id asc",
+        logGroupNames: [importArtefactsSMLogGroup.logGroupName],
+      }
+    );
   }
 }

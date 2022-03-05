@@ -19,6 +19,7 @@
 - [Using S3 interface for your use cases](#using-s3-interface-for-your-use-cases)
 - [Unicorn Rides use cases](https://catalog.us-east-1.prod.workshops.aws/v2/workshops/640b0bab-1f5e-494a-973e-4ed7919d397b/en-US/03-usecases)
 - [AWS SSO Region Switch](docs/documentation//Region-Switch.md)
+- [Troubleshooting](docs/documentation/TroubleShooting.md)
 - [Security](#security)
 - [License](#license)
 
