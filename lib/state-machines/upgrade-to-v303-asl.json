@@ -22,7 +22,29 @@
       },
       "Resource": "arn:aws:states:::aws-sdk:s3:listObjectsV2",
       "Next": "Only proceed if there is links data",
-      "ResultPath": "$.listObjectsResult"
+      "ResultPath": "$.listObjectsResult",
+      "Retry": [
+        {
+          "ErrorEquals": ["States.TaskFailed"],
+          "BackoffRate": 1.5,
+          "IntervalSeconds": 1,
+          "MaxAttempts": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "Catchall",
+          "ResultPath": "$.solutionError"
+        }
+      ]
+    },
+    "Catchall": {
+      "Type": "Pass",
+      "Next": "Fail"
+    },
+    "Fail": {
+      "Type": "Fail"
     },
     "Only proceed if there is links data": {
       "Type": "Choice",
@@ -96,7 +118,15 @@
               }
             },
             "ResultPath": null,
-            "Next": "DynamoDB PutItem"
+            "Next": "DynamoDB PutItem",
+            "Retry": [
+              {
+                "ErrorEquals": ["States.TaskFailed"],
+                "BackoffRate": 1.5,
+                "IntervalSeconds": 1,
+                "MaxAttempts": 2
+              }
+            ]
           },
           "DynamoDB PutItem": {
             "Type": "Task",
@@ -125,7 +155,15 @@
               }
             },
             "ResultPath": null,
-            "Next": "DeleteObject"
+            "Next": "DeleteObject",
+            "Retry": [
+              {
+                "ErrorEquals": [],
+                "BackoffRate": 1.5,
+                "IntervalSeconds": 1,
+                "MaxAttempts": 2
+              }
+            ]
           },
           "DeleteObject": {
             "Type": "Task",
@@ -135,7 +173,15 @@
             },
             "Resource": "arn:aws:states:::aws-sdk:s3:deleteObject",
             "ResultPath": null,
-            "Next": "PutObject"
+            "Next": "PutObject",
+            "Retry": [
+              {
+                "ErrorEquals": [],
+                "BackoffRate": 1.5,
+                "IntervalSeconds": 1,
+                "MaxAttempts": 2
+              }
+            ]
           },
           "PutObject": {
             "Type": "Task",
@@ -145,7 +191,15 @@
               "Bucket.$": "$.artefactsBucketName",
               "Key.$": "States.Format('links_data/{}',$.awsEntityId)"
             },
-            "Resource": "arn:aws:states:::aws-sdk:s3:putObject"
+            "Resource": "arn:aws:states:::aws-sdk:s3:putObject",
+            "Retry": [
+              {
+                "ErrorEquals": [],
+                "BackoffRate": 1.5,
+                "IntervalSeconds": 1,
+                "MaxAttempts": 2
+              }
+            ]
           },
           "Ignore new format links": {
             "Type": "Pass",
@@ -161,7 +215,14 @@
         "processLinksFunctionName.$": "$.processLinksFunctionName"
       },
       "Next": "Check for NextContinuationToken",
-      "ResultPath": null
+      "ResultPath": null,
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "Catchall",
+          "ResultPath": "$.solutionError"
+        }
+      ]
     },
     "Check for NextContinuationToken": {
       "Type": "Choice",
@@ -184,11 +245,29 @@
       },
       "Resource": "arn:aws:states:::aws-sdk:s3:listObjectsV2",
       "Next": "Process link data",
-      "ResultPath": "$.listObjectsResult"
+      "ResultPath": "$.listObjectsResult",
+      "Retry": [
+        {
+          "ErrorEquals": ["States.TaskFailed"],
+          "BackoffRate": 1.5,
+          "IntervalSeconds": 1,
+          "MaxAttempts": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "Catchall",
+          "ResultPath": "$.solutionError"
+        }
+      ]
     },
     "Ignore Op": {
       "Type": "Pass",
-      "End": true
+      "Next": "Success"
+    },
+    "Success": {
+      "Type": "Succeed"
     }
   }
 }

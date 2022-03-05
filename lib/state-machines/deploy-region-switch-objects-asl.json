@@ -26,7 +26,23 @@
           "IntervalSeconds": 2,
           "MaxAttempts": 2
         }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "Catchall for outer logic",
+          "ResultPath": "$.solutionError"
+        }
       ]
+    },
+    "Catchall for outer logic": {
+      "Type": "Pass",
+      "Next": "Fail"
+    },
+    "Fail": {
+      "Type": "Fail",
+      "Error": "Deploy Region Switch AWS SSO objects failed",
+      "Cause": "Deploy Region Switch AWS SSO objects failed"
     },
     "Scan global permission sets table": {
       "Type": "Task",
@@ -43,6 +59,13 @@
           "BackoffRate": 1.5,
           "IntervalSeconds": 2,
           "MaxAttempts": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "Catchall for outer logic",
+          "ResultPath": "$.solutionError"
         }
       ]
     },
@@ -71,13 +94,7 @@
               }
             ],
             "Next": "Verify if permission set creation lambda threw an exception",
-            "OutputPath": "$.Payload",
-            "Catch": [
-              {
-                "ErrorEquals": ["States.TaskFailed"],
-                "Next": "Error op"
-              }
-            ]
+            "OutputPath": "$.Payload"
           },
           "Verify if permission set creation lambda threw an exception": {
             "Type": "Choice",
@@ -85,12 +102,12 @@
               {
                 "Variable": "$.Payload.lambdaException",
                 "IsPresent": true,
-                "Next": "Error op"
+                "Next": "Catchall for inner map"
               }
             ],
             "Default": "Look up account assignments for this permission set"
           },
-          "Error op": {
+          "Catchall for inner map": {
             "Type": "Pass",
             "End": true
           },
@@ -119,6 +136,11 @@
                 "BackoffRate": 1.5,
                 "IntervalSeconds": 2,
                 "MaxAttempts": 2
+              }
+            ],
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"]
               }
             ]
           },
@@ -395,7 +417,14 @@
         "globalAccountAssignmentsTable.$": "$.globalAccountAssignmentsTable",
         "pageSize.$": "$.pageSize",
         "waitSeconds.$": "$.waitSeconds"
-      }
+      },
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "Catchall for outer logic",
+          "ResultPath": "$.solutionError"
+        }
+      ]
     },
     "Wait for permission set throttling": {
       "Type": "Wait",
@@ -443,11 +472,21 @@
           "IntervalSeconds": 2,
           "MaxAttempts": 2
         }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "Catchall for outer logic",
+          "ResultPath": "$.solutionError"
+        }
       ]
     },
     "Ignore Op": {
       "Type": "Pass",
-      "End": true
+      "Next": "Success"
+    },
+    "Success": {
+      "Type": "Succeed"
     }
   }
 }

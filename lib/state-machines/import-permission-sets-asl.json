@@ -18,7 +18,23 @@
           "IntervalSeconds": 2,
           "MaxAttempts": 2
         }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "Catchall",
+          "ResultPath": "$.solutionError"
+        }
       ]
+    },
+    "Catchall": {
+      "Type": "Pass",
+      "Next": "Fail"
+    },
+    "Fail": {
+      "Type": "Fail",
+      "Error": "Import AWS SSO Permission Sets state machine failed",
+      "Cause": "Import AWS SSO Permission Sets state machine failed"
     },
     "Loop through permission sets": {
       "Type": "Map",
@@ -41,7 +57,18 @@
                 "IntervalSeconds": 2,
                 "MaxAttempts": 2
               }
+            ],
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall for error handling",
+                "ResultPath": "$.solutionError"
+              }
             ]
+          },
+          "Catchall for error handling": {
+            "Type": "Pass",
+            "End": true
           },
           "Put Permission Set": {
             "Type": "Task",
@@ -63,6 +90,13 @@
                 "IntervalSeconds": 2,
                 "MaxAttempts": 2
               }
+            ],
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall for error handling",
+                "ResultPath": "$.solutionError"
+              }
             ]
           },
           "ListManagedPoliciesInPermissionSet": {
@@ -81,6 +115,13 @@
                 "BackoffRate": 1.5,
                 "IntervalSeconds": 2,
                 "MaxAttempts": 2
+              }
+            ],
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall for error handling",
+                "ResultPath": "$.solutionError"
               }
             ]
           },
@@ -116,6 +157,17 @@
                       "MaxAttempts": 2
                     }
                   ],
+                  "End": true,
+                  "Catch": [
+                    {
+                      "ErrorEquals": ["States.ALL"],
+                      "Next": "Catchall for inner map",
+                      "ResultPath": "$.solutionError"
+                    }
+                  ]
+                },
+                "Catchall for inner map": {
+                  "Type": "Pass",
                   "End": true
                 }
               }
@@ -126,7 +178,14 @@
               "permissionSetArn.$": "$.permissionSetArn",
               "mp.$": "$$.Map.Item.Value.Arn"
             },
-            "ResultPath": null
+            "ResultPath": null,
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall for error handling",
+                "ResultPath": "$.solutionError"
+              }
+            ]
           },
           "Are there more managed policies?": {
             "Type": "Choice",
@@ -157,6 +216,13 @@
                 "IntervalSeconds": 2,
                 "MaxAttempts": 2
               }
+            ],
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall for error handling",
+                "ResultPath": "$.solutionError"
+              }
             ]
           },
           "GetInlinePolicyForPermissionSet": {
@@ -175,6 +241,13 @@
                 "IntervalSeconds": 2,
                 "MaxAttempts": 2
               }
+            ],
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall for error handling",
+                "ResultPath": "$.solutionError"
+              }
             ]
           },
           "ListTagsForResource": {
@@ -192,6 +265,13 @@
                 "BackoffRate": 1.5,
                 "IntervalSeconds": 2,
                 "MaxAttempts": 2
+              }
+            ],
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall for error handling",
+                "ResultPath": "$.solutionError"
               }
             ]
           },
@@ -226,6 +306,17 @@
                       "MaxAttempts": 2
                     }
                   ],
+                  "End": true,
+                  "Catch": [
+                    {
+                      "ErrorEquals": ["States.ALL"],
+                      "Next": "Catchall for inner map 2",
+                      "ResultPath": "$.solutionError"
+                    }
+                  ]
+                },
+                "Catchall for inner map 2": {
+                  "Type": "Pass",
                   "End": true
                 }
               }
@@ -269,6 +360,13 @@
                 "IntervalSeconds": 2,
                 "MaxAttempts": 2
               }
+            ],
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall for error handling",
+                "ResultPath": "$.solutionError"
+              }
             ]
           },
           "ListTagsForResource with NextToken": {
@@ -288,6 +386,13 @@
                 "IntervalSeconds": 2,
                 "MaxAttempts": 2
               }
+            ],
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall for error handling",
+                "ResultPath": "$.solutionError"
+              }
             ]
           },
           "Publish to PS import handling topic": {
@@ -306,7 +411,14 @@
                 "MaxAttempts": 2
               }
             ],
-            "ResultPath": null
+            "ResultPath": null,
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall for error handling",
+                "ResultPath": "$.solutionError"
+              }
+            ]
           },
           "Delete Permission Set": {
             "Type": "Task",
@@ -328,6 +440,13 @@
                 "IntervalSeconds": 2,
                 "MaxAttempts": 2
               }
+            ],
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall for error handling",
+                "ResultPath": "$.solutionError"
+              }
             ]
           },
           "ListAccountsForProvisionedPermissionSet": {
@@ -347,6 +466,13 @@
                 "BackoffRate": 1.5,
                 "IntervalSeconds": 2,
                 "MaxAttempts": 2
+              }
+            ],
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall for error handling",
+                "ResultPath": "$.solutionError"
               }
             ]
           },
@@ -374,6 +500,17 @@
                       "pageSize.$": "$.pageSize"
                     }
                   },
+                  "End": true,
+                  "Catch": [
+                    {
+                      "ErrorEquals": ["States.ALL"],
+                      "Next": "Catchall for inner map 3",
+                      "ResultPath": "$.solutionError"
+                    }
+                  ]
+                },
+                "Catchall for inner map 3": {
+                  "Type": "Pass",
                   "End": true
                 }
               }
@@ -393,7 +530,14 @@
               "waitSeconds.$": "$.waitSeconds",
               "pageSize.$": "$.pageSize"
             },
-            "ResultPath": null
+            "ResultPath": null,
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall for error handling",
+                "ResultPath": "$.solutionError"
+              }
+            ]
           },
           "Check for NextToken in listAccountsForProvisionedPermissionSet call": {
             "Type": "Choice",
@@ -429,6 +573,13 @@
                 "BackoffRate": 1.5,
                 "IntervalSeconds": 2,
                 "MaxAttempts": 2
+              }
+            ],
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall for error handling",
+                "ResultPath": "$.solutionError"
               }
             ]
           },
@@ -488,11 +639,21 @@
           "IntervalSeconds": 2,
           "MaxAttempts": 2
         }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "Catchall",
+          "ResultPath": "$.solutionError"
+        }
       ]
     },
     "Pass": {
       "Type": "Pass",
-      "End": true
+      "Next": "Success"
+    },
+    "Success": {
+      "Type": "Succeed"
     }
   }
 }

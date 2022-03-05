@@ -16,12 +16,12 @@
               "StringEquals": "CloudFormation"
             }
           ],
-          "Next": "Pass"
+          "Next": "Catchall"
         }
       ],
       "Default": "ListInstances"
     },
-    "Pass": {
+    "Catchall": {
       "Type": "Pass",
       "End": true
     },
@@ -42,8 +42,8 @@
       "Catch": [
         {
           "ErrorEquals": ["States.ALL"],
-          "Next": "Pass",
-          "ResultPath": "$.stateMachineError"
+          "Next": "Catchall",
+          "ResultPath": "$.solutionError"
         }
       ]
     },
@@ -79,8 +79,8 @@
       "Catch": [
         {
           "ErrorEquals": ["States.ALL"],
-          "Next": "Pass",
-          "ResultPath": "$.stateMachineError"
+          "Next": "Catchall",
+          "ResultPath": "$.solutionError"
         }
       ]
     },
@@ -109,7 +109,7 @@
         {
           "ErrorEquals": ["States.ALL"],
           "Next": "Delete temporary permission sets table",
-          "ResultPath": "$.stateMachineError"
+          "ResultPath": "$.solutionError"
         }
       ]
     },
@@ -154,7 +154,7 @@
         {
           "ErrorEquals": ["States.ALL"],
           "Next": "Delete temporary permission sets table",
-          "ResultPath": "$.stateMachineError"
+          "ResultPath": "$.solutionError"
         }
       ]
     },
@@ -179,7 +179,7 @@
       "Type": "Choice",
       "Choices": [
         {
-          "Variable": "$.stateMachineError",
+          "Variable": "$.solutionError",
           "IsPresent": true,
           "Next": "State machine failed"
         }

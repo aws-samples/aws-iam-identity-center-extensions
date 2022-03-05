@@ -3,7 +3,11 @@ import { Table } from "aws-cdk-lib/aws-dynamodb";
 import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { Code, LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
-import { LogGroup, RetentionDays } from "aws-cdk-lib/aws-logs";
+import {
+  CfnQueryDefinition,
+  LogGroup,
+  RetentionDays,
+} from "aws-cdk-lib/aws-logs";
 import { CfnStateMachine } from "aws-cdk-lib/aws-stepfunctions";
 import { Provider } from "aws-cdk-lib/custom-resources";
 import { Construct } from "constructs";
@@ -299,5 +303,13 @@ export class AwsSsoExtensionsRegionSwitchDeploy extends Stack {
      */
     parentSMResource.node.addDependency(rsCreatePermissionSetsHandler);
     parentSMResource.node.addDependency(updateCustomResourceHandler);
+
+    /** CloudWatch insights query to debug errors, if any */
+    new CfnQueryDefinition(this, fullname("-errors"), {
+      name: fullname("-errors"),
+      queryString:
+        "filter @message like 'solutionError' and details.name not like 'Catchall'| sort id asc",
+      logGroupNames: [deploySMLogGroup.logGroupName],
+    });
   }
 }

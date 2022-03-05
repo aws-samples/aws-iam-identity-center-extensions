@@ -8,7 +8,7 @@ AWS SSO service is single-region at this point of time. In some instances, custo
 - When a customer migrates AWS SSO from one region to another region, the solution only helps automate migration of permission sets and account assignments.
 - The solution assumes that identities (users/groups) are onboarded into the new region using the same naming convention. For ex, if a customer had onboarded a user with user name `alpha-user`, group with display name `beta-group` in region 1 through any of the supported identity sources, the solution assumes that the customer will onboard the user with the same user name `alpha-user` and same group display name `beta-group` in region 2. Only when this condition is met, the solution automatically migrates account assignments from region 1 to region 2.
 
-## Seqence
+## Sequence
 
 - `Discover` component of the solution is deployed in your current AWS SSO account and current AWS SSO region first. This would read all the permission sets, account assignments in your current AWS SSO region and persist them for later usage
 - The customer then manually moves the AWS SSO configuration from their current region to the new region
