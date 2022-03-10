@@ -26,6 +26,7 @@
   },
   "devDependencies": {
 <<<<<<< HEAD
+<<<<<<< HEAD
     "@types/aws-lambda": "8.10.92",
     "@types/jest": "27.4.1",
     "@types/js-yaml": "4.0.5",
@@ -37,6 +38,8 @@
     "eslint": "8.9.0",
 =======
     "@aws-sdk/types": "^3.46.0",
+=======
+>>>>>>> 6e3ce91... fixed last test
     "@types/aws-lambda": "8.10.89",
     "@types/jest": "27.4.0",
     "@types/js-yaml": "4.0.5",
@@ -44,7 +47,6 @@
     "@typescript-eslint/eslint-plugin": "5.9.0",
     "@typescript-eslint/parser": "5.9.0",
     "aws-cdk": "2.5.0",
-    "aws-sdk-client-mock": "^0.6.0",
     "esbuild": "0.14.11",
     "eslint": "8.6.0",
 >>>>>>> 409292c... first unit test
@@ -62,8 +64,5 @@
     "constructs": "10.0.70",
     "js-yaml": "4.1.0",
     "source-map-support": "0.5.21"
-  },
-  "resolutions": {
-    "@aws-sdk/types": "^3.46.0"
   }
 }

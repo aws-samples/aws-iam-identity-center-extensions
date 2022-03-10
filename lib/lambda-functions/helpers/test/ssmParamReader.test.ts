@@ -4,36 +4,44 @@ import { GetParameterCommand, SSMClient } from "@aws-sdk/client-ssm";
 import { handler } from "../src/ssmParamReader";
 import {
   CloudFormationCustomResourceCreateEvent,
+  CloudFormationCustomResourceDeleteEvent,
   CloudFormationCustomResourceResponse,
 } from "aws-lambda";
-import { RepositoryNotificationEvents } from "aws-cdk-lib/aws-codecommit";
 
-// Import test data to mock
-const mockCreate: CloudFormationCustomResourceCreateEvent = require("../data/ssmParamReader_Create.json");
-const mockDelete: CloudFormationCustomResourceCreateEvent = require("../data/ssmParamReader_Delete.json");
-const mockMalformed: CloudFormationCustomResourceCreateEvent = require("../data/ssmParamReader_Malformed.json");
+import * as mockCreateJSON from "../data/ssmParamReader_Create.json"
+import * as mockDeleteJSON from "../data/ssmParamReader_Delete.json"
+import * as mockMalformedJSON from "../data/ssmParamReader_Malformed.json"
+/**
+ * aws-lambda uses enum while aws-sdk/types uses string for request type
+ * 
+ */
+const mockCreate: CloudFormationCustomResourceCreateEvent = {...mockCreateJSON,RequestType:"Create"}
+const mockDelete: CloudFormationCustomResourceDeleteEvent = {...mockDeleteJSON,RequestType:"Delete",PhysicalResourceId:"12345"}
+const mockMalformed: CloudFormationCustomResourceCreateEvent = {...mockMalformedJSON,RequestType:"Create"}
 const ssmMock = mockClient(SSMClient);
+
+// import * as importAccountAssignmentsSMJSON from "../../state-machines/import-account-assignments.json";
+
 
 describe("SSM Test", () => {
   // Set SSM Parameter
   ssmMock
     .on(GetParameterCommand, {
-      Name: "tony/test",
+      Name: "unicorn/test",
     })
     .resolves({
       Parameter: {
-        Name: "tony/test",
+        Name: "unicorn/test",
         Type: "String",
         Value: "testvalue",
         Version: 1,
-        ARN: "arn:aws:ssm:us-west-1:123:/tony/test",
+        ARN: "arn:aws:ssm:us-west-1:123:/unicorn/test",
       },
     });
   it("Testing Create Success", async () => {
     const response: CloudFormationCustomResourceResponse = await handler(
       mockCreate
     );
-    console.log(JSON.stringify(response));
     expect(response.Status).toBe("SUCCESS");
     expect(response.Data).toBeDefined();
   });

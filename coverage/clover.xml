@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1646923703643" clover="3.2.0">
+  <project timestamp="1646923703643" name="All files">
+    <metrics statements="12" coveredstatements="12" conditionals="6" coveredconditionals="5" methods="1" coveredmethods="1" elements="19" coveredelements="18" complexity="0" loc="12" ncloc="12" packages="1" files="1" classes="1"/>
+    <file name="ssmParamReader.ts" path="/Users/chamiles/Documents/GitHub/aws-sso-extensions-for-enterprise/lib/lambda-functions/helpers/src/ssmParamReader.ts">
+      <metrics statements="12" coveredstatements="12" conditionals="6" coveredconditionals="5" methods="1" coveredmethods="1"/>
+      <line num="17" count="1" type="stmt"/>
+      <line num="18" count="1" type="stmt"/>
+      <line num="24" count="1" type="stmt"/>
+      <line num="27" count="3" type="cond" truecount="2" falsecount="0"/>
+      <line num="28" count="2" type="stmt"/>
+      <line num="30" count="2" type="stmt"/>
+      <line num="32" count="2" type="stmt"/>
+      <line num="42" count="2" type="stmt"/>
+      <line num="48" count="2" type="stmt"/>
+      <line num="59" count="1" type="stmt"/>
+      <line num="60" count="1" type="stmt"/>
+      <line num="70" count="1" type="stmt"/>
+    </file>
+  </project>
+</coverage>
