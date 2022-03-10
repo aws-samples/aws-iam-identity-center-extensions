@@ -1,5 +1,4 @@
 {
-  "RequestType": "Create",
   "ServiceToken": "<redacted>",
   "ResponseURL": "<redacted>",
   "StackId": "<redacted>",
@@ -8,7 +7,7 @@
   "ResourceType": "AWS::CloudFormation::CustomResource",
   "ResourceProperties": {
     "ServiceToken": "<redacted>",
-    "paramName": "tony/wrong",
+    "paramName": "unicorn/wrong",
     "paramReaderRoleArn": "testARN",
     "paramRegion": "us-east-1",
     "paramAccount": "1234567890123"
