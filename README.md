@@ -3,7 +3,7 @@
 ## Table of Contents
 
 - [Overview](#Overview)
-- [How to Deploy](https://catalog.us-east-1.prod.workshops.aws/v2/workshops/640b0bab-1f5e-494a-973e-4ed7919d397b/en-US)
+- [How to Deploy](https://catalog.workshops.aws/ssoextensions/en-US)
 - [Features](#Features)
 
   - [The Composite Permission Set API](#the-composite-permission-set-api)
@@ -17,7 +17,7 @@
 - [Schema Details for account assignment and permission set operations](#schema-details-for-account-assignment-and-permission-set-operations)
 - [Using API interface for your use cases](#using-api-interface-for-your-use-cases)
 - [Using S3 interface for your use cases](#using-s3-interface-for-your-use-cases)
-- [Unicorn Rides use cases](https://catalog.us-east-1.prod.workshops.aws/v2/workshops/640b0bab-1f5e-494a-973e-4ed7919d397b/en-US/03-usecases)
+- [Unicorn Rides use cases](https://catalog.workshops.aws/ssoextensions/en-US/03-usecases)
 - [AWS SSO Region Switch](docs/documentation//Region-Switch.md)
 - [Troubleshooting](docs/documentation/TroubleShooting.md)
 - [Security](#security)
@@ -42,7 +42,7 @@ setting objects with your permissions descriptions in an S3 bucket. This
 enables you to integrate with upstream identity management systems you
 have in your organization.
 
-**[Get started with the deployment!](https://catalog.us-east-1.prod.workshops.aws/v2/workshops/640b0bab-1f5e-494a-973e-4ed7919d397b/en-US)**
+**[Get started with the deployment!](https://catalog.workshops.aws/ssoextensions/en-US)**
 
 ## Features
 
@@ -314,7 +314,7 @@ The solution provides automated change access management through the following f
 If you chose to use `API` interface for managing your permission sets and account assignments i.e. set `LinksProvisioningMode` or `PermissionSetProvisioningMode` to `api`, then read below for usage instructions:
 
 - Refer to postman collection sample under `docs\samples\postman-collection` for account assignment and permission set operation examples
-- More details on using `API` interface are documented [here](https://catalog.us-east-1.prod.workshops.aws/v2/workshops/640b0bab-1f5e-494a-973e-4ed7919d397b/en-US/02-api)
+- More details on using `API` interface are documented [here](https://catalog.workshops.aws/ssoextensions/en-US/02-api)
 
 ## Using S3 interface for your use cases
 
