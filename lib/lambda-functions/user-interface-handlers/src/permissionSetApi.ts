@@ -208,14 +208,6 @@ export const handler = async (
               Key: `permission_sets/${payload.permissionSetData.permissionSetName}.json`,
             })
           );
-          await ddbDocClientObject.send(
-            new DeleteCommand({
-              TableName: DdbTable,
-              Key: {
-                permissionSetName: payload.permissionSetData.permissionSetName,
-              },
-            })
-          );
           await snsClientObject.send(
             new PublishCommand({
               TopicArn: permissionSetProcessingTopicArn + "",
