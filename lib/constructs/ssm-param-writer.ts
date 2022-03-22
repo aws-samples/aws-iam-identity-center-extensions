@@ -52,6 +52,6 @@ export class SSMParamWriter extends Construct {
       }
     );
 
-    this.parameter.grantRead(this.parameterReaderRole)
+    this.parameter.grantRead(this.parameterReaderRole);
   }
 }
