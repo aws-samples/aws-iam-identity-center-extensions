@@ -24,7 +24,6 @@ import {
 } from "@aws-sdk/client-s3";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import {
-  DeleteCommand,
   DynamoDBDocumentClient,
   GetCommand,
   GetCommandOutput,
