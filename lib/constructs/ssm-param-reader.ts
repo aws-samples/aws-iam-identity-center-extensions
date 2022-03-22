@@ -11,13 +11,13 @@ import {
 } from "aws-cdk-lib/custom-resources";
 import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";
+import { v4 as uuidv4 } from "uuid";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {
   return buildConfig.Environment + "-" + resourcename;
 }
 
-const generateRandomString = (length: number) =>
-  Math.random().toString(36).substring(length);
+const generateRandomString = uuidv4().toString().split("-")[0];
 
 export interface SSMParamReaderProps {
   readonly ParamNameKey: string;
@@ -54,7 +54,7 @@ export class SSMParamReader extends Construct {
           parameters: {
             Name: fullParamName,
           },
-          physicalResourceId: PhysicalResourceId.of(generateRandomString(5)),
+          physicalResourceId: PhysicalResourceId.of(generateRandomString),
           region: ssmParamReaderprops.ParamRegion,
           assumedRoleArn: paramReaderRole,
         },
