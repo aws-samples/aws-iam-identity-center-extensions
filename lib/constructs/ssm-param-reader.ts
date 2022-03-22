@@ -17,7 +17,7 @@ function name(buildConfig: BuildConfig, resourcename: string): string {
 }
 
 const generateRandomString = (length: number) =>
-  Math.random().toString(36).substring(length).toString();
+  Math.random().toString(36).substring(length);
 
 export interface SSMParamReaderProps {
   readonly ParamNameKey: string;
