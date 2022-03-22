@@ -2,10 +2,6 @@
 Utility construct in solution artefacts stack
 that allows shareable resources
 */
-
-import { Table } from "aws-cdk-lib/aws-dynamodb";
-import { Key } from "aws-cdk-lib/aws-kms";
-import * as lambda from "aws-cdk-lib/aws-lambda";
 import { ITopic, Topic } from "aws-cdk-lib/aws-sns";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
@@ -16,27 +12,13 @@ function name(buildConfig: BuildConfig, resourcename: string): string {
   return buildConfig.Environment + "-" + resourcename;
 }
 
-export interface UtilityProps {
-  readonly errorNotificationsTopic: Topic;
-  readonly nodeJsLayer: lambda.LayerVersion;
-  readonly provisionedLinksTable: Table;
-  readonly waiterHandlerSSOAPIRoleArn: string;
-  readonly snsTopicsKey: Key;
-  readonly linkManagerQueueUrl: string;
-}
-
 export class Utility extends Construct {
   public readonly orgEventsNotificationsTopic: ITopic;
   public readonly ssoGroupEventsNotificationsTopic: ITopic;
   public readonly ssoUserEventsNotificationsTopic: ITopic;
   public readonly processTargetAccountSMTopic: ITopic;
 
-  constructor(
-    scope: Construct,
-    id: string,
-    buildConfig: BuildConfig,
-    utilityProps: UtilityProps
-  ) {
+  constructor(scope: Construct, id: string, buildConfig: BuildConfig) {
     super(scope, id);
 
     this.orgEventsNotificationsTopic = Topic.fromTopicArn(
