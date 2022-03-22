@@ -6,7 +6,6 @@ on other constructs
 
 import { Duration } from "aws-cdk-lib";
 import { Key } from "aws-cdk-lib/aws-kms";
-import { LayerVersion } from "aws-cdk-lib/aws-lambda";
 import {
   BlockPublicAccess,
   Bucket,
@@ -24,10 +23,6 @@ function name(buildConfig: BuildConfig, resourcename: string): string {
   return buildConfig.Environment + "-" + resourcename;
 }
 
-export interface IndependentUtilityProps {
-  readonly nodeJsLayer: LayerVersion;
-}
-
 export class IndependentUtility extends Construct {
   public readonly errorNotificationsTopic: Topic;
   public readonly ssoArtefactsBucket: Bucket;
@@ -40,12 +35,7 @@ export class IndependentUtility extends Construct {
   public readonly logsKey: Key;
   public readonly queuesKey: Key;
 
-  constructor(
-    scope: Construct,
-    id: string,
-    buildConfig: BuildConfig,
-    independentUtilityProps: IndependentUtilityProps
-  ) {
+  constructor(scope: Construct, id: string, buildConfig: BuildConfig) {
     super(scope, id);
 
     this.logsKey = new Key(this, name(buildConfig, "logsKey"), {
@@ -130,7 +120,6 @@ export class IndependentUtility extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "waiterHandler-ssoapi-roleArn",
-        LambdaLayers: independentUtilityProps.nodeJsLayer,
       }
     ).paramValue;
 

@@ -4,7 +4,7 @@ cross account/cross region reading through the SSMParamReader
 construct
 */
 
-import { AccountPrincipal, PolicyStatement, Role } from "aws-cdk-lib/aws-iam";
+import { AccountPrincipal, Role } from "aws-cdk-lib/aws-iam";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";
@@ -52,11 +52,6 @@ export class SSMParamWriter extends Construct {
       }
     );
 
-    this.parameterReaderRole.addToPrincipalPolicy(
-      new PolicyStatement({
-        resources: [this.parameter.parameterArn],
-        actions: ["ssm:GetParameter*", "ssm:DescribeParameter*"],
-      })
-    );
+    this.parameter.grantRead(this.parameterReaderRole);
   }
 }

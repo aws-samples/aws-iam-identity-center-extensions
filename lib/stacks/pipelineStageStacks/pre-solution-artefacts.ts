@@ -40,10 +40,7 @@ export class PreSolutionArtefacts extends Stack {
     this.deployIndependentUtility = new IndependentUtility(
       this,
       name(buildConfig, "independentUtility"),
-      buildConfig,
-      {
-        nodeJsLayer: this.deployLambdaLayers.nodeJsLayer,
-      }
+      buildConfig
     );
 
     this.deployLinkCRUD = new LinkCRUD(
@@ -64,18 +61,7 @@ export class PreSolutionArtefacts extends Stack {
     this.deployUtility = new Utility(
       this,
       name(buildConfig, "utility"),
-      buildConfig,
-      {
-        provisionedLinksTable: this.deployLinkCRUD.provisionedLinksTable,
-        errorNotificationsTopic:
-          this.deployIndependentUtility.errorNotificationsTopic,
-        waiterHandlerSSOAPIRoleArn:
-          this.deployIndependentUtility.waiterHandlerSSOAPIRoleArn,
-        nodeJsLayer: this.deployLambdaLayers.nodeJsLayer,
-        snsTopicsKey: this.deployIndependentUtility.snsTopicsKey,
-        linkManagerQueueUrl:
-          this.deployIndependentUtility.linkManagerQueue.queueUrl,
-      }
+      buildConfig
     );
 
     this.deployPermissionSetCRUD = new PermissionSetCRUD(

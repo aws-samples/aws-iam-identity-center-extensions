@@ -24,7 +24,6 @@ import {
 } from "@aws-sdk/client-s3";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import {
-  DeleteCommand,
   DynamoDBDocumentClient,
   GetCommand,
   GetCommandOutput,
@@ -206,14 +205,6 @@ export const handler = async (
             new DeleteObjectCommand({
               Bucket: artefactsBucketName,
               Key: `permission_sets/${payload.permissionSetData.permissionSetName}.json`,
-            })
-          );
-          await ddbDocClientObject.send(
-            new DeleteCommand({
-              TableName: DdbTable,
-              Key: {
-                permissionSetName: payload.permissionSetData.permissionSetName,
-              },
             })
           );
           await snsClientObject.send(
