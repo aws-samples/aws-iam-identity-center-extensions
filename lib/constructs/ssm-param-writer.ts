@@ -52,11 +52,6 @@ export class SSMParamWriter extends Construct {
       }
     );
 
-    this.parameterReaderRole.addToPrincipalPolicy(
-      new PolicyStatement({
-        resources: [this.parameter.parameterArn],
-        actions: ["ssm:GetParameter*", "ssm:DescribeParameter*"],
-      })
-    );
+    this.parameter.grantRead(this.parameterReaderRole)
   }
 }
