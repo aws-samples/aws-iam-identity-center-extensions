@@ -50,7 +50,6 @@ export class Utility extends Construct {
           ParamAccountId: buildConfig.PipelineSettings.OrgMainAccountId,
           ParamRegion: "us-east-1",
           ParamNameKey: "orgEventsNotificationsTopicArn",
-          LambdaLayers: utilityProps.nodeJsLayer,
         }
       ).paramValue
     );
@@ -66,7 +65,6 @@ export class Utility extends Construct {
           ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
           ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
           ParamNameKey: "ssoGroupEventsNotificationTopicArn",
-          LambdaLayers: utilityProps.nodeJsLayer,
         }
       ).paramValue
     );
@@ -82,7 +80,6 @@ export class Utility extends Construct {
           ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
           ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
           ParamNameKey: "ssoUserEventsNotificationTopicArn",
-          LambdaLayers: utilityProps.nodeJsLayer,
         }
       ).paramValue
     );
@@ -98,7 +95,6 @@ export class Utility extends Construct {
           ParamAccountId: buildConfig.PipelineSettings.OrgMainAccountId,
           ParamRegion: "us-east-1",
           ParamNameKey: "processTargetAccountSMTopicArn",
-          LambdaLayers: utilityProps.nodeJsLayer,
         }
       ).paramValue
     );

@@ -64,7 +64,6 @@ export class ImportArtefacts extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "ssoList-ssoapi-roleArn",
-        LambdaLayers: this.nodeJsLayer,
       }
     ).paramValue;
 
@@ -76,7 +75,6 @@ export class ImportArtefacts extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "smDescribe-ssoapi-roleArn",
-        LambdaLayers: this.nodeJsLayer,
       }
     ).paramValue;
 
@@ -88,7 +86,6 @@ export class ImportArtefacts extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "permissionSetHandler-ssoapi-roleArn",
-        LambdaLayers: this.nodeJsLayer,
       }
     ).paramValue;
 
@@ -103,7 +100,6 @@ export class ImportArtefacts extends Construct {
           ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
           ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
           ParamNameKey: "accountAssignmentImportTopicArn",
-          LambdaLayers: this.nodeJsLayer,
         }
       ).paramValue
     );
@@ -119,7 +115,6 @@ export class ImportArtefacts extends Construct {
           ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
           ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
           ParamNameKey: "permissionSetImportTopicArn",
-          LambdaLayers: this.nodeJsLayer,
         }
       ).paramValue
     );

@@ -130,7 +130,6 @@ export class IndependentUtility extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "waiterHandler-ssoapi-roleArn",
-        LambdaLayers: independentUtilityProps.nodeJsLayer,
       }
     ).paramValue;
 

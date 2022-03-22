@@ -211,7 +211,6 @@ export class FetchCrossStackValues extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "permissionSetHandler-ssoapi-roleArn",
-        LambdaLayers: this.nodeJsLayer,
       }
     ).paramValue;
 
@@ -223,7 +222,6 @@ export class FetchCrossStackValues extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "linkManagerHandler-ssoapi-roleArn",
-        LambdaLayers: this.nodeJsLayer,
       }
     ).paramValue;
 
@@ -235,7 +233,6 @@ export class FetchCrossStackValues extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "listInstances-ssoapi-roleArn",
-        LambdaLayers: this.nodeJsLayer,
       }
     ).paramValue;
 
@@ -247,7 +244,6 @@ export class FetchCrossStackValues extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "listPrincipals-identitystoreapi-roleArn",
-        LambdaLayers: this.nodeJsLayer,
       }
     ).paramValue;
 
@@ -259,7 +255,6 @@ export class FetchCrossStackValues extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.OrgMainAccountId,
         ParamRegion: "us-east-1", // Organizations discovery can only be done in us-east-1, hence the step functions and related roles are declared in that region
         ParamNameKey: "orgListSM-orgapi-roleArn",
-        LambdaLayers: this.nodeJsLayer,
       }
     ).paramValue;
 
