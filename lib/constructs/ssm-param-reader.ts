@@ -3,24 +3,26 @@ Custom cloudformation resource construct that
 allows cross account/cross region read of SSM parameter value
 */
 
-import { CustomResource } from "aws-cdk-lib";
 import { PolicyStatement } from "aws-cdk-lib/aws-iam";
-import { ILayerVersion, Runtime } from "aws-cdk-lib/aws-lambda"; // Importing external resources in CDK would use interfaces and not base objects
-import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
-import { Provider } from "aws-cdk-lib/custom-resources";
+import {
+  AwsCustomResource,
+  AwsCustomResourcePolicy,
+  PhysicalResourceId,
+} from "aws-cdk-lib/custom-resources";
 import { Construct } from "constructs";
-import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {
   return buildConfig.Environment + "-" + resourcename;
 }
 
+const generateRandomString = (length: number) =>
+  Math.random().toString(36).substring(length).toString();
+
 export interface SSMParamReaderProps {
   readonly ParamNameKey: string;
   readonly ParamAccountId: string;
   readonly ParamRegion: string;
-  readonly LambdaLayers: ILayerVersion;
 }
 
 export class SSMParamReader extends Construct {
@@ -34,78 +36,34 @@ export class SSMParamReader extends Construct {
   ) {
     super(scope, id);
 
-    const paramReadPolicy = new PolicyStatement({
-      resources: [
-        `arn:aws:ssm:${ssmParamReaderprops.ParamRegion}:${ssmParamReaderprops.ParamAccountId}:parameter/${ssmParamReaderprops.ParamNameKey}*`,
-      ],
-      actions: ["ssm:GetParameter*", "ssm:DescribeParameter*"],
-    });
-
     const fullParamName = name(buildConfig, ssmParamReaderprops.ParamNameKey);
+    const paramReaderRole = `arn:aws:iam::${ssmParamReaderprops.ParamAccountId}:role/${fullParamName}-readerRole`;
 
     const assumeRolePolicy = new PolicyStatement({
-      resources: [
-        `arn:aws:iam::${ssmParamReaderprops.ParamAccountId}:role/${fullParamName}-readerRole`,
-      ],
+      resources: [paramReaderRole],
       actions: ["sts:AssumeRole"],
     });
 
-    const paramReaderFn = new NodejsFunction(
-      this,
-      name(
-        buildConfig,
-        `${id.slice(id.length - 5)}-paramReader-${
-          ssmParamReaderprops.ParamNameKey
-        }`
-      ),
-      {
-        runtime: Runtime.NODEJS_14_X,
-        layers: [ssmParamReaderprops.LambdaLayers],
-        entry: join(
-          __dirname,
-          "../",
-          "lambda-functions",
-          "helpers",
-          "src",
-          "ssmParamReader.ts"
-        ),
-        bundling: {
-          externalModules: [
-            "@aws-sdk/client-ssm",
-            "@aws-sdk/credential-providers",
-          ],
-          minify: true,
-        },
-      }
-    );
-
-    if (paramReaderFn.role) {
-      paramReaderFn.role.addToPrincipalPolicy(paramReadPolicy);
-      paramReaderFn.role.addToPrincipalPolicy(assumeRolePolicy);
-    }
-
-    const paramReadResourceProvider = new Provider(
-      this,
-      name(buildConfig, `${id.slice(id.length - 5)}-paramReaderRP`),
-      {
-        onEventHandler: paramReaderFn,
-      }
-    );
-
-    const paramReadResource = new CustomResource(
+    const paramReadResource = new AwsCustomResource(
       this,
       name(buildConfig, `${id.slice(id.length - 5)}-paramReadResource`),
       {
-        serviceToken: paramReadResourceProvider.serviceToken,
-        properties: {
-          paramReaderRoleArn: `arn:aws:iam::${ssmParamReaderprops.ParamAccountId}:role/${fullParamName}-readerRole`,
-          paramName: name(buildConfig, ssmParamReaderprops.ParamNameKey),
-          paramRegion: ssmParamReaderprops.ParamRegion,
-          paramAccount: ssmParamReaderprops.ParamAccountId,
+        onUpdate: {
+          service: "SSM",
+          action: "getParameter",
+          parameters: {
+            Name: fullParamName,
+          },
+          physicalResourceId: PhysicalResourceId.of(generateRandomString(5)),
+          region: ssmParamReaderprops.ParamRegion,
+          assumedRoleArn: paramReaderRole,
         },
+        policy: AwsCustomResourcePolicy.fromStatements([assumeRolePolicy]),
       }
     );
 
-    this.paramValue = paramReadResource.getAtt("ParamValue").toString();
+    this.paramValue = paramReadResource
+      .getResponseField("Parameter.Value")
+      .toString();
   }
 }
