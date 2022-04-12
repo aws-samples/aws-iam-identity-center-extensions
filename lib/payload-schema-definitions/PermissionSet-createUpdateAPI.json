@@ -123,7 +123,7 @@
           }
         },
         "inlinePolicyDocument": {
-          "$id": "#/properties/inlinePolicyDocument",
+          "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument",
           "type": "object",
           "title": "The inlinePolicyDocument $schema",
           "description": "Inline Policy Document",
@@ -131,23 +131,23 @@
           "required": ["Version", "Statement"],
           "properties": {
             "Version": {
-              "$id": "#/properties/inlinePolicyDocument/properties/Version",
+              "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument/properties/Version",
               "type": "string",
               "title": "The Version $schema",
               "description": "An explanation about the purpose of this instance.",
               "default": ""
             },
             "Statement": {
-              "$id": "#/properties/inlinePolicyDocument/properties/Statement",
+              "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument/properties/Statement",
               "type": "array",
               "title": "The Statement $schema",
               "description": "An explanation about the purpose of this instance.",
               "default": [],
               "items": {
-                "$id": "#/properties/inlinePolicyDocument/properties/Statement/items",
+                "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument/properties/Statement/items",
                 "anyOf": [
                   {
-                    "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0",
+                    "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0",
                     "type": "object",
                     "title": "Statement object",
                     "description": "Statement object",
@@ -155,16 +155,16 @@
                     "required": ["Action", "Resource", "Effect"],
                     "properties": {
                       "Action": {
-                        "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Action",
+                        "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Action",
                         "type": "array",
                         "title": "The Action $schema",
                         "description": "The permitted actions",
                         "default": [],
                         "items": {
-                          "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Action/items",
+                          "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Action/items",
                           "anyOf": [
                             {
-                              "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Action/items/anyOf/0",
+                              "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Action/items/anyOf/0",
                               "type": "string",
                               "title": "Permitted actions",
                               "description": "The permitted actions",
@@ -174,16 +174,16 @@
                         },
                       },
                       "Resource": {
-                        "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Resource",
+                        "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Resource",
                         "type": ["array", "string"],
                         "title": "The Resource $schema",
                         "description": "The resource that has the permission",
                         "default": [],
                         "items": {
-                          "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Resource/items",
+                          "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Resource/items",
                           "anyOf": [
                             {
-                              "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Resource/items/anyOf/0",
+                              "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Resource/items/anyOf/0",
                               "type": "string",
                               "title": "Permitted resources",
                               "description": "The permitted resources",
@@ -193,7 +193,7 @@
                         },
                       },
                       "Effect": {
-                        "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Effect",
+                        "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Effect",
                         "type": "string",
                         "title": "The Effect $schema",
                         "description": "Permission type",
@@ -201,7 +201,7 @@
                         "default": "Allow"
                       },
                       "Sid": {
-                        "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Sid",
+                        "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Sid",
                         "type": "string",
                         "title": "The Sid $schema",
                         "description": "Statement id - optional identifier for the statement",
