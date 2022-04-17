@@ -155,7 +155,7 @@
                           "default": ""
                         }
                       ]
-                    },
+                    }
                   },
                   "Resource": {
                     "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Resource",
@@ -171,10 +171,10 @@
                           "type": "string",
                           "title": "Permitted resources",
                           "description": "The permitted resources",
-                          "default": "",
+                          "default": ""
                         }
                       ]
-                    },
+                    }
                   },
                   "Effect": {
                     "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Effect",
@@ -190,13 +190,13 @@
                     "title": "The Sid $schema",
                     "description": "Statement id - optional identifier for the statement",
                     "default": ""
-                  },
+                  }
                 },
                 "additionalProperties": false
               }
             ]
           }
-        },
+        }
       },
       "additionalProperties": false
     }
