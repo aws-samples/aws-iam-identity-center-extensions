@@ -15,28 +15,28 @@
       "default": {},
       "oneOf": [
         {
-          "pattern": "root%all%[\\w+=,.@-]{1,32}%[-\\p{L}\\p{M}\\p{S}\\p{N}+@.]{1,1024}%GROUP%ssofile"
+          "pattern": "root%all%[\\w+=,.@-]{1,32}%[_\\-\\p{L}\\p{M}\\p{S}\\p{N}+@.]{1,1024}%GROUP%ssofile"
         },
         {
-          "pattern": "root%all%[\\w+=,.@-]{1,32}%[-\\p{L}\\p{M}\\p{S}\\p{N}+@.]{1,128}%USER%ssofile"
+          "pattern": "root%all%[\\w+=,.@-]{1,32}%[_\\-\\p{L}\\p{M}\\p{S}\\p{N}+@.]{1,128}%USER%ssofile"
         },
         {
-          "pattern": "ou_id%ou-[a-z0-9]{4}-[a-z0-9]{8}%[\\w+=,.@-]{1,32}%[-\\p{L}\\p{M}\\p{S}\\p{N}+@.]{1,1024}%GROUP%ssofile"
+          "pattern": "ou_id%ou-[a-z0-9]{4}-[a-z0-9]{8}%[\\w+=,.@-]{1,32}%[_\\-\\p{L}\\p{M}\\p{S}\\p{N}+@.]{1,1024}%GROUP%ssofile"
         },
         {
-          "pattern": "ou_id%ou-[a-z0-9]{4}-[a-z0-9]{8}%[\\w+=,.@-]{1,32}%[-\\p{L}\\p{M}\\p{S}\\p{N}+@.]{1,128}%USER%ssofile"
+          "pattern": "ou_id%ou-[a-z0-9]{4}-[a-z0-9]{8}%[\\w+=,.@-]{1,32}%[_\\-\\p{L}\\p{M}\\p{S}\\p{N}+@.]{1,128}%USER%ssofile"
         },
         {
-          "pattern": "account%\\d{12}%[\\w+=,.@-]{1,32}%[-\\p{L}\\p{M}\\p{S}\\p{N}+@.]{1,1024}%GROUP%ssofile"
+          "pattern": "account%\\d{12}%[\\w+=,.@-]{1,32}%[_\\-\\p{L}\\p{M}\\p{S}\\p{N}+@.]{1,1024}%GROUP%ssofile"
         },
         {
-          "pattern": "account\\d{12}%[\\w+=,.@-]{1,32}%[-\\p{L}\\p{M}\\p{S}\\p{N}+@.]{1,128}%USER%ssofile"
+          "pattern": "account\\d{12}%[\\w+=,.@-]{1,32}%[_\\-\\p{L}\\p{M}\\p{S}\\p{N}+@.]{1,128}%USER%ssofile"
         },
         {
-          "pattern": "account_tag%[\\w+=,.@-]{1,128}\\^[\\w+=,.@-]{1,256}%[\\w+=,.@-]{1,32}%[-\\p{L}\\p{M}\\p{S}\\p{N}+@.]{1,1024}%GROUP%ssofile"
+          "pattern": "account_tag%[\\w+=,.@-]{1,128}\\^[\\w+=,.@-]{1,256}%[\\w+=,.@-]{1,32}%[_\\-\\p{L}\\p{M}\\p{S}\\p{N}+@.]{1,1024}%GROUP%ssofile"
         },
         {
-          "pattern": "account_tag%[\\w+=,.@-]{1,128}\\^[\\w+=,.@-]{1,256}%[\\w+=,.@-]{1,32}%[-\\p{L}\\p{M}\\p{S}\\p{N}+@.]{1,128}%USER%ssofile"
+          "pattern": "account_tag%[\\w+=,.@-]{1,128}\\^[\\w+=,.@-]{1,256}%[\\w+=,.@-]{1,32}%[_\\-\\p{L}\\p{M}\\p{S}\\p{N}+@.]{1,128}%USER%ssofile"
         }
       ]
     }

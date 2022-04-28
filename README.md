@@ -325,6 +325,8 @@ If you chose to use `S3` interface for managing your permission sets and account
 - For account assignment operations, uploading a file to the S3 prefix path would map to creating an account assignment and deleting a file from the S3 prefix path would map to deleting an account assignment
 - For permission set operations, uploading a new file to the S3 prefix path would map to creating a permission set, uploading a new copy of the file would map to updating the permission set, and deleting the file would map to deleting the permission set
 
+- Ensure your deployment account has a cloudtrail. If not, the solution will not be able to provision permission sets when moving in and out of OUs as these events will not register with the event bus.
+
 ## Security
 
 See [CONTRIBUTING](CONTRIBUTING.md) for more information.
