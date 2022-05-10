@@ -24,8 +24,6 @@
       "required": [
         "permissionSetName",
         "sessionDurationInMinutes",
-        "relayState",
-        "tags",
         "managedPoliciesArnList",
         "inlinePolicyDocument"
       ],
@@ -34,11 +32,21 @@
           "$id": "#/properties/permissionSetData/properties/permissionSetName",
           "type": "string",
           "title": "Permission Set Name",
-          "description": "Permission Set Nam",
+          "description": "Permission Set Name",
           "default": "",
           "minLength": 1,
           "maxLength": 32,
           "pattern": "[\\w+=,.@-]+"
+        },
+        "description": {
+          "$id": "#/properties/permissionSetData/properties/description",
+          "type": "string",
+          "title": "description",
+          "description": "Permission set description",
+          "default": "",
+          "minLength": 0,
+          "maxLength": 700,
+          "pattern": "[\\u0009\\u000A\\u000D\\u0020-\\u007E\\u00A1-\\u00FF]*"
         },
         "sessionDurationInMinutes": {
           "$id": "#/properties/permissionSetData/properties/sessionDurationInMinutes",
@@ -94,7 +102,7 @@
                     "default": "",
                     "minLength": 0,
                     "maxLength": 256,
-                    "pattern": "^[A-Za-z0-9_:/=\\+\\-@]*$"
+                    "pattern": "^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$"
                   }
                 },
                 "additionalProperties": false
