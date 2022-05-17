@@ -28,7 +28,7 @@
       "title": "description",
       "description": "Permission set description",
       "default": "",
-      "minLength": 0,
+      "minLength": 1,
       "maxLength": 700,
       "pattern": "[\\u0009\\u000A\\u000D\\u0020-\\u007E\\u00A1-\\u00FF]*"
     },
@@ -38,7 +38,7 @@
       "title": "sessionDurationInMinutes",
       "description": "sessionDurationInMinutes",
       "default": "",
-      "minLength": 0,
+      "minLength": 1,
       "pattern": "^(720|7[0-1][0-9]|[1-6][0-9][0-9]|[6-9][0-9])$"
     },
     "relayState": {
@@ -52,7 +52,7 @@
       "pattern": "[A-Za-z0-9_:/=\\+\\-@#]+"
     },
     "tags": {
-      "$id": "#/properties/tags", 
+      "$id": "#/properties/tags",
       "type": "array",
       "title": "tags",
       "description": "tags",
@@ -120,7 +120,6 @@
       "title": "The inlinePolicyDocument $schema",
       "description": "Inline Policy Document",
       "default": {},
-      "required": ["Version", "Statement"],
       "properties": {
         "Version": {
           "$id": "#/properties/inlinePolicyDocument/properties/Version",
@@ -167,22 +166,41 @@
                   },
                   "Resource": {
                     "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Resource",
-                    "type": ["array", "string"],
-                    "title": "The Resource $schema",
-                    "description": "The resource that has the permission",
-                    "default": [],
-                    "items": {
-                      "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Resource/items",
-                      "anyOf": [
-                        {
-                          "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Resource/items/anyOf/0",
-                          "type": "string",
-                          "title": "Permitted resources",
-                          "description": "The permitted resources",
-                          "default": ""
+                    "anyOf": [
+                      {
+                        "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Resource/anyOf/0",
+                        "type": ["array"],
+                        "title": "The Resource $schema",
+                        "description": "The resource that has the permission",
+                        "default": [],
+                        "items": {
+                          "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Resource/anyOf/0/items",
+                          "anyOf": [
+                            {
+                              "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Resource/anyOf/0/items/anyOf/0",
+                              "type": "string",
+                              "title": "Permitted resources",
+                              "description": "The permitted resources",
+                              "default": ""
+                            }
+                          ]
                         }
-                      ]
-                    }
+                      },
+                      {
+                        "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Resource/anyOf/1",
+                        "type": "string",
+                        "title": "The Resource $schema",
+                        "description": "The resource that has the permission",
+                        "default": ""
+                      }
+                    ]
+                  },
+                  "Condition": {
+                    "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Condition",
+                    "type": "object",
+                    "title": "Condition object",
+                    "description": "Condition object",
+                    "default": {}
                   },
                   "Effect": {
                     "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Effect",
