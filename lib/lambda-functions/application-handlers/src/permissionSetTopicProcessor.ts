@@ -129,6 +129,7 @@ export const handler = async (event: SNSEvent) => {
     let currentSessionDuration = "";
     let sortedManagedPoliciesArnList: Array<string> = [];
     let currentRelayState = "";
+    let currentPermissionSetDescription = permissionSetName;
 
     logger({
       handler: "permissionSetTopicProcessor",
@@ -154,7 +155,9 @@ export const handler = async (event: SNSEvent) => {
           new CreatePermissionSetCommand({
             InstanceArn: instanceArn,
             Name: permissionSetName,
-            Description: permissionSetName,
+            Description: currentItem.description
+              ? currentItem.description
+              : permissionSetName,
             RelayState: currentItem.relayState + "",
             SessionDuration: serializeDurationToISOFormat({
               minutes: parseInt(currentItem.sessionDurationInMinutes + ""),
@@ -326,6 +329,12 @@ export const handler = async (event: SNSEvent) => {
             if (currentItem.sortedManagedPoliciesArnList) {
               sortedManagedPoliciesArnList =
                 currentItem.sortedManagedPoliciesArnList;
+            }
+            if (
+              currentItem.description &&
+              currentItem.description.length !== 0
+            ) {
+              currentPermissionSetDescription = currentItem.description;
             }
             permissionSetArn = fetchArn.Item.permissionSetArn;
 
@@ -506,10 +515,14 @@ export const handler = async (event: SNSEvent) => {
                 case "sessionDurationInMinutes-add":
                 case "sessionDurationInMinutes-remove":
                 case "sessionDurationInMinutes-update":
+                case "description-add":
+                case "description-remove":
+                case "description-update":
                 case "relayState-add":
                 case "relayState-remove":
                 case "relayState-update": {
                   updatePermissionSetAttributes = true;
+                  reProvision = true;
                   logger({
                     handler: "permissionSetTopicProcessor",
                     logMode: "info",
@@ -603,6 +616,7 @@ export const handler = async (event: SNSEvent) => {
                 new UpdatePermissionSetCommand({
                   PermissionSetArn: permissionSetArn,
                   InstanceArn: instanceArn,
+                  Description: currentPermissionSetDescription,
                   SessionDuration: serializeDurationToISOFormat({
                     minutes: parseInt(currentSessionDuration),
                   }),

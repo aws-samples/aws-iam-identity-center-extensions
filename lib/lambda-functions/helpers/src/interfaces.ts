@@ -12,6 +12,7 @@ export interface Tag {
 }
 export interface CreateUpdatePermissionSetDataProps {
   readonly permissionSetName: string;
+  readonly description?: string;
   readonly sessionDurationInMinutes: string;
   readonly relayState: string;
   readonly tags: Array<Tag>;
