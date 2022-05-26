@@ -127,5 +127,53 @@ export class SSOApiRoles extends Stack {
         }),
       }
     );
+
+    if (buildConfig.Parameters.EnableNightlyRun === true) {
+      new CrossAccountRole(
+        this,
+        name(buildConfig, "nightlyRun-ssoapi-Role"),
+        buildConfig,
+        {
+          assumeAccountID: buildConfig.PipelineSettings.TargetAccountId,
+          roleNameKey: "nightlyRun-ssoapi",
+          policyStatement: new PolicyStatement({
+            resources: ["*"],
+            actions: [
+              "sso:DeleteInlinePolicyFromPermissionSet",
+              "sso:DetachManagedPolicyFromPermissionSet",
+              "sso:DeletePermissionSet",
+              "sso:CreatePermissionSet",
+              "sso:GetPermissionSet",
+              "sso:TagResource",
+              "sso:ListTagsForResource",
+              "sso:ListPermissionSetProvisioningStatus",
+              "sso:UntagResource",
+              "sso:ListInstances",
+              "sso:DescribePermissionSet",
+              "sso:ProvisionPermissionSet",
+              "sso:ListPermissionSets",
+              "sso:ListAccountsForProvisionedPermissionSet",
+              "sso:PutInlinePolicyToPermissionSet",
+              "sso:AttachManagedPolicyToPermissionSet",
+              "sso:UpdatePermissionSet",
+              "sso:GetInlinePolicyForPermissionSet",
+              "sso:ListManagedPoliciesInPermissionSet",
+              "sso:DescribePermissionSetProvisioningStatus",
+              "sso:CreateAccountAssignment",
+              "sso:DescribeAccountAssignmentDeletionStatus",
+              "sso:ListAccountAssignmentDeletionStatus",
+              "sso:DescribeAccountAssignmentCreationStatus",
+              "sso:DeleteAccountAssignment",
+              "sso:ListAccountAssignmentCreationStatus",
+              "sso:ListAccountAssignments",
+              "sso:ListInstances",
+              "sso:DescribeAccountAssignmentDeletionStatus",
+              "sso:DescribePermissionSetProvisioningStatus",
+              "sso:DescribeAccountAssignmentCreationStatus",
+            ],
+          }),
+        }
+      );
+    }
   }
 }

@@ -108,7 +108,7 @@ export class PermissionSetCRUD extends Construct {
         name(buildConfig, "psApiHandler"),
         {
           functionName: name(buildConfig, "psApiHandler"),
-          runtime: Runtime.NODEJS_14_X,
+          runtime: Runtime.NODEJS_16_X,
           entry: join(
             __dirname,
             "../",
@@ -163,7 +163,7 @@ export class PermissionSetCRUD extends Construct {
         name(buildConfig, "psCuHandler"),
         {
           functionName: name(buildConfig, "psCuHandler"),
-          runtime: Runtime.NODEJS_14_X,
+          runtime: Runtime.NODEJS_16_X,
           entry: join(
             __dirname,
             "../",
@@ -225,7 +225,7 @@ export class PermissionSetCRUD extends Construct {
         name(buildConfig, "psDelHandler"),
         {
           functionName: name(buildConfig, "psDelHandler"),
-          runtime: Runtime.NODEJS_14_X,
+          runtime: Runtime.NODEJS_16_X,
           entry: join(
             __dirname,
             "../",

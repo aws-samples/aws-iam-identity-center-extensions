@@ -12,6 +12,7 @@ import { SSOApiRoles } from "../pipelineStageStacks/sso-api-roles";
 import { SSOEventsProcessor } from "../pipelineStageStacks/sso-events-processor";
 import { SSOImportArtefactsPart1 } from "../pipelineStageStacks/sso-import-artefacts-part1";
 import { SSOImportArtefactsPart2 } from "../pipelineStageStacks/sso-import-artefacts-part2";
+import { SSOImportArtefactsPart3 } from "../pipelineStageStacks/sso-import-artefacts-part3";
 import { UpgradeToV303 } from "../pipelineStageStacks/upgrade-to-v303";
 
 function fullname(buildConfig: BuildConfig, name: string): string {
@@ -74,7 +75,10 @@ export class SSOArtefactsDeploymentStage extends Stage {
       buildConfig
     );
 
-    if (buildConfig.Parameters.ImportCurrentSSOConfiguration) {
+    if (
+      buildConfig.Parameters.ImportCurrentSSOConfiguration ||
+      buildConfig.Parameters.EnableNightlyRun
+    ) {
       new SSOImportArtefactsPart1(
         this,
         fullname(buildConfig, "ssoImportArtefactsPart1stack"),
@@ -125,7 +129,10 @@ export class SolutionArtefactsDeploymentStage extends Stage {
 
     solutionartefactsStack.node.addDependency(preSolutionArtefactsStack);
 
-    if (buildConfig.Parameters.ImportCurrentSSOConfiguration) {
+    if (
+      buildConfig.Parameters.ImportCurrentSSOConfiguration ||
+      buildConfig.Parameters.EnableNightlyRun
+    ) {
       const ssoImportArtefactsPart2Stack = new SSOImportArtefactsPart2(
         this,
         fullname(buildConfig, "ssoImportArtefactsPart2Stack"),
@@ -155,5 +162,28 @@ export class SolutionArtefactsDeploymentStage extends Stage {
       );
       upgradeToV303Stack.node.addDependency(solutionartefactsStack);
     }
+  }
+}
+
+export class SSOArtefactsPostDeployment extends Stage {
+  constructor(
+    scope: Construct,
+    id: string,
+    props: StageProps | undefined,
+    buildConfig: BuildConfig
+  ) {
+    super(scope, id, props);
+
+    new SSOImportArtefactsPart3(
+      this,
+      fullname(buildConfig, "ssoImportArtefactsPart3stack"),
+      {
+        stackName: fullname(buildConfig, "ssoImportArtefactsPart3stack"),
+        synthesizer: new DefaultStackSynthesizer({
+          qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
+        }),
+      },
+      buildConfig
+    );
   }
 }
