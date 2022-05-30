@@ -154,7 +154,7 @@ export class SSOObjectsDiscoveryPart1 extends Construct {
       this,
       name(buildConfig, "importAccountAssignmentsSMRole"),
       {
-        roleName: name(buildConfig, "importAccountAssignmentsSMRole"),
+        roleName: name(buildConfig, "accountAssignmentsImportRole"),
         assumedBy: new ServicePrincipal("states.amazonaws.com"),
       }
     );
@@ -241,7 +241,7 @@ export class SSOObjectsDiscoveryPart1 extends Construct {
       this,
       name(buildConfig, "importPermissionSetSMRole"),
       {
-        roleName: name(buildConfig, "importPermissionSetSMRole"),
+        roleName: name(buildConfig, "permissionSetsImportRole"),
         assumedBy: new ServicePrincipal("states.amazonaws.com"),
       }
     );
@@ -340,7 +340,7 @@ export class SSOObjectsDiscoveryPart1 extends Construct {
       this,
       name(buildConfig, "importCurrentConfigSMRole"),
       {
-        roleName: name(buildConfig, "importCurrentConfigSMRole"),
+        roleName: name(buildConfig, "currentSSOConfigImportRole"),
         assumedBy: new ServicePrincipal("states.amazonaws.com"),
       }
     );
@@ -428,14 +428,19 @@ export class SSOObjectsDiscoveryPart1 extends Construct {
      * Create IAM role with permissions to invoke the import current config
      * state machine and trust policy set to trust target account
      */
-    new CrossAccountRole(this, name(buildConfig, "ssoListRole"), buildConfig, {
-      assumeAccountID: buildConfig.PipelineSettings.TargetAccountId,
-      roleNameKey: "ssoList-ssoapi",
-      policyStatement: new PolicyStatement({
-        resources: [importCurrentConfigSM.ref],
-        actions: ["states:StartExecution"],
-      }),
-    });
+    new CrossAccountRole(
+      this,
+      name(buildConfig, "smStartExecutionRole"),
+      buildConfig,
+      {
+        assumeAccountID: buildConfig.PipelineSettings.TargetAccountId,
+        roleNameKey: "smStartExecution-smapi",
+        policyStatement: new PolicyStatement({
+          resources: [importCurrentConfigSM.ref],
+          actions: ["states:StartExecution"],
+        }),
+      }
+    );
     /**
      * Create IAM role with permissions to describe the state machine execution
      * status so that CloudFormation can update resource creation status

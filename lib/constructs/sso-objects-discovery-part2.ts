@@ -3,15 +3,21 @@
  * assignments. This construct is to be run in target account + region. It will
  * deploy a collection of lambda functions.
  */
+import { Duration } from "aws-cdk-lib";
 import { ITable, Table } from "aws-cdk-lib/aws-dynamodb";
 import { PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { IKey, Key } from "aws-cdk-lib/aws-kms";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import { ILayerVersion } from "aws-cdk-lib/aws-lambda";
-import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
+import {
+  SnsEventSource,
+  SqsEventSource,
+} from "aws-cdk-lib/aws-lambda-event-sources";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Bucket, IBucket } from "aws-cdk-lib/aws-s3";
 import { ITopic, Topic } from "aws-cdk-lib/aws-sns";
+import { EmailSubscription } from "aws-cdk-lib/aws-sns-subscriptions";
+import { Queue, QueueEncryption } from "aws-cdk-lib/aws-sqs";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 import { join } from "path";
@@ -73,7 +79,7 @@ export class SSOObjectsDiscoveryPart2 extends Construct {
       {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
-        ParamNameKey: "ssoList-ssoapi-roleArn",
+        ParamNameKey: "smStartExecution-smapi-roleArn",
       }
     ).paramValue;
 
@@ -201,8 +207,7 @@ export class SSOObjectsDiscoveryPart2 extends Construct {
         layers: [this.nodeJsLayer],
         entry: join(
           __dirname,
-          "../../",
-          "lib",
+          "../",
           "lambda-functions",
           "current-config-handlers",
           "src",
@@ -269,8 +274,7 @@ export class SSOObjectsDiscoveryPart2 extends Construct {
         layers: [this.nodeJsLayer],
         entry: join(
           __dirname,
-          "../../",
-          "lib",
+          "../",
           "lambda-functions",
           "current-config-handlers",
           "src",
@@ -328,5 +332,178 @@ export class SSOObjectsDiscoveryPart2 extends Construct {
     this.importPermissionSetHandler.addEventSource(
       new SnsEventSource(this.permissionSetImportTopic)
     );
+
+    /**
+     * As part of nightlyRun use case, we create 2 SQS FIFO queues for managing
+     * deviations as well as the subscriber lambda functions for these queues to
+     * process message payloads. We also import references to other resources
+     * created in prior stacks for processing the remediation
+     */
+    /** Import the existing SQS key created in the preSolutionArtefacts stage */
+    const sqsKey = Key.fromKeyArn(
+      this,
+      name(buildConfig, "importedSQSKeyArn"),
+      StringParameter.valueForStringParameter(
+        this,
+        name(buildConfig, `queuesKeyArn`)
+      )
+    );
+
+    /** Import the nightlyRun role arn to use in the processing lambda */
+    const nightlyRunRoleArn = new SSMParamReader(
+      this,
+      name(buildConfig, "nightlyRunRoleArnpr"),
+      buildConfig,
+      {
+        ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
+        ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
+        ParamNameKey: "nightlyRun-ssoapi-roleArn",
+      }
+    ).paramValue;
+    /** Create common DLQ for both nightly run queues */
+    const nightlyRunDLQ = new Queue(this, name(buildConfig, `nightlyRunDLQ`), {
+      fifo: true,
+      encryption: QueueEncryption.KMS,
+      encryptionMasterKey: sqsKey,
+      visibilityTimeout: Duration.hours(10),
+      queueName: name(buildConfig, "nightlyRunDLQ.fifo"),
+    });
+    /**
+     * Create one queue - as strict ordering would be required such that account
+     * assignments are remediated first and only then permission sets, as
+     * otherwise the API call would fail due to related links being present
+     */
+    const nightlyRunDeviationQ = new Queue(
+      this,
+      name(buildConfig, "nightlyRunDeviationQ"),
+      {
+        fifo: true,
+        encryption: QueueEncryption.KMS,
+        encryptionMasterKey: sqsKey,
+        visibilityTimeout: Duration.hours(2),
+        contentBasedDeduplication: true,
+        queueName: name(buildConfig, "nightlyRunDeviationQ.fifo"),
+        deadLetterQueue: {
+          queue: nightlyRunDLQ,
+          maxReceiveCount: 4,
+        },
+      }
+    );
+
+    /** Grant the permissionsetHandler to post paylaods to the deviation queue */
+    nightlyRunDeviationQ.grantSendMessages(this.importPermissionSetHandler);
+
+    /** Grant the account assignmet handler to post paylaods to the deviation queue */
+    nightlyRunDeviationQ.grantSendMessages(this.importAccountAssignmentHandler);
+
+    /**
+     * Export the queue link URL's as SSM parameters for import lambda's to read
+     * from Also, grant the relevant handlers permission to read the parameter
+     * values from
+     */
+    const nightlyRunDeviationQParam = new StringParameter(
+      this,
+      name(buildConfig, "nightlyRunDeviationQURL"),
+      {
+        parameterName: name(buildConfig, "nightlyRunDeviationQURL"),
+        stringValue: nightlyRunDeviationQ.queueUrl,
+      }
+    );
+    nightlyRunDeviationQParam.grantRead(this.importPermissionSetHandler);
+    nightlyRunDeviationQParam.grantRead(this.importAccountAssignmentHandler);
+
+    /** Create nightlyRunProcessing lambda */
+    const nightlyRunProcessor = new NodejsFunction(
+      this,
+      name(buildConfig, `nightlyRunProcessor`),
+      {
+        runtime: lambda.Runtime.NODEJS_16_X,
+        functionName: name(buildConfig, `nightlyRunProcessor`),
+        layers: [this.nodeJsLayer],
+        entry: join(
+          __dirname,
+          "../",
+          "lambda-functions",
+          "current-config-handlers",
+          "src",
+          "nightlyRun.ts"
+        ),
+        bundling: {
+          externalModules: [
+            "@aws-sdk/client-sns",
+            "@aws-sdk/client-ssm",
+            "@aws-sdk/client-sso-admin",
+            "@aws-sdk/credential-providers",
+          ],
+          minify: true,
+        },
+        environment: {
+          remediationMode: buildConfig.Parameters.NightlyRunRemediationMode,
+          ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
+          SSOAPIRoleArn: nightlyRunRoleArn,
+          env: buildConfig.Environment,
+        },
+      }
+    );
+
+    nightlyRunProcessor.addEventSource(
+      new SqsEventSource(nightlyRunDeviationQ, {
+        batchSize: 5,
+      })
+    );
+
+    if (nightlyRunProcessor.role) {
+      nightlyRunProcessor.addToRolePolicy(
+        new PolicyStatement({
+          resources: [nightlyRunRoleArn],
+          actions: ["sts:AssumeRole"],
+        })
+      );
+    }
+
+    if (
+      buildConfig.Parameters.NightlyRunRemediationMode.toUpperCase() ===
+      "NOTIFY"
+    ) {
+      /** Import the existing SNS key created in the preSolutionArtefacts stage */
+      const snsKey = Key.fromKeyArn(
+        this,
+        name(buildConfig, "importedSNSKeyArn"),
+        StringParameter.valueForStringParameter(
+          this,
+          name(buildConfig, "snsTopicsKeyArn")
+        )
+      );
+      /** Create SNS topic for notifying nightly Run deviations */
+      const nightlyRunNotificationTopic = new Topic(
+        this,
+        name(buildConfig, "nightlyRunNotificationTopic"),
+        {
+          displayName: name(buildConfig, "nightlyRunNotificationTopic"),
+          masterKey: snsKey,
+          topicName: name(buildConfig, "nightlyRunNotificationTopic"),
+        }
+      );
+      /** Export the topic arn for the nightlyRun processor to read */
+      const nightlyRunTopicArn = new StringParameter(
+        this,
+        name(buildConfig, "nightlyRunTopicArn"),
+        {
+          parameterName: name(buildConfig, "nightlyRunTopicArn"),
+          stringValue: nightlyRunNotificationTopic.topicArn,
+        }
+      );
+      /** Add notification email as a subscriber to the remediation topic */
+      nightlyRunNotificationTopic.addSubscription(
+        new EmailSubscription(buildConfig.Parameters.NotificationEmail)
+      );
+      /**
+       * Grant nightlyRun processor permissions to post to the topic, topic arn
+       * param read along with the KMS permissions
+       */
+      nightlyRunNotificationTopic.grantPublish(nightlyRunProcessor);
+      snsKey.grantEncryptDecrypt(nightlyRunProcessor);
+      nightlyRunTopicArn.grantRead(nightlyRunProcessor);
+    }
   }
 }

@@ -75,22 +75,17 @@ export class SSOArtefactsDeploymentStage extends Stage {
       buildConfig
     );
 
-    if (
-      buildConfig.Parameters.ImportCurrentSSOConfiguration ||
-      buildConfig.Parameters.EnableNightlyRun
-    ) {
-      new SSOImportArtefactsPart1(
-        this,
-        fullname(buildConfig, "ssoImportArtefactsPart1stack"),
-        {
-          stackName: fullname(buildConfig, "ssoImportArtefactsPart1stack"),
-          synthesizer: new DefaultStackSynthesizer({
-            qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
-          }),
-        },
-        buildConfig
-      );
-    }
+    new SSOImportArtefactsPart1(
+      this,
+      fullname(buildConfig, "ssoImportArtefactsPart1stack"),
+      {
+        stackName: fullname(buildConfig, "ssoImportArtefactsPart1stack"),
+        synthesizer: new DefaultStackSynthesizer({
+          qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
+        }),
+      },
+      buildConfig
+    );
   }
 }
 
@@ -129,24 +124,19 @@ export class SolutionArtefactsDeploymentStage extends Stage {
 
     solutionartefactsStack.node.addDependency(preSolutionArtefactsStack);
 
-    if (
-      buildConfig.Parameters.ImportCurrentSSOConfiguration ||
-      buildConfig.Parameters.EnableNightlyRun
-    ) {
-      const ssoImportArtefactsPart2Stack = new SSOImportArtefactsPart2(
-        this,
-        fullname(buildConfig, "ssoImportArtefactsPart2Stack"),
-        {
-          stackName: fullname(buildConfig, "ssoImportArtefactsPart2Stack"),
-          synthesizer: new DefaultStackSynthesizer({
-            qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
-          }),
-        },
-        buildConfig
-      );
+    const ssoImportArtefactsPart2Stack = new SSOImportArtefactsPart2(
+      this,
+      fullname(buildConfig, "ssoImportArtefactsPart2Stack"),
+      {
+        stackName: fullname(buildConfig, "ssoImportArtefactsPart2Stack"),
+        synthesizer: new DefaultStackSynthesizer({
+          qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
+        }),
+      },
+      buildConfig
+    );
 
-      ssoImportArtefactsPart2Stack.node.addDependency(solutionartefactsStack);
-    }
+    ssoImportArtefactsPart2Stack.node.addDependency(solutionartefactsStack);
 
     if (buildConfig.Parameters.UpgradeFromVersionLessThanV303) {
       const upgradeToV303Stack = new UpgradeToV303(

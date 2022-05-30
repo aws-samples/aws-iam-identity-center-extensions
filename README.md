@@ -338,7 +338,7 @@ If you chose to enable the nightly run feature, i.e. set `EnableNightlyRun` to `
 - The deviations are in two categories: 1) Unknown account assignments/permission sets. This is where a change has been made outside of the solution to create a new permission set/assignment and is therefore unknown to the solution. 2) Changed permission sets (i.e. changes to attached policies, session duration tags)
 - Any deviations found will either be auto remediated or a user will be notified.
 
-- Set `NightlyRunRemediationMode` to `AUTOREMEDIATE` to automatically delete unknown (additional) account assignments/permissions sets, and to update changed permission sets.
+- Set `NightlyRunRemediationMode` to `AUTOREMEDIATE` to delete unknown (additional) account assignments/permissions sets, and to update changed permission sets.
 - Set `NightlyRunRemediationMode` to `NOTIFY` to be notified about any unknown account assignments/permissions sets, and changed permission sets. Notifications will be sent to the email that is subscribed to the SNS topic, i.e. the email set in `NotificationEmail`.
 
 - _Note: This feature currently looks at changes/new entities being present. This does not yet determine if account assignments/permission sets are missing._
