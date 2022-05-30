@@ -156,6 +156,15 @@ function getConfig() {
         unparsedEnv["Parameters"],
         "UpgradeFromVersionLessThanV303"
       ),
+      EnableNightlyRun: ensureBoolean(
+        unparsedEnv["Parameters"],
+        "EnableNightlyRun"
+      ),
+      NightlyRunRemediationMode: ensureValidString(
+        unparsedEnv["Parameters"],
+        "NightlyRunRemediationMode",
+        ["NOTIFY", "AUTOREMEDIATE"]
+      ),
     },
   };
 

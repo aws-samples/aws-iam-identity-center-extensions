@@ -36,4 +36,6 @@ export interface Parameters {
   readonly DomainName: string;
   readonly ImportCurrentSSOConfiguration: boolean;
   readonly UpgradeFromVersionLessThanV303: boolean;
+  readonly EnableNightlyRun: boolean;
+  readonly NightlyRunRemediationMode: string;
 }
