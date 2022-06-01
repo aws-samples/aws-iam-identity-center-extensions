@@ -93,7 +93,7 @@ export class UpgradeToV303 extends Stack {
       this,
       name(buildConfig, "processLinkDataFunction"),
       {
-        runtime: Runtime.NODEJS_16_X,
+        runtime: Runtime.NODEJS_14_X,
         entry: join(
           __dirname,
           "../../../",
@@ -170,7 +170,7 @@ export class UpgradeToV303 extends Stack {
       this,
       name(buildConfig, `triggerUpgradeSM`),
       {
-        runtime: Runtime.NODEJS_16_X,
+        runtime: Runtime.NODEJS_14_X,
         functionName: name(buildConfig, `triggerUpgradeSM`),
         layers: [nodeJsLayer],
         entry: join(
@@ -200,7 +200,7 @@ export class UpgradeToV303 extends Stack {
       this,
       name(buildConfig, `updateCustomResource`),
       {
-        runtime: Runtime.NODEJS_16_X,
+        runtime: Runtime.NODEJS_14_X,
         functionName: name(buildConfig, `updateCustomResource`),
         layers: [nodeJsLayer],
         entry: join(
