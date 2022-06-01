@@ -91,9 +91,3 @@ export interface LogMessage {
   readonly hasRelatedRequests?: boolean;
   readonly sourceRequestId?: string;
 }
-
-export enum NightlyRunDeviationTypes {
-  Unknown,
-  Changed,
-  Missing,
-}

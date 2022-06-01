@@ -69,11 +69,11 @@ export class ObservabilityArtefacts extends Construct {
     //Get Related RequestDetails for accountAssignmentAPI flows
     new CfnQueryDefinition(
       this,
-      name(buildConfig, "accountAssignmentAPIFlows-getRelatedRequestDetails"),
+      name(buildConfig, "accountAssignmentAPIFlows-getRelateedRequestDetails"),
       {
         name: name(
           buildConfig,
-          "accountAssignmentAPIFlows-getRelatedRequestDetails"
+          "accountAssignmentAPIFlows-getRelateedRequestDetails"
         ),
         queryString:
           "filter sourceRequestId like '' | fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc",
@@ -96,11 +96,11 @@ export class ObservabilityArtefacts extends Construct {
     //Get Related RequestDetails for permissionSetAPI flows
     new CfnQueryDefinition(
       this,
-      name(buildConfig, "permissionSetAPIFlows-getRelatedRequestDetails"),
+      name(buildConfig, "permissionSetAPIFlows-getRelateedRequestDetails"),
       {
         name: name(
           buildConfig,
-          "permissionSetAPIFlows-getRelatedRequestDetails"
+          "permissionSetAPIFlows-getRelateedRequestDetails"
         ),
         queryString:
           "filter sourceRequestId like '' | fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc",
@@ -123,11 +123,11 @@ export class ObservabilityArtefacts extends Construct {
     //Get Related RequestDetails for SSO group trigger flows
     new CfnQueryDefinition(
       this,
-      name(buildConfig, "ssoGroupTriggerFlows-getRelatedRequestDetails"),
+      name(buildConfig, "ssoGroupTriggerFlows-getRelateedRequestDetails"),
       {
         name: name(
           buildConfig,
-          "ssoGroupTriggerFlows-getRelatedRequestDetails"
+          "ssoGroupTriggerFlows-getRelateedRequestDetails"
         ),
         queryString:
           "filter sourceRequestId like '' | fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc",
@@ -150,9 +150,12 @@ export class ObservabilityArtefacts extends Construct {
     //Get Related RequestDetails for SSO user trigger flows
     new CfnQueryDefinition(
       this,
-      name(buildConfig, "ssoUserTriggerFlows-getRelatedRequestDetails"),
+      name(buildConfig, "ssoUserTriggerFlows-getRelateedRequestDetails"),
       {
-        name: name(buildConfig, "ssoUserTriggerFlows-getRelatedRequestDetails"),
+        name: name(
+          buildConfig,
+          "ssoUserTriggerFlows-getRelateedRequestDetails"
+        ),
         queryString:
           "filter sourceRequestId like '' | fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc",
         logGroupNames: ssoUserLogGroupNames,
@@ -179,12 +182,12 @@ export class ObservabilityArtefacts extends Construct {
       this,
       name(
         buildConfig,
-        "permissionSetSyncTriggerFlows-getRelatedRequestDetails"
+        "permissionSetSyncTriggerFlows-getRelateedRequestDetails"
       ),
       {
         name: name(
           buildConfig,
-          "permissionSetSyncTriggerFlows-getRelatedRequestDetails"
+          "permissionSetSyncTriggerFlows-getRelateedRequestDetails"
         ),
         queryString:
           "filter sourceRequestId like '' | fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc",
@@ -207,11 +210,11 @@ export class ObservabilityArtefacts extends Construct {
     //Get Related RequestDetails for org events trigger flows
     new CfnQueryDefinition(
       this,
-      name(buildConfig, "orgEventsTriggerFlows-getRelatedRequestDetails"),
+      name(buildConfig, "orgEventsTriggerFlows-getRelateedRequestDetails"),
       {
         name: name(
           buildConfig,
-          "orgEventsTriggerFlows-getRelatedRequestDetails"
+          "orgEventsTriggerFlows-getRelateedRequestDetails"
         ),
         queryString:
           "filter sourceRequestId like '' | fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc",

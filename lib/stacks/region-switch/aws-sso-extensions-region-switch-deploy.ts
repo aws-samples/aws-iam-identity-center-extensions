@@ -37,7 +37,7 @@ export class AwsSsoExtensionsRegionSwitchDeploy extends Stack {
       code: Code.fromAsset(
         join(__dirname, "../../", "lambda-layers", "nodejs-layer")
       ),
-      compatibleRuntimes: [Runtime.NODEJS_16_X],
+      compatibleRuntimes: [Runtime.NODEJS_14_X],
     });
 
     /**
@@ -77,7 +77,7 @@ export class AwsSsoExtensionsRegionSwitchDeploy extends Stack {
       this,
       fullname(`rsCreatePermissionSetsHandler`),
       {
-        runtime: Runtime.NODEJS_16_X,
+        runtime: Runtime.NODEJS_14_X,
         layers: [rsNodeJsLayer],
         entry: join(
           __dirname,
@@ -199,7 +199,7 @@ export class AwsSsoExtensionsRegionSwitchDeploy extends Stack {
       this,
       fullname(`updateCustomResourceHandler`),
       {
-        runtime: Runtime.NODEJS_16_X,
+        runtime: Runtime.NODEJS_14_X,
         layers: [rsNodeJsLayer],
         entry: join(
           __dirname,
@@ -237,7 +237,7 @@ export class AwsSsoExtensionsRegionSwitchDeploy extends Stack {
       this,
       fullname(`parentSMInvokeFunction`),
       {
-        runtime: Runtime.NODEJS_16_X,
+        runtime: Runtime.NODEJS_14_X,
         functionName: fullname(`parentSMInvokeFunction`),
         layers: [rsNodeJsLayer],
         entry: join(

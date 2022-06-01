@@ -44,7 +44,7 @@ export class SSOGroupProcessor extends Construct {
       this,
       name(buildConfig, "ssoGroupHandler"),
       {
-        runtime: Runtime.NODEJS_16_X,
+        runtime: Runtime.NODEJS_14_X,
         functionName: name(buildConfig, "ssoGroupHandler"),
         entry: join(
           __dirname,
@@ -93,7 +93,7 @@ export class SSOGroupProcessor extends Construct {
       this,
       name(buildConfig, "ssoUserHandler"),
       {
-        runtime: Runtime.NODEJS_16_X,
+        runtime: Runtime.NODEJS_14_X,
         functionName: name(buildConfig, "ssoUserHandler"),
         entry: join(
           __dirname,
