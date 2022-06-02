@@ -82,4 +82,4 @@ The solution comprises of the following building blocks:
 
 | Layer Name    | Runtime     | Purpose                                                             | Referenced by |
 | ------------- | ----------- | ------------------------------------------------------------------- | ------------- |
-| Node JS layer | NODEJS_14_X | Package AWS-JS SDK V3 modular clients, uuid, ajv and json-diff libs | All Lambda's  |
+| Node JS layer | NODEJS_16_X | Package AWS-JS SDK V3 modular clients, uuid, ajv and json-diff libs | All Lambda's  |

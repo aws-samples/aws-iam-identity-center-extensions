@@ -37,7 +37,7 @@ export class SSOImportArtefactsPart2 extends Stack {
       this,
       name(buildConfig, `importAccountAssignmentHandler`),
       {
-        runtime: lambda.Runtime.NODEJS_14_X,
+        runtime: lambda.Runtime.NODEJS_16_X,
         functionName: name(buildConfig, `importAccountAssignmentHandler`),
         layers: [deployImportArtefacts.nodeJsLayer],
         entry: join(
@@ -91,7 +91,7 @@ export class SSOImportArtefactsPart2 extends Stack {
       this,
       name(buildConfig, `importPermissionSetHandler`),
       {
-        runtime: lambda.Runtime.NODEJS_14_X,
+        runtime: lambda.Runtime.NODEJS_16_X,
         functionName: name(buildConfig, `importPermissionSetHandler`),
         layers: [deployImportArtefacts.nodeJsLayer],
         entry: join(
@@ -163,7 +163,7 @@ export class SSOImportArtefactsPart2 extends Stack {
       this,
       name(buildConfig, `updateCustomResourceHandler`),
       {
-        runtime: lambda.Runtime.NODEJS_14_X,
+        runtime: lambda.Runtime.NODEJS_16_X,
         functionName: name(buildConfig, `updateCustomResourceHandler`),
         layers: [deployImportArtefacts.nodeJsLayer],
         entry: join(
@@ -209,7 +209,7 @@ export class SSOImportArtefactsPart2 extends Stack {
       this,
       name(buildConfig, `parentSMInvokeFunction`),
       {
-        runtime: lambda.Runtime.NODEJS_14_X,
+        runtime: lambda.Runtime.NODEJS_16_X,
         functionName: name(buildConfig, `parentSMInvokeFunction`),
         layers: [deployImportArtefacts.nodeJsLayer],
         entry: join(
