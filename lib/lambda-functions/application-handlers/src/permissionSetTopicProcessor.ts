@@ -342,11 +342,13 @@ export const handler = async (event: SNSEvent) => {
               status: requestStatus.InProgress,
               statusMessage: `PermissionSet update operation - object and arn found, progressing with delta`,
             });
-
-            if (currentItem.sessionDurationInMinutes.length !== 0) {
+            console.log(`currentRelayState: ${currentRelayState}`);
+            console.log(`currentSessionDuration: ${currentSessionDuration}`);
+            console.log("start of update check");
+            if (currentItem.sessionDurationInMinutes.length > 0) {
               currentSessionDuration = currentItem.sessionDurationInMinutes;
             }
-            if (currentItem.relayState.length !== 0) {
+            if (currentItem.relayState.length > 0) {
               currentRelayState = currentItem.relayState;
             }
             if (currentItem.sortedManagedPoliciesArnList) {
@@ -653,6 +655,8 @@ export const handler = async (event: SNSEvent) => {
               /**
                * Update relayState and sessionDuration if they match length greater than 0
                */
+              console.log(`currentRelayState: ${currentRelayState}`);
+              console.log(`currentSessionDuration: ${currentSessionDuration}`);
               if (currentRelayState.length > 0) {
                 await ssoAdminClientObject.send(
                   new UpdatePermissionSetCommand({
@@ -661,6 +665,14 @@ export const handler = async (event: SNSEvent) => {
                     RelayState: currentRelayState,
                   })
                 );
+                logger({
+                  handler: "permissionSetTopicProcessor",
+                  logMode: "info",
+                  requestId: requestId,
+                  relatedData: permissionSetName,
+                  status: requestStatus.InProgress,
+                  statusMessage: `PermissionSet update operation - updated relayState`,
+                });
               }
               if (currentSessionDuration.length > 0) {
                 await ssoAdminClientObject.send(
@@ -672,6 +684,14 @@ export const handler = async (event: SNSEvent) => {
                     }),
                   })
                 );
+                logger({
+                  handler: "permissionSetTopicProcessor",
+                  logMode: "info",
+                  requestId: requestId,
+                  relatedData: permissionSetName,
+                  status: requestStatus.InProgress,
+                  statusMessage: `PermissionSet update operation - updated sessionDurationInMinutes`,
+                });
               }
             }
 
