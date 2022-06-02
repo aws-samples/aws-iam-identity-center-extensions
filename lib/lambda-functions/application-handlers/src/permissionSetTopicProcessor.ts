@@ -158,10 +158,6 @@ export const handler = async (event: SNSEvent) => {
             Description: currentItem.description
               ? currentItem.description
               : permissionSetName,
-            RelayState: currentItem.relayState + "",
-            SessionDuration: serializeDurationToISOFormat({
-              minutes: parseInt(currentItem.sessionDurationInMinutes + ""),
-            }),
           })
         );
         logger({
@@ -175,6 +171,33 @@ export const handler = async (event: SNSEvent) => {
 
         permissionSetArn =
           createOp.PermissionSet?.PermissionSetArn?.toString() + "";
+        /**
+         * Only process relayState and sessionDurationInMinutes if present
+         */
+        if (currentItem.relayState) {
+          if (currentItem.relayState.length > 0) {
+            await ssoAdminClientObject.send(
+              new UpdatePermissionSetCommand({
+                InstanceArn: instanceArn,
+                PermissionSetArn: permissionSetArn,
+                RelayState: currentItem.relayState,
+              })
+            );
+          }
+        }
+        if (currentItem.sessionDurationInMinutes) {
+          if (currentItem.sessionDurationInMinutes.length > 0) {
+            await ssoAdminClientObject.send(
+              new UpdatePermissionSetCommand({
+                InstanceArn: instanceArn,
+                PermissionSetArn: permissionSetArn,
+                SessionDuration: serializeDurationToISOFormat({
+                  minutes: parseInt(currentItem.sessionDurationInMinutes),
+                }),
+              })
+            );
+          }
+        }
         await ddbDocClientObject.send(
           new UpdateCommand({
             TableName: Arntable,
@@ -617,10 +640,6 @@ export const handler = async (event: SNSEvent) => {
                   PermissionSetArn: permissionSetArn,
                   InstanceArn: instanceArn,
                   Description: currentPermissionSetDescription,
-                  SessionDuration: serializeDurationToISOFormat({
-                    minutes: parseInt(currentSessionDuration),
-                  }),
-                  RelayState: currentRelayState,
                 })
               );
               logger({
@@ -631,6 +650,29 @@ export const handler = async (event: SNSEvent) => {
                 status: requestStatus.InProgress,
                 statusMessage: `PermissionSet update operation - updated Permission set attributes`,
               });
+              /**
+               * Update relayState and sessionDuration if they match length greater than 0
+               */
+              if (currentRelayState.length > 0) {
+                await ssoAdminClientObject.send(
+                  new UpdatePermissionSetCommand({
+                    PermissionSetArn: permissionSetArn,
+                    InstanceArn: instanceArn,
+                    RelayState: currentRelayState,
+                  })
+                );
+              }
+              if (currentSessionDuration.length > 0) {
+                await ssoAdminClientObject.send(
+                  new UpdatePermissionSetCommand({
+                    PermissionSetArn: permissionSetArn,
+                    InstanceArn: instanceArn,
+                    SessionDuration: serializeDurationToISOFormat({
+                      minutes: parseInt(currentSessionDuration),
+                    }),
+                  })
+                );
+              }
             }
 
             if (reProvision) {
