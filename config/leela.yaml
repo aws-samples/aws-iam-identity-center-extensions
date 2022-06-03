@@ -17,7 +17,7 @@ PipelineSettings:
   SynthCommand: "yarn cdk synth leela-aws-sso-extensions-for-enterprise -c config=leela"
 
 Parameters:
-  LinksProvisioningMode: "api"
+  LinksProvisioningMode: "s3"
   PermissionSetProvisioningMode: "s3"
   LinkCallerRoleArn: "arn:aws:iam::270869494959:role/LinkCallerRole"
   PermissionSetCallerRoleArn: "arn:aws:iam::270869494959:role/PermissionSetCallerRole"
