@@ -86,7 +86,7 @@
         "sourceRequestId.$": "$.sourceRequestId"
       },
       "Next": "Wait for throttling",
-      "ResultPath": "$.getResources.notifications"
+      "ResultPath": null
     },
     "Wait for throttling": {
       "Type": "Wait",
@@ -191,7 +191,7 @@
         "pretargetId.$": "$$.Map.Item.Value.Id",
         "sourceRequestId.$": "$.sourceRequestId"
       },
-      "ResultPath": "$.listRootAccounts.notifications"
+      "ResultPath": null
     },
     "Wait for throttling - 2": {
       "Type": "Wait",
@@ -281,7 +281,102 @@
           "Next": "Call ListAccountsForParent with NextToken"
         }
       ],
+      "Default": "call ListChildren"
+    },
+    "call ListChildren": {
+      "Type": "Task",
+      "Next": "Process nested OU's",
+      "Parameters": {
+        "ChildType": "ORGANIZATIONAL_UNIT",
+        "ParentId.$": "$.ou_id",
+        "MaxResults.$": "$.pageSize"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:organizations:listChildren",
+      "ResultPath": "$.listChildrenResults"
+    },
+    "Process nested OU's": {
+      "Type": "Map",
+      "Next": "Wait for throttling - 4",
+      "Iterator": {
+        "StartAt": "Invoke the same state machine recursively",
+        "States": {
+          "Invoke the same state machine recursively": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::states:startExecution.sync:2",
+            "Parameters": {
+              "StateMachineArn.$": "$.stateMachineArn",
+              "Input": {
+                "action.$": "$.action",
+                "entityType.$": "$.entityType",
+                "instanceArn.$": "$.instanceArn",
+                "permissionSetArn.$": "$.permissionSetArn",
+                "principalId.$": "$.principalId",
+                "principalType.$": "$.principalType",
+                "targetType.$": "$.targetType",
+                "topicArn.$": "$.topicArn",
+                "sourceRequestId.$": "$.sourceRequestId",
+                "pageSize.$": "$.pageSize",
+                "waitSeconds.$": "$.waitSeconds",
+                "tagKey.$": "$.tagKey",
+                "emptyString.$": "$.emptyString",
+                "tagValues.$": "$.tagValues",
+                "ou_id.$": "$.ou_id",
+                "resourceTypeFilters.$": "$.resourceTypeFilters"
+              }
+            },
+            "End": true
+          }
+        }
+      },
+      "ItemsPath": "$.listChildrenResults.Children",
+      "ResultPath": "$.processedOuList",
+      "Parameters": {
+        "action.$": "$.action",
+        "entityType.$": "$.entityType",
+        "instanceArn.$": "$.instanceArn",
+        "permissionSetArn.$": "$.permissionSetArn",
+        "principalId.$": "$.principalId",
+        "principalType.$": "$.principalType",
+        "targetType.$": "$.targetType",
+        "topicArn.$": "$.topicArn",
+        "sourceRequestId.$": "$.sourceRequestId",
+        "pageSize.$": "$.pageSize",
+        "waitSeconds.$": "$.waitSeconds",
+        "tagKey.$": "$.tagKey",
+        "emptyString.$": "$.emptyString",
+        "tagValues.$": "$.tagValues",
+        "ou_id.$": "$$.Map.Item.Value.Id",
+        "resourceTypeFilters.$": "$.resourceTypeFilters",
+        "stateMachineArn.$": "$$.StateMachine.Id"
+      }
+    },
+    "Wait for throttling - 4": {
+      "Type": "Wait",
+      "Next": "Are there more children?",
+      "SecondsPath": "$.waitSeconds"
+    },
+    "Are there more children?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.listChildrenResults.NextToken",
+          "IsPresent": true,
+          "Next": "call ListChildren with NextToken"
+        }
+      ],
       "Default": "Final State"
+    },
+    "call ListChildren with NextToken": {
+      "Type": "Task",
+      "Parameters": {
+        "ChildType": "ORGANIZATIONAL_UNIT",
+        "ParentId.$": "$.ou_id",
+        "MaxResults.$": "$.pageSize",
+        "NextToken.$": "$.listChildrenResults.NextToken"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:organizations:listChildren",
+      "ResultPath": "$.listChildrenResults",
+      "Next": "Process nested OU's"
     },
     "Final State": {
       "Type": "Pass",

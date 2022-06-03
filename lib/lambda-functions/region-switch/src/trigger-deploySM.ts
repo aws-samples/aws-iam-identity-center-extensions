@@ -49,7 +49,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
           globalAccountAssignmentsTable: globalAccountAssignmentsTable,
           CreatePSFunctionName: CreatePSFunctionName,
           waitSeconds: 2,
-          pageSize: 5,
+          pageSize: 1,
           eventType: event.RequestType,
         }),
       })

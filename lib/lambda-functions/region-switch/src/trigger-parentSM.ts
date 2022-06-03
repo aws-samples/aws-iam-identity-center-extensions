@@ -56,7 +56,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
           triggerSource: "CloudFormation",
           requestId: requestId,
           waitSeconds: 2,
-          pageSize: 5,
+          pageSize: 1,
         }),
       })
     );
