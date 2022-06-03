@@ -222,7 +222,7 @@ export const handler = async (event: SNSEvent) => {
             targetType: staticSSOPayload.TargetType,
             topicArn: processTargetAccountSMTopicArn + "",
             sourceRequestId: requestId,
-            pageSize: 1,
+            pageSize: 5,
             waitSeconds: 2,
           };
           await invokeStepFunction(
