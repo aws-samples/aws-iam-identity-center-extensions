@@ -181,7 +181,9 @@ export const handler = async (event: SNSEvent) => {
          */
         if (currentItem.relayState || currentItem.sessionDurationInMinutes) {
           if (
+            currentItem.relayState &&
             currentItem.relayState.length > 0 &&
+            currentItem.sessionDurationInMinutes &&
             currentItem.sessionDurationInMinutes.length > 0
           ) {
             await ssoAdminClientObject.send(
@@ -202,7 +204,10 @@ export const handler = async (event: SNSEvent) => {
               status: requestStatus.InProgress,
               statusMessage: `PermissionSet create operation - updated relayState and currentSessionDuration`,
             });
-          } else if (currentItem.relayState.length > 0) {
+          } else if (
+            currentItem.relayState &&
+            currentItem.relayState.length > 0
+          ) {
             await ssoAdminClientObject.send(
               new UpdatePermissionSetCommand({
                 InstanceArn: instanceArn,
@@ -218,7 +223,10 @@ export const handler = async (event: SNSEvent) => {
               status: requestStatus.InProgress,
               statusMessage: `PermissionSet create operation - updated relayState`,
             });
-          } else if (currentItem.sessionDurationInMinutes.length > 0) {
+          } else if (
+            currentItem.sessionDurationInMinutes &&
+            currentItem.sessionDurationInMinutes.length > 0
+          ) {
             await ssoAdminClientObject.send(
               new UpdatePermissionSetCommand({
                 InstanceArn: instanceArn,
