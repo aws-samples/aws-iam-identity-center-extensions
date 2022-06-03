@@ -218,6 +218,7 @@ export const handler = async (event: SNSEvent) => {
                   topicArn: processTargetAccountSMTopicArn + "",
                   sourceRequestId: requestId,
                   pageSize: 5,
+                  waitSeconds: 2,
                 };
                 await invokeStepFunction(
                   stateMachinePayload,

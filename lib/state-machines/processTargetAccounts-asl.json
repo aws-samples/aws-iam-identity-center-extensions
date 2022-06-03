@@ -85,8 +85,13 @@
         "tagKey.$": "$.tagKey",
         "sourceRequestId.$": "$.sourceRequestId"
       },
-      "Next": "Check for PaginationToken in GetResources response?",
+      "Next": "Wait for throttling",
       "ResultPath": "$.getResources.notifications"
+    },
+    "Wait for throttling": {
+      "Type": "Wait",
+      "Next": "Check for PaginationToken in GetResources response?",
+      "SecondsPath": "$.waitSeconds"
     },
     "Check for PaginationToken in GetResources response?": {
       "Type": "Choice",
@@ -150,7 +155,7 @@
     },
     "Loop through all accounts in root": {
       "Type": "Map",
-      "Next": "Check for NextToken in ListAcccounts response?",
+      "Next": "Wait for throttling - 2",
       "Iterator": {
         "StartAt": "Publish listaccounts to SNS topic",
         "States": {
@@ -187,6 +192,11 @@
         "sourceRequestId.$": "$.sourceRequestId"
       },
       "ResultPath": "$.listRootAccounts.notifications"
+    },
+    "Wait for throttling - 2": {
+      "Type": "Wait",
+      "Next": "Check for NextToken in ListAcccounts response?",
+      "SecondsPath": "$.waitSeconds"
     },
     "Check for NextToken in ListAcccounts response?": {
       "Type": "Choice",
@@ -255,7 +265,12 @@
         "sourceRequestId.$": "$.sourceRequestId"
       },
       "ResultPath": "$.listAccountsForParent.notifications",
-      "Next": "Check for NextToken in ListAccountsForParent response?"
+      "Next": "Wait for throttling - 3"
+    },
+    "Wait for throttling - 3": {
+      "Type": "Wait",
+      "Next": "Check for NextToken in ListAccountsForParent response?",
+      "SecondsPath": "$.waitSeconds"
     },
     "Check for NextToken in ListAccountsForParent response?": {
       "Type": "Choice",
