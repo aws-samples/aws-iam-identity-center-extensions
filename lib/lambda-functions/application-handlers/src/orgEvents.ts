@@ -346,10 +346,8 @@ export const handler = async (event: SNSEvent) => {
        * root If nested OU support is not enabled, then the function would
        * simply remove and add any related account assignments for the old and new OU's
        */
-      const oldParentsList: Array<string> = [];
-      const newParentsList: Array<string> = [];
-      let completeOldParentsList: Array<string> = [];
-      let completeNewParentsList: Array<string> = [];
+      let oldParentsList: Array<string> = [];
+      let newParentsList: Array<string> = [];
       oldParentsList.push(message.detail.requestParameters.sourceParentId);
       newParentsList.push(message.detail.requestParameters.destinationParentId);
       if (supportNestedOU === "true") {
@@ -394,15 +392,27 @@ export const handler = async (event: SNSEvent) => {
           }
         }
         /** Remove root parents from both old and new parents list */
-        completeOldParentsList = oldParentsList.filter(
+        oldParentsList = oldParentsList.filter(
           (parent) => !parent.match(/r-.*/)
         );
-        completeNewParentsList = newParentsList.filter(
+        newParentsList = newParentsList.filter(
           (parent) => !parent.match(/r-.*/)
         );
       }
+
+      console.log(JSON.stringify(oldParentsList));
+      console.log(JSON.stringify(newParentsList));
+      const parentsToRemove: Array<string> = oldParentsList.filter(
+        (parent) => !newParentsList.includes(parent)
+      );
+      const parentsToAdd: Array<string> = newParentsList.filter(
+        (parent) => !oldParentsList.includes(parent)
+      );
+      console.log("final list");
+      console.log(JSON.stringify(parentsToRemove));
+      console.log(JSON.stringify(parentsToAdd));
       /** Start processing deletion of any related account assignments for old parents list */
-      for (const parent of completeOldParentsList) {
+      for (const parent of parentsToRemove) {
         console.log(`oldParent: ${parent}`);
         await orgEventProvisioning(
           instanceArn,
@@ -415,7 +425,7 @@ export const handler = async (event: SNSEvent) => {
         );
       }
       /** Start processing addition of any related account assignments for new parents list */
-      for (const parent of completeNewParentsList) {
+      for (const parent of parentsToAdd) {
         console.log(`newParent: ${parent}`);
         await orgEventProvisioning(
           instanceArn,
