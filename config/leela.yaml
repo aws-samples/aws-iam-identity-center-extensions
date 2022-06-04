@@ -21,7 +21,7 @@ Parameters:
   PermissionSetProvisioningMode: "s3"
   LinkCallerRoleArn: "arn:aws:iam::270869494959:role/LinkCallerRole"
   PermissionSetCallerRoleArn: "arn:aws:iam::270869494959:role/PermissionSetCallerRole"
-  NotificationEmail: "klagudu+ssoex@gmail.com"
+  NotificationEmail: "leela.ssoextensions@gmail.com"
   IsAdUsed: false
   DomainName: "corp.example.com" # If IsAdUsed is false, this will be ignored.
   ImportCurrentSSOConfiguration: true
