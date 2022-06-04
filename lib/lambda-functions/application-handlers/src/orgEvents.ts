@@ -23,6 +23,7 @@ const {
   errorNotificationsTopicArn,
   ssoRegion,
   provisionedLinksTable,
+  supportNestedOU,
   AWS_REGION,
 } = process.env;
 

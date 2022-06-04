@@ -77,6 +77,7 @@ export class OrgEvents extends Construct {
           ISAPIRoleArn: orgEventsProps.listGroupsIdentityStoreAPIRoleArn,
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
           provisionedLinksTable: orgEventsProps.provisionedlinksTableName,
+          supportNestedOU: String(buildConfig.Parameters.SupportNestedOU),
         },
       }
     );

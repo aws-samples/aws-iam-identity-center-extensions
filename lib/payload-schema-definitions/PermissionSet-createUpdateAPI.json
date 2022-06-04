@@ -150,21 +150,32 @@
                     "properties": {
                       "Action": {
                         "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Action",
-                        "type": "array",
-                        "title": "The Action $schema",
-                        "description": "The permitted actions",
-                        "default": [],
-                        "items": {
-                          "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Action/items",
-                          "anyOf": [
-                            {
-                              "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Action/items/anyOf/0",
-                              "type": "string",
-                              "title": "Permitted actions",
-                              "description": "The permitted actions"
+                        "anyOf": [
+                          {
+                            "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Action/anyOf/0",
+                            "type": ["array"],
+                            "title": "The Action $schema",
+                            "description": "The permitted actions",
+                            "default": [],
+                            "items": {
+                              "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Action/anyOf/0/items",
+                              "anyOf": [
+                                {
+                                  "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Action/items/anyOf/0/items/anyOf/0",
+                                  "type": "string",
+                                  "title": "Permitted actions",
+                                  "description": "The permitted actions"
+                                }
+                              ]
                             }
-                          ]
-                        }
+                          },
+                          {
+                            "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Action/anyOf/1",
+                            "type": "string",
+                            "title": "The Action $schema",
+                            "description": "The permitted actions"
+                          }
+                        ]
                       },
                       "Resource": {
                         "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Resource",
