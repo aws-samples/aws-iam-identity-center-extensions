@@ -38,6 +38,7 @@ const {
   domainName,
   errorNotificationsTopicArn,
   ssoRegion,
+  supportNestedOU,
   AWS_REGION,
 } = process.env;
 
@@ -224,6 +225,7 @@ export const handler = async (event: SNSEvent) => {
             sourceRequestId: requestId,
             pageSize: 5,
             waitSeconds: 2,
+            supportNestedOU: supportNestedOU + "",
           };
           await invokeStepFunction(
             stateMachinePayload,

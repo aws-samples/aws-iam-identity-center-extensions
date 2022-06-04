@@ -156,6 +156,10 @@ function getConfig() {
         unparsedEnv["Parameters"],
         "UpgradeFromVersionLessThanV303"
       ),
+      SupportNestedOU: ensureBoolean(
+        unparsedEnv["Parameters"],
+        "SupportNestedOU"
+      ),
     },
   };
 

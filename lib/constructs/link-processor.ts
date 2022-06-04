@@ -174,6 +174,7 @@ export class LinkProcessor extends Construct {
           orgListSMRoleArn: linkprocessProps.orgListSMRoleArn,
           processTargetAccountSMArn: `arn:aws:states:us-east-1:${buildConfig.PipelineSettings.OrgMainAccountId}:stateMachine:${buildConfig.Environment}-processTargetAccountSM`,
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
+          supportNestedOU: String(buildConfig.Parameters.SupportNestedOU),
         },
       }
     );

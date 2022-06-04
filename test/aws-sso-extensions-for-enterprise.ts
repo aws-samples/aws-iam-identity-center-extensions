@@ -152,6 +152,10 @@ test("Empty Stack", () => {
           unparsedEnv["Parameters"],
           "UpgradeFromVersionLessThanV303"
         ),
+        SupportNestedOU: ensureBoolean(
+          unparsedEnv["Parameters"],
+          "SupportNestedOU"
+        ),
       },
     };
   }

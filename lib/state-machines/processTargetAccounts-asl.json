@@ -281,7 +281,18 @@
           "Next": "Call ListAccountsForParent with NextToken"
         }
       ],
-      "Default": "call ListChildren"
+      "Default": "Only processNested OU's if required?"
+    },
+    "Only processNested OU's if required?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.supportNestedOU",
+          "StringMatches": "true",
+          "Next": "call ListChildren"
+        }
+      ],
+      "Default": "Final State"
     },
     "call ListChildren": {
       "Type": "Task",
@@ -347,6 +358,7 @@
         "tagValues.$": "$.tagValues",
         "ou_id.$": "$$.Map.Item.Value.Id",
         "resourceTypeFilters.$": "$.resourceTypeFilters",
+        "supportNestedOU.$": "$.supportNestedOU",
         "stateMachineArn.$": "$$.StateMachine.Id"
       }
     },

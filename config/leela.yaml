@@ -26,3 +26,4 @@ Parameters:
   DomainName: "corp.example.com" # If IsAdUsed is false, this will be ignored.
   ImportCurrentSSOConfiguration: true
   UpgradeFromVersionLessThanV303: false # Should be set to true, if upgrading from solution version 3.0.2/earlier
+  SupportNestedOU: false

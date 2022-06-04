@@ -261,5 +261,19 @@ export class OrgEventsProcessor extends Stack {
         }),
       }
     );
+
+    new CrossAccountRole(
+      this,
+      name(buildConfig, "orgListParentsRole"),
+      buildConfig,
+      {
+        assumeAccountID: buildConfig.PipelineSettings.TargetAccountId,
+        roleNameKey: "orgListParents-orgapi",
+        policyStatement: new PolicyStatement({
+          resources: ["*"],
+          actions: ["organizations:ListParents"],
+        }),
+      }
+    );
   }
 }

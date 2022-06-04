@@ -65,6 +65,7 @@ export interface StateMachinePayload {
   readonly sourceRequestId: string;
   readonly pageSize: number;
   readonly waitSeconds: number;
+  readonly supportNestedOU: string;
 }
 
 export interface StaticSSOPayload {
