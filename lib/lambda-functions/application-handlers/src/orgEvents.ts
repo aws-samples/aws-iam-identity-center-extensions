@@ -353,44 +353,58 @@ export const handler = async (event: SNSEvent) => {
       if (supportNestedOU === "true") {
         /**
          * Paginate through the old and new parents list, so that we don't hit
-         * throttling limits
+         * throttling limits Only paginate when source/destination is not root itself
          */
-        const listOldParentsPaginator = paginateListParents(
-          {
-            client: organizationsClientObject,
-            pageSize: 5,
-          },
-          {
-            ChildId: message.detail.requestParameters.sourceParentId,
-          }
-        );
-        for await (const page of listOldParentsPaginator) {
-          if (page.Parents) {
-            for await (const parent of page.Parents) {
-              if (parent.Id) {
-                oldParentsList.push(parent.Id);
+        if (
+          !message.detail.requestParameters.sourceParentId
+            .toString()
+            .match(/r-.*/)
+        ) {
+          const listOldParentsPaginator = paginateListParents(
+            {
+              client: organizationsClientObject,
+              pageSize: 5,
+            },
+            {
+              ChildId: message.detail.requestParameters.sourceParentId,
+            }
+          );
+          for await (const page of listOldParentsPaginator) {
+            if (page.Parents) {
+              for await (const parent of page.Parents) {
+                if (parent.Id) {
+                  oldParentsList.push(parent.Id);
+                }
               }
             }
           }
         }
-        const listNewParentsPaginator = paginateListParents(
-          {
-            client: organizationsClientObject,
-            pageSize: 5,
-          },
-          {
-            ChildId: message.detail.requestParameters.destinationParentId,
-          }
-        );
-        for await (const page of listNewParentsPaginator) {
-          if (page.Parents) {
-            for await (const parent of page.Parents) {
-              if (parent.Id) {
-                newParentsList.push(parent.Id);
+
+        if (
+          !message.detail.requestParameters.destinationParentId
+            .toString()
+            .match(/r-.*/)
+        ) {
+          const listNewParentsPaginator = paginateListParents(
+            {
+              client: organizationsClientObject,
+              pageSize: 5,
+            },
+            {
+              ChildId: message.detail.requestParameters.destinationParentId,
+            }
+          );
+          for await (const page of listNewParentsPaginator) {
+            if (page.Parents) {
+              for await (const parent of page.Parents) {
+                if (parent.Id) {
+                  newParentsList.push(parent.Id);
+                }
               }
             }
           }
         }
+
         /** Remove root parents from both old and new parents list */
         oldParentsList = oldParentsList.filter(
           (parent) => !parent.match(/r-.*/)
