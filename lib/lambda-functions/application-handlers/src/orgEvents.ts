@@ -393,7 +393,7 @@ export const handler = async (event: SNSEvent) => {
             }
           }
         }
-        /** Remove root parent from both old and new parents list */
+        /** Remove root parents from both old and new parents list */
         completeOldParentsList = oldParentsList.filter(
           (parent) => !parent.match(/r-.*/)
         );
