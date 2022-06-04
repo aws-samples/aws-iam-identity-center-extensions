@@ -403,6 +403,7 @@ export const handler = async (event: SNSEvent) => {
       }
       /** Start processing deletion of any related account assignments for old parents list */
       for (const parent of completeOldParentsList) {
+        console.log(`oldParent: ${parent}`);
         await orgEventProvisioning(
           instanceArn,
           message.detail.requestParameters.accountId,
@@ -415,6 +416,7 @@ export const handler = async (event: SNSEvent) => {
       }
       /** Start processing addition of any related account assignments for new parents list */
       for (const parent of completeNewParentsList) {
+        console.log(`newParent: ${parent}`);
         await orgEventProvisioning(
           instanceArn,
           message.detail.requestParameters.accountId,
