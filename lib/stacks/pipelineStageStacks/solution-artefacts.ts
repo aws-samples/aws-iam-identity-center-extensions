@@ -140,6 +140,8 @@ export class SolutionArtefacts extends Stack {
           deployFetchCrossStackValues.listInstancesSSOAPIRoleArn,
         provisionedlinksTableName:
           deployFetchCrossStackValues.provisionedLinksTable.tableName,
+        orgListParentsRoleArn:
+          deployFetchCrossStackValues.orgListParentsRoleArn,
       }
     );
 

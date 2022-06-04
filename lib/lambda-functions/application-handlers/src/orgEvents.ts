@@ -24,6 +24,7 @@ const {
   ssoRegion,
   provisionedLinksTable,
   supportNestedOU,
+  orgListParentsRoleArn,
   AWS_REGION,
 } = process.env;
 
@@ -45,6 +46,10 @@ import {
   QueryCommand,
   QueryCommandOutput,
 } from "@aws-sdk/lib-dynamodb";
+import {
+  OrganizationsClient,
+  paginateListParents,
+} from "@aws-sdk/client-organizations";
 import { SNSEvent } from "aws-lambda";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -75,6 +80,15 @@ const identityStoreClientObject = new IdentitystoreClient({
   credentials: fromTemporaryCredentials({
     params: {
       RoleArn: ISAPIRoleArn,
+    },
+  }),
+  maxAttempts: 2,
+});
+const organizationsClientObject = new OrganizationsClient({
+  region: "us-east-1",
+  credentials: fromTemporaryCredentials({
+    params: {
+      RoleArn: orgListParentsRoleArn,
     },
   }),
   maxAttempts: 2,
@@ -323,24 +337,94 @@ export const handler = async (event: SNSEvent) => {
         requestId
       );
     } else if (message.detail.eventName === "MoveAccount") {
-      await orgEventProvisioning(
-        instanceArn,
-        message.detail.requestParameters.accountId,
-        "delete",
-        message.detail.requestParameters.sourceParentId,
-        "ou_id",
-        identityStoreId,
-        requestId
-      );
-      await orgEventProvisioning(
-        instanceArn,
-        message.detail.requestParameters.accountId,
-        "create",
-        message.detail.requestParameters.destinationParentId,
-        "ou_id",
-        identityStoreId,
-        requestId
-      );
+      /**
+       * If nesteOU support is enabled, then the function removes any related
+       * account assignments that has been provisioned for any of the parents of
+       * the old OU until root. It would also assign any related account
+       * assignments for any of the parents of the new OU until root. Both
+       * removal and addition is inclusive of the actual OU ID and exclusive of
+       * root If nested OU support is not enabled, then the function would
+       * simply remove and add any related account assignments for the old and new OU's
+       */
+      const oldParentsList: Array<string> = [];
+      const newParentsList: Array<string> = [];
+      let completeOldParentsList: Array<string> = [];
+      let completeNewParentsList: Array<string> = [];
+      oldParentsList.push(message.detail.requestParameters.sourceParentId);
+      newParentsList.push(message.detail.requestParameters.destinationParentId);
+      if (supportNestedOU === "true") {
+        /**
+         * Paginate through the old and new parents list, so that we don't hit
+         * throttling limits
+         */
+        const listOldParentsPaginator = paginateListParents(
+          {
+            client: organizationsClientObject,
+            pageSize: 5,
+          },
+          {
+            ChildId: message.detail.requestParameters.sourceParentId,
+          }
+        );
+        for await (const page of listOldParentsPaginator) {
+          if (page.Parents) {
+            for await (const parent of page.Parents) {
+              if (parent.Id) {
+                oldParentsList.push(parent.Id);
+              }
+            }
+          }
+        }
+        const listNewParentsPaginator = paginateListParents(
+          {
+            client: organizationsClientObject,
+            pageSize: 5,
+          },
+          {
+            ChildId: message.detail.requestParameters.destinationParentId,
+          }
+        );
+        for await (const page of listNewParentsPaginator) {
+          if (page.Parents) {
+            for await (const parent of page.Parents) {
+              if (parent.Id) {
+                newParentsList.push(parent.Id);
+              }
+            }
+          }
+        }
+        /** Remove root parent from both old and new parents list */
+        completeOldParentsList = oldParentsList.filter(
+          (parent) => !parent.match(/r-.*/)
+        );
+        completeNewParentsList = newParentsList.filter(
+          (parent) => !parent.match(/r-.*/)
+        );
+      }
+      /** Start processing deletion of any related account assignments for old parents list */
+      for (const parent of completeOldParentsList) {
+        await orgEventProvisioning(
+          instanceArn,
+          message.detail.requestParameters.accountId,
+          "delete",
+          parent,
+          "ou_id",
+          identityStoreId,
+          requestId
+        );
+      }
+      /** Start processing addition of any related account assignments for new parents list */
+      for (const parent of completeNewParentsList) {
+        await orgEventProvisioning(
+          instanceArn,
+          message.detail.requestParameters.accountId,
+          "create",
+          parent,
+          "ou_id",
+          identityStoreId,
+          requestId
+        );
+      }
     } else if (message["detail-type"] === "Tag Change on Resource") {
       // When tag changes are recieved by the lambda
       // handler it would contain changed-tag-keys

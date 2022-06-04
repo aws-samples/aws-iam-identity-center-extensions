@@ -210,7 +210,8 @@ export class OrgEventsProcessor extends Stack {
     );
 
     /**
-     * Add permissions for recursive invocation of the same state machine , to handle nested OU's
+     * Add permissions for recursive invocation of the same state machine , to
+     * handle nested OU's
      */
     processTargetAccountSMRole.addToPrincipalPolicy(
       new PolicyStatement({

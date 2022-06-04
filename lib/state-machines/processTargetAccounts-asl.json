@@ -332,7 +332,8 @@
                 "emptyString.$": "$.emptyString",
                 "tagValues.$": "$.tagValues",
                 "ou_id.$": "$.ou_id",
-                "resourceTypeFilters.$": "$.resourceTypeFilters"
+                "resourceTypeFilters.$": "$.resourceTypeFilters",
+                "supportNestedOU.$": "$.supportNestedOU"
               }
             },
             "End": true

@@ -174,10 +174,13 @@ export const handler = async (event: SNSEvent) => {
         permissionSetArn =
           createOp.PermissionSet?.PermissionSetArn?.toString() + "";
         /**
-         * Update relayState and sessionDuration if they match length greater than 0
-         * SSO Admin API sets sessionDuration to 60 mins when un-specified
-         * Additionally, when only relayState is specified in the updatePermissionSet call, the service updates the sessionDuration to 60 mins irrespective of what it's previous value is
-         * So, the below logic tries to circumvent this behaviour of the SSO admin API and ensure that the end values reflect correctly
+         * Update relayState and sessionDuration if they match length greater
+         * than 0 SSO Admin API sets sessionDuration to 60 mins when
+         * un-specified Additionally, when only relayState is specified in the
+         * updatePermissionSet call, the service updates the sessionDuration to
+         * 60 mins irrespective of what it's previous value is So, the below
+         * logic tries to circumvent this behaviour of the SSO admin API and
+         * ensure that the end values reflect correctly
          */
         if (currentItem.relayState || currentItem.sessionDurationInMinutes) {
           if (
@@ -705,10 +708,14 @@ export const handler = async (event: SNSEvent) => {
                 statusMessage: `PermissionSet update operation - updated Permission set attributes`,
               });
               /**
-               * Update relayState and sessionDuration if they match length greater than 0
-               * SSO Admin API sets sessionDuration to 60 mins when un-specified
-               * Additionally, when only relayState is specified in the updatePermissionSet call, the service updates the sessionDuration to 60 mins irrespective of what it's previous value is
-               * So, the below logic tries to circumvent this behaviour of the SSO admin API and ensure that the end values reflect correctly
+               * Update relayState and sessionDuration if they match length
+               * greater than 0 SSO Admin API sets sessionDuration to 60 mins
+               * when un-specified Additionally, when only relayState is
+               * specified in the updatePermissionSet call, the service updates
+               * the sessionDuration to 60 mins irrespective of what it's
+               * previous value is So, the below logic tries to circumvent this
+               * behaviour of the SSO admin API and ensure that the end values
+               * reflect correctly
                */
               if (relayStatePresent && sessionDurationPresent) {
                 await ssoAdminClientObject.send(

@@ -3,6 +3,7 @@ composite construct that sets up all resources
 for org events handling
 */
 
+import { Duration } from "aws-cdk-lib";
 import { ILayerVersion, Runtime } from "aws-cdk-lib/aws-lambda"; // Importing external resources in CDK would use interfaces and not base objects
 import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
@@ -25,6 +26,7 @@ export interface OrgEventsProps {
   readonly listInstancesSSOAPIRoleArn: string;
   readonly listGroupsIdentityStoreAPIRoleArn: string;
   readonly provisionedlinksTableName: string;
+  readonly orgListParentsRoleArn: string;
 }
 
 export class OrgEvents extends Construct {
@@ -60,6 +62,7 @@ export class OrgEvents extends Construct {
             "@aws-sdk/client-sso-admin",
             "@aws-sdk/credential-providers",
             "@aws-sdk/lib-dynamodb",
+            "@aws-sdk/client-organizations",
             "@aws-sdk/client-sqs",
             "uuid",
           ],
@@ -78,7 +81,9 @@ export class OrgEvents extends Construct {
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
           provisionedLinksTable: orgEventsProps.provisionedlinksTableName,
           supportNestedOU: String(buildConfig.Parameters.SupportNestedOU),
+          orgListParentsRoleArn: orgEventsProps.orgListParentsRoleArn,
         },
+        timeout: Duration.minutes(5), //aggressive timeout to accommodate for child OU's having many parents
       }
     );
 
