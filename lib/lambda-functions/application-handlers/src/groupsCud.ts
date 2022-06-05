@@ -197,10 +197,10 @@ export const handler = async (event: SNSEvent) => {
                       tagKeyLookUp: "none",
                       sourceRequestId: requestId,
                     }),
-                    MessageDeduplicationId: `create-${awsEntityData}-${
+                    /* MessageDeduplicationId: `create-${awsEntityData}-${
                       permissionSetArn.toString().split("/")[2]
                     }-${groupId}`,
-                    MessageGroupId: `${awsEntityData}-${
+ */ MessageGroupId: `${awsEntityData}-${
                       permissionSetArn.toString().split("/")[2]
                     }-${groupId}`,
                   })

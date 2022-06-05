@@ -149,7 +149,7 @@ export const tagBasedDeProvisioning = async (
               tagKeyLookUp: `${passedTagKey}^${targetId}`,
               sourceRequestId: requestId,
             }),
-            MessageDeduplicationId: `delete-${targetId}-${parentLinkItems[3]}-${parentLinkItems[0]}`,
+            /*  MessageDeduplicationId: `delete-${targetId}-${parentLinkItems[3]}-${parentLinkItems[0]}`, */
             MessageGroupId: `${targetId}-${parentLinkItems[3]}-${parentLinkItems[0]}`,
           })
         );
@@ -346,11 +346,27 @@ export const handler = async (event: SNSEvent) => {
        * root If nested OU support is not enabled, then the function would
        * simply remove and add any related account assignments for the old and new OU's
        */
+      logger({
+        handler: "orgEventsProcessor",
+        logMode: "info",
+        relatedData: `${message.detail.requestParameters.accountId}`,
+        status: requestStatus.InProgress,
+        requestId: requestId,
+        statusMessage: `OrgEvents - org move, determining the list of OU ID's`,
+      });
       let oldParentsList: Array<string> = [];
       let newParentsList: Array<string> = [];
       oldParentsList.push(message.detail.requestParameters.sourceParentId);
       newParentsList.push(message.detail.requestParameters.destinationParentId);
       if (supportNestedOU === "true") {
+        logger({
+          handler: "orgEventsProcessor",
+          logMode: "info",
+          relatedData: `${message.detail.requestParameters.accountId}`,
+          status: requestStatus.InProgress,
+          requestId: requestId,
+          statusMessage: `OrgEvents - org move, nestedOU support enabled, traversing through the org tree for delta`,
+        });
         /**
          * Orgs API listParents call only returns the parent up to one level up.
          * The below code would traverse the tree until it reaches root
@@ -423,20 +439,34 @@ export const handler = async (event: SNSEvent) => {
         );
       }
 
-      console.log(JSON.stringify(oldParentsList));
-      console.log(JSON.stringify(newParentsList));
       const parentsToRemove: Array<string> = oldParentsList.filter(
         (parent) => !newParentsList.includes(parent)
       );
       const parentsToAdd: Array<string> = newParentsList.filter(
         (parent) => !oldParentsList.includes(parent)
       );
-      console.log("final list");
-      console.log(JSON.stringify(parentsToRemove));
-      console.log(JSON.stringify(parentsToAdd));
+      logger({
+        handler: "orgEventsProcessor",
+        logMode: "info",
+        relatedData: `${message.detail.requestParameters.accountId}`,
+        status: requestStatus.InProgress,
+        requestId: requestId,
+        statusMessage: `OrgEvents - account move, list of OU ID's calculated for de-provisioning: ${JSON.stringify(
+          parentsToRemove
+        )}`,
+      });
+      logger({
+        handler: "orgEventsProcessor",
+        logMode: "info",
+        relatedData: `${message.detail.requestParameters.accountId}`,
+        status: requestStatus.InProgress,
+        requestId: requestId,
+        statusMessage: `OrgEvents - account move, list of OU ID's calculated for provisioning: ${JSON.stringify(
+          parentsToAdd
+        )}`,
+      });
       /** Start processing deletion of any related account assignments for old parents list */
       for (const parent of parentsToRemove) {
-        console.log(`oldParent: ${parent}`);
         await orgEventProvisioning(
           instanceArn,
           message.detail.requestParameters.accountId,
@@ -449,7 +479,6 @@ export const handler = async (event: SNSEvent) => {
       }
       /** Start processing addition of any related account assignments for new parents list */
       for (const parent of parentsToAdd) {
-        console.log(`newParent: ${parent}`);
         await orgEventProvisioning(
           instanceArn,
           message.detail.requestParameters.accountId,

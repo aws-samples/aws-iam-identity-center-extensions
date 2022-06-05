@@ -192,9 +192,9 @@ export const handler = async (event: SNSEvent) => {
                 tagKeyLookUp: "none",
                 sourceRequestId: requestId,
               }),
-              MessageDeduplicationId: `${action}-${entityValue}-${
+              /*   MessageDeduplicationId: `${action}-${entityValue}-${
                 permissionSetArn.toString().split("/")[2]
-              }-${principalId}`,
+              }-${principalId}`, */
               MessageGroupId: `${entityValue}-${
                 permissionSetArn.toString().split("/")[2]
               }-${principalId}`,
