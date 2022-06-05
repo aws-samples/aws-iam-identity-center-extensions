@@ -251,11 +251,11 @@ export const orgEventProvisioning = async (
                   tagKeyLookUp: tagKeyLookupValue,
                   sourceRequestId: requestId,
                 }),
-                MessageDeduplicationId: `${actionType}-${targetId}-${
+                /*  MessageDeduplicationId: `${actionType}-${targetId}-${
                   permissionSetFetch.Item.permissionSetArn
                     .toString()
                     .split("/")[2]
-                }-${principalId}`,
+                }-${principalId}`, */
                 MessageGroupId: `${targetId}-${
                   permissionSetFetch.Item.permissionSetArn
                     .toString()
