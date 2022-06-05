@@ -31,6 +31,10 @@ const {
 // SDK and third party client imports
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { IdentitystoreClient } from "@aws-sdk/client-identitystore";
+import {
+  ListParentsCommand,
+  OrganizationsClient,
+} from "@aws-sdk/client-organizations";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
 import {
@@ -46,10 +50,6 @@ import {
   QueryCommand,
   QueryCommandOutput,
 } from "@aws-sdk/lib-dynamodb";
-import {
-  OrganizationsClient,
-  paginateListParents,
-} from "@aws-sdk/client-organizations";
 import { SNSEvent } from "aws-lambda";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -352,30 +352,35 @@ export const handler = async (event: SNSEvent) => {
       newParentsList.push(message.detail.requestParameters.destinationParentId);
       if (supportNestedOU === "true") {
         /**
-         * Paginate through the old and new parents list, so that we don't hit
-         * throttling limits Only paginate when source/destination is not root itself
+         * Orgs API listParents call only returns the parent up to one level up.
+         * The below code would traverse the tree until it reaches root
          */
         if (
           !message.detail.requestParameters.sourceParentId
             .toString()
             .match(/r-.*/)
         ) {
-          const listOldParentsPaginator = paginateListParents(
-            {
-              client: organizationsClientObject,
-              pageSize: 5,
-            },
-            {
-              ChildId: message.detail.requestParameters.sourceParentId,
-            }
-          );
-          for await (const page of listOldParentsPaginator) {
-            if (page.Parents) {
-              for await (const parent of page.Parents) {
-                if (parent.Id) {
-                  oldParentsList.push(parent.Id);
+          let loop = true;
+          let previousParentId =
+            message.detail.requestParameters.sourceParentId;
+          while (loop) {
+            const currentParentOutput = await organizationsClientObject.send(
+              new ListParentsCommand({
+                ChildId: previousParentId,
+              })
+            );
+
+            if (currentParentOutput.Parents) {
+              if (currentParentOutput.Parents[0].Type === "ROOT") {
+                loop = false;
+              } else {
+                if (currentParentOutput.Parents[0].Id) {
+                  oldParentsList.push(currentParentOutput.Parents[0].Id);
+                  previousParentId = currentParentOutput.Parents[0].Id;
                 }
               }
+            } else {
+              loop = false;
             }
           }
         }
@@ -385,26 +390,30 @@ export const handler = async (event: SNSEvent) => {
             .toString()
             .match(/r-.*/)
         ) {
-          const listNewParentsPaginator = paginateListParents(
-            {
-              client: organizationsClientObject,
-              pageSize: 5,
-            },
-            {
-              ChildId: message.detail.requestParameters.destinationParentId,
-            }
-          );
-          for await (const page of listNewParentsPaginator) {
-            if (page.Parents) {
-              for await (const parent of page.Parents) {
-                if (parent.Id) {
-                  newParentsList.push(parent.Id);
+          let loop = true;
+          let previousParentId =
+            message.detail.requestParameters.destinationParentId;
+          while (loop) {
+            const currentParentOutput = await organizationsClientObject.send(
+              new ListParentsCommand({
+                ChildId: previousParentId,
+              })
+            );
+
+            if (currentParentOutput.Parents) {
+              if (currentParentOutput.Parents[0].Type === "ROOT") {
+                loop = false;
+              } else {
+                if (currentParentOutput.Parents[0].Id) {
+                  newParentsList.push(currentParentOutput.Parents[0].Id);
+                  previousParentId = currentParentOutput.Parents[0].Id;
                 }
               }
+            } else {
+              loop = false;
             }
           }
         }
-
         /** Remove root parents from both old and new parents list */
         oldParentsList = oldParentsList.filter(
           (parent) => !parent.match(/r-.*/)
