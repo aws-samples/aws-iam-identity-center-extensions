@@ -249,6 +249,12 @@ export class OrgEventsProcessor extends Stack {
       }
     );
 
+    /**
+     * Explicit dependency to ensure the inline policy is created and attached
+     * prior to the state machine creation
+     */
+    processTargetAccountSM.node.addDependency(processTargetAccountSMRole);
+
     new CrossAccountRole(
       this,
       name(buildConfig, "orgListSMRole"),

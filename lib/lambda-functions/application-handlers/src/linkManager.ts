@@ -75,7 +75,7 @@ const ssoAdminClientObject = new SSOAdminClient({
       RoleArn: SSOAPIRoleArn,
     },
   }),
-  maxAttempts: 2,
+  maxAttempts: 5 /** Aggressive retry to accommodate large no of account assignment processing */,
 });
 const ssoAdminWaiterClientObject = new SSOAdminClient({
   region: ssoRegion,
@@ -84,7 +84,7 @@ const ssoAdminWaiterClientObject = new SSOAdminClient({
       RoleArn: waiterHandlerSSOAPIRoleArn,
     },
   }),
-  maxAttempts: 2,
+  maxAttempts: 5 /** Aggressive retry to accommodate large no of account assignment processing */,
 });
 
 //Error notification
