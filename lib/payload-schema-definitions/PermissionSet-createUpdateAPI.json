@@ -146,7 +146,7 @@
                     "title": "Statement object",
                     "description": "Statement object",
                     "default": {},
-                    "required": ["Action", "Resource", "Effect", "Sid"],
+                    "required": ["Effect"],
                     "properties": {
                       "Action": {
                         "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Action",

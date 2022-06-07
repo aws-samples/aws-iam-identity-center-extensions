@@ -143,7 +143,7 @@ export class IndependentUtility extends Construct {
         queueName: name(buildConfig, "linkManagerQueue.fifo"),
         deadLetterQueue: {
           queue: this.linkManagerDLQ,
-          maxReceiveCount: 4,
+          maxReceiveCount: 2,
         },
       }
     );

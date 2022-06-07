@@ -149,8 +149,7 @@ export const tagBasedDeProvisioning = async (
               tagKeyLookUp: `${passedTagKey}^${targetId}`,
               sourceRequestId: requestId,
             }),
-            /*  MessageDeduplicationId: `delete-${targetId}-${parentLinkItems[3]}-${parentLinkItems[0]}`, */
-            MessageGroupId: `${targetId}-${parentLinkItems[3]}-${parentLinkItems[0]}`,
+            MessageGroupId: targetId.slice(-1),
           })
         );
         logger({
@@ -251,16 +250,7 @@ export const orgEventProvisioning = async (
                   tagKeyLookUp: tagKeyLookupValue,
                   sourceRequestId: requestId,
                 }),
-                /*  MessageDeduplicationId: `${actionType}-${targetId}-${
-                  permissionSetFetch.Item.permissionSetArn
-                    .toString()
-                    .split("/")[2]
-                }-${principalId}`, */
-                MessageGroupId: `${targetId}-${
-                  permissionSetFetch.Item.permissionSetArn
-                    .toString()
-                    .split("/")[2]
-                }-${principalId}`,
+                MessageGroupId: targetId.slice(-1),
               })
             );
             logger({
