@@ -218,7 +218,7 @@ export const handler = async (event: SNSEvent) => {
             targetType: staticSSOPayload.TargetType,
             topicArn: processTargetAccountSMTopicArn + "",
             sourceRequestId: requestId,
-            pageSize: 5,
+            pageSize: 1,
             waitSeconds: 2,
             supportNestedOU: supportNestedOU + "",
           };
