@@ -89,7 +89,6 @@ export class LinkProcessor extends Construct {
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         },
         timeout: Duration.minutes(5), //aggressive timeout to accommodate SSO Admin API's workflow based logic,
-        reservedConcurrentExecutions: 10 /** Ensure that at any given point of time only 10 concurrent executions are executed */,
       }
     );
 
