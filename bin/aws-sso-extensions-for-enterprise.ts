@@ -159,13 +159,9 @@ function getConfig() {
         unparsedEnv["Parameters"],
         "NotificationEmail"
       ),
-      accountAssignmentVisibilityTimeOutHours: ensureNumber(
+      AccountAssignmentVisibilityTimeoutHours: ensureNumber(
         unparsedEnv["Parameters"],
-        "accountAssignmentVisibilityTimeOutHours"
-      ),
-      accountAssignmentVisibilityDLQTimeOutHours: ensureNumber(
-        unparsedEnv["Parameters"],
-        "accountAssignmentVisibilityDLQTimeOutHours"
+        "AccountAssignmentVisibilityTimeoutHours"
       ),
       IsAdUsed: ensureBoolean(unparsedEnv["Parameters"], "IsAdUsed"),
       DomainName: ensureString(unparsedEnv["Parameters"], "DomainName"),

@@ -92,6 +92,11 @@ const errorMessage: ErrorMessage = {
   Subject: "Error Processing link provisioning operation",
 };
 
+/** Pre-emptive delay function */
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export const handler = async (event: SQSEvent) => {
   await Promise.all(
     event.Records.map(async (record) => {
@@ -145,6 +150,9 @@ export const handler = async (event: SQSEvent) => {
                     ...ssoParams,
                   })
                 );
+
+              /** Pre-emptively delay to avoid waitPenalty on waiter */
+              await delay(15000);
               await waitUntilAccountAssignmentCreation(
                 {
                   client: ssoAdminWaiterClientObject,
@@ -194,6 +202,8 @@ export const handler = async (event: SQSEvent) => {
                     ...ssoParams,
                   })
                 );
+              /** Pre-emptively delay to avoid waitPenalty on waiter */
+              await delay(15000);
               await waitUntilAccountAssignmentDeletion(
                 {
                   client: ssoAdminWaiterClientObject,

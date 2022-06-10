@@ -15,6 +15,7 @@
 - [Detailed Building Blocks Overview](docs/documentation/Building-Blocks.md)
 - [Use case Flows](docs/documentation/Use-Case-Flows.md)
 - [Schema Details for account assignment and permission set operations](#schema-details-for-account-assignment-and-permission-set-operations)
+- [Scaling for large organizations](docs/documentation/Scaling.md)
 - [Using API interface for your use cases](#using-api-interface-for-your-use-cases)
 - [Using S3 interface for your use cases](#using-s3-interface-for-your-use-cases)
 - [Unicorn Rides use cases](https://catalog.workshops.aws/ssoextensions/en-US/03-usecases)
