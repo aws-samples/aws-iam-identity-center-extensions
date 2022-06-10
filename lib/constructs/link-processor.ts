@@ -100,6 +100,7 @@ export class LinkProcessor extends Construct {
          * threads at any point of time
          */
         batchSize: 1,
+        reportBatchItemFailures: true,
       })
     );
 
