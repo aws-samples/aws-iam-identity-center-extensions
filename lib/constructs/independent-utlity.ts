@@ -127,7 +127,9 @@ export class IndependentUtility extends Construct {
       fifo: true,
       encryption: QueueEncryption.KMS,
       encryptionMasterKey: this.queuesKey,
-      visibilityTimeout: Duration.hours(10),
+      visibilityTimeout: Duration.hours(
+        buildConfig.Parameters.accountAssignmentVisibilityDLQTimeOutHours
+      ),
       queueName: name(buildConfig, "linkManagerDLQ.fifo"),
     });
 
@@ -138,7 +140,9 @@ export class IndependentUtility extends Construct {
         fifo: true,
         encryption: QueueEncryption.KMS,
         encryptionMasterKey: this.queuesKey,
-        visibilityTimeout: Duration.hours(2),
+        visibilityTimeout: Duration.hours(
+          buildConfig.Parameters.accountAssignmentVisibilityTimeOutHours
+        ),
         contentBasedDeduplication: true,
         queueName: name(buildConfig, "linkManagerQueue.fifo"),
         deadLetterQueue: {

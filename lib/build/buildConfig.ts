@@ -32,6 +32,8 @@ export interface Parameters {
   readonly LinkCallerRoleArn: string;
   readonly PermissionSetCallerRoleArn: string;
   readonly NotificationEmail: string;
+  readonly accountAssignmentVisibilityTimeOutHours: number;
+  readonly accountAssignmentVisibilityDLQTimeOutHours: number;
   readonly IsAdUsed: boolean;
   readonly DomainName: string;
   readonly ImportCurrentSSOConfiguration: boolean;
