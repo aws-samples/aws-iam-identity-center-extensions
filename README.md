@@ -280,10 +280,11 @@ The solution provides automated change access management through the following f
 
 ### Import existing AWS SSO access entitlements for management through the solution
 
-- The solution enables importing existing AWS SSO access entitlements for management through the solution
+- The solution enables a one-time import of existing AWS SSO access entitlements for management through the solution
 - Based on the `ImportCurrentSSOConfiguration` flag in the configuration file, the solution would import all existing permission sets and account assignments so that they could be updated/deleted through the solution interfaces
 - The solution ensures that all related attributes of permission sets/account assignments are imported in a format that would allow you to manage them through the solution interfaces
 - All account assignments would be imported as `account` scope types
+- While the solution triggers an automatic import one-time through the pipeline, once enabled the `env-importCurrentConfigSM` state machine in your `AWS SSO account` and `AWS SSO region` could be run as many times as you require. You could refer to the execution input that the solution uses as part of the pipeline deployment for reference.
 
 ### De-couple life cycle management of different SSO objects and other features
 
