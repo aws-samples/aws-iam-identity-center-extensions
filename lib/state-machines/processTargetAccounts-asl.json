@@ -85,8 +85,13 @@
         "tagKey.$": "$.tagKey",
         "sourceRequestId.$": "$.sourceRequestId"
       },
+      "Next": "Wait for throttling",
+      "ResultPath": null
+    },
+    "Wait for throttling": {
+      "Type": "Wait",
       "Next": "Check for PaginationToken in GetResources response?",
-      "ResultPath": "$.getResources.notifications"
+      "SecondsPath": "$.waitSeconds"
     },
     "Check for PaginationToken in GetResources response?": {
       "Type": "Choice",
@@ -150,7 +155,7 @@
     },
     "Loop through all accounts in root": {
       "Type": "Map",
-      "Next": "Check for NextToken in ListAcccounts response?",
+      "Next": "Wait for throttling - 2",
       "Iterator": {
         "StartAt": "Publish listaccounts to SNS topic",
         "States": {
@@ -186,7 +191,12 @@
         "pretargetId.$": "$$.Map.Item.Value.Id",
         "sourceRequestId.$": "$.sourceRequestId"
       },
-      "ResultPath": "$.listRootAccounts.notifications"
+      "ResultPath": null
+    },
+    "Wait for throttling - 2": {
+      "Type": "Wait",
+      "Next": "Check for NextToken in ListAcccounts response?",
+      "SecondsPath": "$.waitSeconds"
     },
     "Check for NextToken in ListAcccounts response?": {
       "Type": "Choice",
@@ -255,7 +265,12 @@
         "sourceRequestId.$": "$.sourceRequestId"
       },
       "ResultPath": "$.listAccountsForParent.notifications",
-      "Next": "Check for NextToken in ListAccountsForParent response?"
+      "Next": "Wait for throttling - 3"
+    },
+    "Wait for throttling - 3": {
+      "Type": "Wait",
+      "Next": "Check for NextToken in ListAccountsForParent response?",
+      "SecondsPath": "$.waitSeconds"
     },
     "Check for NextToken in ListAccountsForParent response?": {
       "Type": "Choice",
@@ -266,7 +281,115 @@
           "Next": "Call ListAccountsForParent with NextToken"
         }
       ],
+      "Default": "Only processNested OU's if required?"
+    },
+    "Only processNested OU's if required?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.supportNestedOU",
+          "StringMatches": "true",
+          "Next": "call ListChildren"
+        }
+      ],
       "Default": "Final State"
+    },
+    "call ListChildren": {
+      "Type": "Task",
+      "Next": "Process nested OU's",
+      "Parameters": {
+        "ChildType": "ORGANIZATIONAL_UNIT",
+        "ParentId.$": "$.ou_id",
+        "MaxResults.$": "$.pageSize"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:organizations:listChildren",
+      "ResultPath": "$.listChildrenResults"
+    },
+    "Process nested OU's": {
+      "Type": "Map",
+      "Next": "Wait for throttling - 4",
+      "Iterator": {
+        "StartAt": "Invoke the same state machine recursively",
+        "States": {
+          "Invoke the same state machine recursively": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::states:startExecution.sync:2",
+            "Parameters": {
+              "StateMachineArn.$": "$.stateMachineArn",
+              "Input": {
+                "action.$": "$.action",
+                "entityType.$": "$.entityType",
+                "instanceArn.$": "$.instanceArn",
+                "permissionSetArn.$": "$.permissionSetArn",
+                "principalId.$": "$.principalId",
+                "principalType.$": "$.principalType",
+                "targetType.$": "$.targetType",
+                "topicArn.$": "$.topicArn",
+                "sourceRequestId.$": "$.sourceRequestId",
+                "pageSize.$": "$.pageSize",
+                "waitSeconds.$": "$.waitSeconds",
+                "tagKey.$": "$.tagKey",
+                "emptyString.$": "$.emptyString",
+                "tagValues.$": "$.tagValues",
+                "ou_id.$": "$.ou_id",
+                "resourceTypeFilters.$": "$.resourceTypeFilters",
+                "supportNestedOU.$": "$.supportNestedOU"
+              }
+            },
+            "End": true
+          }
+        }
+      },
+      "ItemsPath": "$.listChildrenResults.Children",
+      "ResultPath": "$.processedOuList",
+      "Parameters": {
+        "action.$": "$.action",
+        "entityType.$": "$.entityType",
+        "instanceArn.$": "$.instanceArn",
+        "permissionSetArn.$": "$.permissionSetArn",
+        "principalId.$": "$.principalId",
+        "principalType.$": "$.principalType",
+        "targetType.$": "$.targetType",
+        "topicArn.$": "$.topicArn",
+        "sourceRequestId.$": "$.sourceRequestId",
+        "pageSize.$": "$.pageSize",
+        "waitSeconds.$": "$.waitSeconds",
+        "tagKey.$": "$.tagKey",
+        "emptyString.$": "$.emptyString",
+        "tagValues.$": "$.tagValues",
+        "ou_id.$": "$$.Map.Item.Value.Id",
+        "resourceTypeFilters.$": "$.resourceTypeFilters",
+        "supportNestedOU.$": "$.supportNestedOU",
+        "stateMachineArn.$": "$$.StateMachine.Id"
+      }
+    },
+    "Wait for throttling - 4": {
+      "Type": "Wait",
+      "Next": "Are there more children?",
+      "SecondsPath": "$.waitSeconds"
+    },
+    "Are there more children?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.listChildrenResults.NextToken",
+          "IsPresent": true,
+          "Next": "call ListChildren with NextToken"
+        }
+      ],
+      "Default": "Final State"
+    },
+    "call ListChildren with NextToken": {
+      "Type": "Task",
+      "Parameters": {
+        "ChildType": "ORGANIZATIONAL_UNIT",
+        "ParentId.$": "$.ou_id",
+        "MaxResults.$": "$.pageSize",
+        "NextToken.$": "$.listChildrenResults.NextToken"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:organizations:listChildren",
+      "ResultPath": "$.listChildrenResults",
+      "Next": "Process nested OU's"
     },
     "Final State": {
       "Type": "Pass",

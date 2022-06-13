@@ -75,7 +75,7 @@ const ssoAdminClientObject = new SSOAdminClient({
       RoleArn: SSOAPIRoleArn,
     },
   }),
-  maxAttempts: 2,
+  maxAttempts: 5 /** Aggressive retry to accommodate large no of account assignment processing */,
 });
 const ssoAdminWaiterClientObject = new SSOAdminClient({
   region: ssoRegion,
@@ -84,13 +84,18 @@ const ssoAdminWaiterClientObject = new SSOAdminClient({
       RoleArn: waiterHandlerSSOAPIRoleArn,
     },
   }),
-  maxAttempts: 2,
+  maxAttempts: 5 /** Aggressive retry to accommodate large no of account assignment processing */,
 });
 
 //Error notification
 const errorMessage: ErrorMessage = {
   Subject: "Error Processing link provisioning operation",
 };
+
+/** Pre-emptive delay function */
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export const handler = async (event: SQSEvent) => {
   await Promise.all(
@@ -145,6 +150,9 @@ export const handler = async (event: SQSEvent) => {
                     ...ssoParams,
                   })
                 );
+
+              /** Pre-emptively delay to avoid waitPenalty on waiter */
+              await delay(15000);
               await waitUntilAccountAssignmentCreation(
                 {
                   client: ssoAdminWaiterClientObject,
@@ -194,6 +202,8 @@ export const handler = async (event: SQSEvent) => {
                     ...ssoParams,
                   })
                 );
+              /** Pre-emptively delay to avoid waitPenalty on waiter */
+              await delay(15000);
               await waitUntilAccountAssignmentDeletion(
                 {
                   client: ssoAdminWaiterClientObject,

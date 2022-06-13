@@ -55,7 +55,7 @@ export class LinkProcessor extends Construct {
       name(buildConfig, "linkManagerHandler"),
       {
         functionName: name(buildConfig, "linkManagerHandler"),
-        runtime: Runtime.NODEJS_14_X,
+        runtime: Runtime.NODEJS_16_X,
         entry: join(
           __dirname,
           "../",
@@ -88,13 +88,19 @@ export class LinkProcessor extends Construct {
             linkprocessProps.waiterHandlerSSOAPIRoleArn,
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         },
-        timeout: Duration.minutes(11), //aggressive timeout to accommodate SSO Admin API's workflow based logic
+        timeout: Duration.minutes(5), //aggressive timeout to accommodate SSO Admin API's workflow based logic,
       }
     );
 
     this.linkManagerHandler.addEventSource(
       new SqsEventSource(linkprocessProps.linkManagerQueue, {
-        batchSize: 10,
+        /**
+         * While the batch size is set to 1, we achieve concurrency by ensuring
+         * the message group ID is between 0 and 9, achieving 10 parallel
+         * threads at any point of time
+         */
+        batchSize: 1,
+        reportBatchItemFailures: true,
       })
     );
 
@@ -102,7 +108,7 @@ export class LinkProcessor extends Construct {
       this,
       name(buildConfig, "processTargetAccountSMListenerHandler"),
       {
-        runtime: Runtime.NODEJS_14_X,
+        runtime: Runtime.NODEJS_16_X,
         functionName: name(
           buildConfig,
           "processTargetAccountSMListenerHandler"
@@ -137,7 +143,7 @@ export class LinkProcessor extends Construct {
       name(buildConfig, "linkTopicProcessor"),
       {
         functionName: name(buildConfig, "linkTopicProcessor"),
-        runtime: Runtime.NODEJS_14_X,
+        runtime: Runtime.NODEJS_16_X,
         entry: join(
           __dirname,
           "../",
@@ -174,6 +180,7 @@ export class LinkProcessor extends Construct {
           orgListSMRoleArn: linkprocessProps.orgListSMRoleArn,
           processTargetAccountSMArn: `arn:aws:states:us-east-1:${buildConfig.PipelineSettings.OrgMainAccountId}:stateMachine:${buildConfig.Environment}-processTargetAccountSM`,
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
+          supportNestedOU: String(buildConfig.Parameters.SupportNestedOU),
         },
       }
     );

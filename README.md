@@ -15,6 +15,7 @@
 - [Detailed Building Blocks Overview](docs/documentation/Building-Blocks.md)
 - [Use case Flows](docs/documentation/Use-Case-Flows.md)
 - [Schema Details for account assignment and permission set operations](#schema-details-for-account-assignment-and-permission-set-operations)
+- [Scaling for large organizations](docs/documentation/Scaling.md)
 - [Using API interface for your use cases](#using-api-interface-for-your-use-cases)
 - [Using S3 interface for your use cases](#using-s3-interface-for-your-use-cases)
 - [Unicorn Rides use cases](https://catalog.workshops.aws/ssoextensions/en-US/03-usecases)
@@ -24,6 +25,8 @@
 - [License](#license)
 
 ## Overview
+
+![High level design](docs/images/aws-sso-extensions-for-enterprise-overview.png)
 
 **AWS SSO Extensions for Enterprise** simplifies the process to manage user
 access to AWS accounts with [AWS SSO](https://aws.amazon.com/single-sign-on/) by extending the [AWS SSO API](https://docs.aws.amazon.com/singlesignon/latest/APIReference/welcome.html).
@@ -191,6 +194,7 @@ This solution enables enterprise friendly account assignment lifecycles through 
 - Based on the configuration parameter, you can use either an S3 based interface/ Rest API interface to create/delete account assignments
 - Create & delete account assignments with scope set to **account, root, ou_id or account_tag**
 - Using the entity value passed in the payload, the solution calculates the account list and processes the account assignment operations on all the accounts automatically
+- When using an **ou_id** scope type, the solution optionally provides nested OU support as well. This behaviour could be configured by setting `SupportNestedOU` to `true` in your environment configuration file. When configured, the solution discovers all the children under a specified ou_id traversing the complete tree and assigning the account assignment to every single account under the tree.
 
 <b>NOTE:</b> Permission sets and user/group assignments cannot be applied to the Organization Main account (also known as the Master Payer) due to a design constraint of the AWS API. There is no available mechanism to programmatically manage the permission sets and user/group assignments of the Organization Main account.
 
@@ -271,14 +275,16 @@ The solution provides automated change access management through the following f
 
 - If an account assignment has been created through the solution with scope set to root, and if a new account has been created at a later time, this new account is automatically provisioned with the account assignment.
 - If an account assignment has been created through the solution with scope set to ou_id, and an existing account moves out of this ou, this account assignment is automatically deleted from the account by the solution. If a new account is moved in to the ou, this account assignment is automatically created for the account by the solution.
+- The solution also supports nested OU behaviour for automated access change management. This behaviour could be configured by setting `SupportNestedOU` to `true` in your environment configuration file. If the nested OU support is configured, when an account moves from a source OU to a destination OU, the solution discovers all the parents of the source OU and destination OU until root , to determine the list of account assignments that need to be removed/added automatically.
 - If an account assignment has been created through the solution with scope set to account_tag, and an account is updated with this tag key value at a later time, this account assignment is automatically created for the new account by the solution. Additionally, when this tag key value is removed from the account/when this tag key is updated to a different value on the account at a later time, this account assignment is automatically deleted from the account by the solution.
 
 ### Import existing AWS SSO access entitlements for management through the solution
 
-- The solution enables importing existing AWS SSO access entitlements for management through the solution
+- The solution enables a one-time import of existing AWS SSO access entitlements for management through the solution
 - Based on the `ImportCurrentSSOConfiguration` flag in the configuration file, the solution would import all existing permission sets and account assignments so that they could be updated/deleted through the solution interfaces
 - The solution ensures that all related attributes of permission sets/account assignments are imported in a format that would allow you to manage them through the solution interfaces
 - All account assignments would be imported as `account` scope types
+- While the solution triggers an automatic import one-time through the pipeline, once enabled the `env-importCurrentConfigSM` state machine in your `AWS SSO account` and `AWS SSO region` could be run as many times as you require. You could refer to the execution input that the solution uses as part of the pipeline deployment for reference.
 
 ### De-couple life cycle management of different SSO objects and other features
 

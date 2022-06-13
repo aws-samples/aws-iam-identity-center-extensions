@@ -62,7 +62,7 @@ export class PermissionSetProcessor extends Construct {
       name(buildConfig, "permissionSetTopicProcessor"),
       {
         functionName: name(buildConfig, "permissionSetTopicProcessor"),
-        runtime: lambda.Runtime.NODEJS_14_X,
+        runtime: lambda.Runtime.NODEJS_16_X,
         entry: join(
           __dirname,
           "../",
@@ -112,7 +112,7 @@ export class PermissionSetProcessor extends Construct {
       this,
       name(buildConfig, "permissionSetSyncHandler"),
       {
-        runtime: lambda.Runtime.NODEJS_14_X,
+        runtime: lambda.Runtime.NODEJS_16_X,
         functionName: name(buildConfig, "permissionSetSyncHandler"),
         entry: join(
           __dirname,
@@ -153,6 +153,7 @@ export class PermissionSetProcessor extends Construct {
           orgListSMRoleArn: permissionSetProcessorProps.orgListSMRoleArn,
           processTargetAccountSMArn: `arn:aws:states:us-east-1:${buildConfig.PipelineSettings.OrgMainAccountId}:stateMachine:${buildConfig.Environment}-processTargetAccountSM`,
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
+          supportNestedOU: String(buildConfig.Parameters.SupportNestedOU),
         },
       }
     );

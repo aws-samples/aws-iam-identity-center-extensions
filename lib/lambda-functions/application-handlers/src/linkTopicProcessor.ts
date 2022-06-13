@@ -38,6 +38,7 @@ const {
   domainName,
   errorNotificationsTopicArn,
   ssoRegion,
+  supportNestedOU,
   AWS_REGION,
 } = process.env;
 
@@ -191,12 +192,7 @@ export const handler = async (event: SNSEvent) => {
                 tagKeyLookUp: "none",
                 sourceRequestId: requestId,
               }),
-              MessageDeduplicationId: `${action}-${entityValue}-${
-                permissionSetArn.toString().split("/")[2]
-              }-${principalId}`,
-              MessageGroupId: `${entityValue}-${
-                permissionSetArn.toString().split("/")[2]
-              }-${principalId}`,
+              MessageGroupId: entityValue.slice(-1),
             })
           );
           logger({
@@ -223,6 +219,8 @@ export const handler = async (event: SNSEvent) => {
             topicArn: processTargetAccountSMTopicArn + "",
             sourceRequestId: requestId,
             pageSize: 5,
+            waitSeconds: 2,
+            supportNestedOU: supportNestedOU + "",
           };
           await invokeStepFunction(
             stateMachinePayload,

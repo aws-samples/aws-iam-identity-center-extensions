@@ -49,6 +49,19 @@ function ensureValidString(
   return object[`${propName}`];
 }
 
+function ensureNumber(
+  /* eslint-disable  @typescript-eslint/no-explicit-any */
+  object: { [name: string]: any },
+  propName: string
+): number {
+  if (!object[`${propName}`] || typeof object[`${propName}`] !== "number")
+    throw new Error(
+      propName + " does not exist or is empty or is not a number data type"
+    );
+
+  return object[`${propName}`];
+}
+
 function ensureBoolean(
   /* eslint-disable  @typescript-eslint/no-explicit-any */
   object: { [name: string]: any },
@@ -146,6 +159,10 @@ function getConfig() {
         unparsedEnv["Parameters"],
         "NotificationEmail"
       ),
+      AccountAssignmentVisibilityTimeoutHours: ensureNumber(
+        unparsedEnv["Parameters"],
+        "AccountAssignmentVisibilityTimeoutHours"
+      ),
       IsAdUsed: ensureBoolean(unparsedEnv["Parameters"], "IsAdUsed"),
       DomainName: ensureString(unparsedEnv["Parameters"], "DomainName"),
       ImportCurrentSSOConfiguration: ensureBoolean(
@@ -155,6 +172,10 @@ function getConfig() {
       UpgradeFromVersionLessThanV303: ensureBoolean(
         unparsedEnv["Parameters"],
         "UpgradeFromVersionLessThanV303"
+      ),
+      SupportNestedOU: ensureBoolean(
+        unparsedEnv["Parameters"],
+        "SupportNestedOU"
       ),
     },
   };
