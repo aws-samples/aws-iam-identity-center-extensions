@@ -1,6 +1,4 @@
-/*
-Objective: Import existing permission sets into the solution
-*/
+/** Objective: Import existing permission sets into the solution */
 
 // Environment configuration read
 const {

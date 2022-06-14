@@ -1,6 +1,4 @@
-/*
-Objective: Custom waiter for account assignment deletion
-*/
+/** Objective: Custom waiter for account assignment deletion */
 import {
   DescribeAccountAssignmentDeletionStatusCommand,
   DescribeAccountAssignmentDeletionStatusCommandInput,

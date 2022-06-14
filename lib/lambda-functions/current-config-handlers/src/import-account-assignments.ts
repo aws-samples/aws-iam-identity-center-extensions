@@ -1,6 +1,4 @@
-/*
-Objective: Import existing account assignments into the solution
-*/
+/** Objective: Import existing account assignments into the solution */
 
 // Environment configuration read
 const {

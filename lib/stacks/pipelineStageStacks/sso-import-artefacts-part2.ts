@@ -1,8 +1,7 @@
-/*
-Deploys part 2 of artefacts required for importing
-current AWS SSO configuration i.e. permission sets and
-account assignments in target account
-*/
+/**
+ * Deploys part 2 of artefacts required for importing current AWS SSO
+ * configuration i.e. permission sets and account assignments in target account
+ */
 import { CustomResource, Duration, Stack, StackProps } from "aws-cdk-lib";
 import { PolicyStatement } from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";

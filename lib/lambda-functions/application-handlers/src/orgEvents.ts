@@ -1,16 +1,15 @@
-/*
-Objective: Implement org event notifications
-Trigger source: Org event notification topic which in turn
-                receives event bridge notifications from Org
-                main account for move account,create account
-                and account tag type events
-- assumes role in SSO account for calling SSO admin API
-- determine the type of org event and resolve the
-  relevant create and delete link operations
-- Process the appropriate link operation
-- Catch all failures in a generic exception block
-  and post the error details to error notifications topics
-*/
+/**
+ * Objective: Implement org event notifications Trigger source: Org event
+ * notification topic which in turn receives event bridge notifications from Org
+ * main account for move account,create account and account tag type events
+ *
+ * - Assumes role in SSO account for calling SSO admin API
+ * - Determine the type of org event and resolve the relevant create and delete
+ *   link operations
+ * - Process the appropriate link operation
+ * - Catch all failures in a generic exception block and post the error details to
+ *   error notifications topics
+ */
 
 const {
   permissionSetArnTable,
@@ -28,7 +27,6 @@ const {
   AWS_REGION,
 } = process.env;
 
-// SDK and third party client imports
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { IdentitystoreClient } from "@aws-sdk/client-identitystore";
 import {
@@ -58,7 +56,7 @@ import {
   StaticSSOPayload,
 } from "../../helpers/src/interfaces";
 import { logger, resolvePrincipal } from "../../helpers/src/utilities";
-// SDK and third party client object initialistaion
+
 const ddbClientObject = new DynamoDBClient({
   region: AWS_REGION,
   maxAttempts: 2,
@@ -94,7 +92,6 @@ const organizationsClientObject = new OrganizationsClient({
   maxAttempts: 2,
 });
 
-//Error notification
 const errorMessage: ErrorMessage = {
   Subject: "Error Processing Org event based link provisioning operation",
 };
@@ -108,8 +105,6 @@ export const tagBasedDeProvisioning = async (
   const tagKeyLookUpValue = `${passedTagKey}^${targetId}`;
   const relatedProvisionedLinks: QueryCommandOutput =
     await ddbDocClientObject.send(
-      // QueryCommand is a pagniated call, however the logic requires
-      // checking only if the result set is greater than 0
       new QueryCommand({
         TableName: provisionedLinksTable,
         IndexName: "tagKeyLookUp",
@@ -163,8 +158,6 @@ export const tagBasedDeProvisioning = async (
       })
     );
   } else {
-    // Ignore if a tag that's not part of the provsionedlinks
-    // is deleted from the account
     logger({
       handler: "orgEventsProcessor",
       logMode: "info",
@@ -191,8 +184,6 @@ export const orgEventProvisioning = async (
   }
 
   const relatedLinks: QueryCommandOutput = await ddbDocClientObject.send(
-    // QueryCommand is a pagniated call, however the logic requires
-    // checking only if the result set is greater than 0
     new QueryCommand({
       TableName: DdbTable,
       IndexName: "awsEntityData",
@@ -216,7 +207,6 @@ export const orgEventProvisioning = async (
             })
           );
         if (permissionSetFetch.Item) {
-          // Compute user/group name based on whether Active Directory is the user store
           let principalNameToLookUp = principalName;
           if (adUsed === "true" && domainName !== "") {
             principalNameToLookUp = `${principalName}@${domainName}`;
@@ -229,7 +219,6 @@ export const orgEventProvisioning = async (
           );
 
           if (principalId !== "0") {
-            // Resolved the principal ID and proceeding with the operation
             const staticSSOPayload: StaticSSOPayload = {
               InstanceArn: instanceArn + "",
               TargetType: "AWS_ACCOUNT",
@@ -262,7 +251,6 @@ export const orgEventProvisioning = async (
               statusMessage: `OrgEvents - link provisioned to link manager topic`,
             });
           } else {
-            // No related principals found for this link
             logger({
               handler: "orgEventsProcessor",
               logMode: "info",
@@ -273,7 +261,6 @@ export const orgEventProvisioning = async (
             });
           }
         } else {
-          // No related permission sets found for this link
           logger({
             handler: "orgEventsProcessor",
             logMode: "info",
@@ -286,8 +273,6 @@ export const orgEventProvisioning = async (
       })
     );
   } else if (entityType === "account_tag") {
-    // We need to determine if an account tag has been
-    // updated to trigger de-provisioning logic
     logger({
       handler: "orgEventsProcessor",
       logMode: "info",
@@ -480,25 +465,24 @@ export const handler = async (event: SNSEvent) => {
         );
       }
     } else if (message["detail-type"] === "Tag Change on Resource") {
-      // When tag changes are recieved by the lambda
-      // handler it would contain changed-tag-keys
-      // and the current set of tag key value pairs
-      // The logic first determines if a tag is
-      // deleted (or) created (or) updated on the account
-      // If a tag key is deleted, the solution looks up
-      // provisionedLinks table to determine if there were
-      // any links provisioned with that tag key and if the
-      // result length is more than 0, trigger de-provisioning
-      // If a tag key is created/updated, then the solution
-      // looks up linksTable with entityData and determines if there's
-      // a link that matches this entityData. If there is a link that
-      // matches this entityData, the solution triggers provisioning
-      // logic with the link it retreived. If there's no link that
-      // matches this entityData, the solutions looks up provisionedlinks
-      // table to determine if there's an existing link with the tagkey
-      // If there is a provisioned link existing this indicates that an
-      // account had a scope tag updates, so the solution triggers
-      // de-provisioning logic
+      /**
+       * // When tag changes are recieved by the lambda // handler it would
+       * contain changed-tag-keys // and the current set of tag key value pairs
+       * // The logic first determines if a tag is // deleted (or) created (or)
+       * updated on the account // If a tag key is deleted, the solution looks
+       * up // provisionedLinks table to determine if there were // any links
+       * provisioned with that tag key and if the // result length is more than
+       * 0, trigger de-provisioning // If a tag key is created/updated, then the
+       * solution // looks up linksTable with entityData and determines if
+       * there's // a link that matches this entityData. If there is a link that
+       * // matches this entityData, the solution triggers provisioning // logic
+       * with the link it retreived. If there's no link that // matches this
+       * entityData, the solutions looks up provisionedlinks // table to
+       * determine if there's an existing link with the tagkey // If there is a
+       * provisioned link existing this indicates that an // account had a scope
+       * tag updates, so the solution triggers // de-provisioning logic
+       */
+
       const { detail, resources } = message;
       const { tags } = detail;
       const changedTagKeys = detail["changed-tag-keys"];

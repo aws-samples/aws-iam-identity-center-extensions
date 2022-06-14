@@ -1,12 +1,13 @@
-/*
-Objective: Listener for step function outputs from org account
-Trigger source: Process Target Account SM topic
-- determines if entity_tye is account_tag and if it is, extracts the account id
-- prepares the payload required
-- posts the payload to link manager topic
-- Catch all failures in a generic exception block
-  and post the error details to error notifications topics
-*/
+/**
+ * Objective: Listener for step function outputs from org account Trigger
+ * source: Process Target Account SM topic
+ *
+ * - Determines if entity_tye is account_tag and if it is, extracts the account id
+ * - Prepares the payload required
+ * - Posts the payload to link manager topic
+ * - Catch all failures in a generic exception block and post the error details to
+ *   error notifications topics
+ */
 
 const { errorNotificationsTopicArn, linkQueueUrl, AWS_REGION } = process.env;
 

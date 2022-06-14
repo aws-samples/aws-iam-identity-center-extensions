@@ -1,10 +1,11 @@
-/*
-Objective: Implement event notification handler for permission set objects s3clientObject path
-Trigger source: permission set s3clientObject path object notification for
-both created and change type events
-- Schema validation of the file name
-- Upsert in permission set DDB table parsing the file name
-*/
+/**
+ * Objective: Implement event notification handler for permission set objects
+ * s3clientObject path Trigger source: permission set s3clientObject path object
+ * notification for both created and change type events
+ *
+ * - Schema validation of the file name
+ * - Upsert in permission set DDB table parsing the file name
+ */
 
 // Environment configuration read
 const {

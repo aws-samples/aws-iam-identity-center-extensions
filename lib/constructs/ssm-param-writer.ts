@@ -1,17 +1,13 @@
-/*
-Custom SSM writer construct that facilitates
-cross account/cross region reading through the SSMParamReader
-construct
-*/
+/**
+ * Custom SSM writer construct that facilitates cross account/cross region
+ * reading through the SSMParamReader construct
+ */
 
 import { AccountPrincipal, Role } from "aws-cdk-lib/aws-iam";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";
-
-function name(buildConfig: BuildConfig, resourcename: string): string {
-  return buildConfig.Environment + "-" + resourcename;
-}
+import { name } from "./helpers";
 
 export interface SSMParamWriterProps {
   readonly ParamNameKey: string;

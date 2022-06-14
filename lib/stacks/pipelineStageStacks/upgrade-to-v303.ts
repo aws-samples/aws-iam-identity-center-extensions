@@ -1,8 +1,7 @@
-/*
-Deploys a custom resource that would upgrade
-account assignment data from old format i.e. dot based delimiter
-to new format i.e. percent symbol
-*/
+/**
+ * Deploys a custom resource that would upgrade account assignment data from old
+ * format i.e. dot based delimiter to new format i.e. percent symbol
+ */
 import { CustomResource, Duration, Stack, StackProps } from "aws-cdk-lib";
 import { Table } from "aws-cdk-lib/aws-dynamodb";
 import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";

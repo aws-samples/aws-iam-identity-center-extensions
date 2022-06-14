@@ -1,25 +1,21 @@
-/*
-Construct to read values from solution Artefact and preSolutions
-Artefact stacks. This is to avoid creating a circular 
-dependency through CFN exports and instead rely on SSM paramter
-store based reads.
-Used by ssoImportArtefacts-Part2 stack.
-*/
+/**
+ * This construct allows read the non-deterministic values of resources created
+ * in preSolutions stack. This is to avoid creating circular dependencies
+ * between preSolutions and ssoImportArtefacts-part2 through the default CFN
+ * exports. We circumvent that by relying on AWS SSM parameter store based reads
+ */
 
 import { ITable, Table } from "aws-cdk-lib/aws-dynamodb";
 import { IKey, Key } from "aws-cdk-lib/aws-kms";
 import * as lambda from "aws-cdk-lib/aws-lambda";
-import { ILayerVersion } from "aws-cdk-lib/aws-lambda"; // Importing external resources in CDK would use interfaces and not base objects
+import { ILayerVersion } from "aws-cdk-lib/aws-lambda";
 import { Bucket, IBucket } from "aws-cdk-lib/aws-s3";
-import { ITopic, Topic } from "aws-cdk-lib/aws-sns"; // Importing external resources in CDK would use interfaces and not base objects
+import { ITopic, Topic } from "aws-cdk-lib/aws-sns";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";
 import { SSMParamReader } from "./ssm-param-reader";
-
-function name(buildConfig: BuildConfig, resourcename: string): string {
-  return buildConfig.Environment + "-" + resourcename;
-}
+import { name } from "./helpers";
 
 export class ImportArtefacts extends Construct {
   public readonly nodeJsLayer: ILayerVersion;

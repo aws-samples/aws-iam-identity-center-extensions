@@ -1,15 +1,15 @@
-/*
-Objective: Implement SSO user events handler for processing groups
-Trigger source: SSO user changes notification topic which in turn
-                receives event bridge notifications from SSO account
-                for group changes
-- assumes role in SSO account for calling SSO admin API - listInstances
-- determine if the event type is create or delete
-- determine the user name
-- Process the appropriate links
-- Catch all failures in a generic exception block
-  and post the error details to error notifications topics
-*/
+/**
+ * Objective: Implement SSO user events handler for processing groups Trigger
+ * source: SSO user changes notification topic which in turn receives event
+ * bridge notifications from SSO account for group changes
+ *
+ * - Assumes role in SSO account for calling SSO admin API - listInstances
+ * - Determine if the event type is create or delete
+ * - Determine the user name
+ * - Process the appropriate links
+ * - Catch all failures in a generic exception block and post the error details to
+ *   error notifications topics
+ */
 
 // Environment configuration read
 const {

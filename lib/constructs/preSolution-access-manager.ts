@@ -1,7 +1,7 @@
-/*
-All access granting within the preSolution artefacts stack is consolidated
-here to facilitate easier management and visibility
-*/
+/**
+ * All access granting within the preSolution artefacts stack is consolidated
+ * here to facilitate easier management and visibility
+ */
 
 import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";

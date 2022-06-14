@@ -1,9 +1,10 @@
-/*
-Objective: Implement lambda proxy for permission set importer API
-Trigger source: Permission set API
-- Schema validation of the payload
-- Upsert / delete in permission sets DDB table depending on the operation
-*/
+/**
+ * Objective: Implement lambda proxy for permission set importer API Trigger
+ * source: Permission set API
+ *
+ * - Schema validation of the payload
+ * - Upsert / delete in permission sets DDB table depending on the operation
+ */
 
 // Environment configuration read
 const {

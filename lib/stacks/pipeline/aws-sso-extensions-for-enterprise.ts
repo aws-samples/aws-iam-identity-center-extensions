@@ -1,6 +1,4 @@
-/*
-Main pipeline stack i.e. entry point of the application
-*/
+/** Main pipeline stack i.e. entry point of the application */
 
 import { Repository } from "aws-cdk-lib/aws-codecommit";
 import { Stack, StackProps, Tags } from "aws-cdk-lib";

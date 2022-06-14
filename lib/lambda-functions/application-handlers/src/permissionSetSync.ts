@@ -1,17 +1,16 @@
-/*
-Objective: Implement permission set sync
-Trigger source: Permission set sync notification
-                which in turn is triggered by permission
-                set topic handler when it determines that
-                there is a permission set being created/updated
-                that has not yet been provisioned
-- assumes role in SSO account for calling SSO admin API
-- fetches if there are links provisioned already
-  for the permission set in the links table
-- Process the appropriate links
-- Catch all failures in a generic exception block
-  and post the error details to error notifications topics
-*/
+/**
+ * Objective: Implement permission set sync Trigger source: Permission set sync
+ * notification which in turn is triggered by permission set topic handler when
+ * it determines that there is a permission set being created/updated that has
+ * not yet been provisioned
+ *
+ * - Assumes role in SSO account for calling SSO admin API
+ * - Fetches if there are links provisioned already for the permission set in the
+ *   links table
+ * - Process the appropriate links
+ * - Catch all failures in a generic exception block and post the error details to
+ *   error notifications topics
+ */
 
 const {
   linksTableName,
@@ -29,7 +28,6 @@ const {
   AWS_REGION,
 } = process.env;
 
-// SDK and third party client imports
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { IdentitystoreClient } from "@aws-sdk/client-identitystore";
 import { SFNClient } from "@aws-sdk/client-sfn";
@@ -60,7 +58,6 @@ import {
   resolvePrincipal,
 } from "../../helpers/src/utilities";
 
-// SDK and third party client object initialistaion
 const ddbClientObject = new DynamoDBClient({
   region: AWS_REGION,
   maxAttempts: 2,
@@ -96,7 +93,6 @@ const sfnClientObject = new SFNClient({
   maxAttempts: 2,
 });
 
-//Error notification
 const errorMessage: ErrorMessage = {
   Subject: "Error Processing link stream handler",
 };
@@ -106,8 +102,6 @@ export const handler = async (event: SNSEvent) => {
   try {
     const message = JSON.parse(event.Records[0].Sns.Message);
     const relatedLinks: QueryCommandOutput = await ddbDocClientObject.send(
-      // QueryCommand is a pagniated call, however the logic requires
-      // checking only if the result set is greater than 0
       new QueryCommand({
         TableName: linksTableName,
         IndexName: "permissionSetName",
@@ -152,7 +146,6 @@ export const handler = async (event: SNSEvent) => {
             PrincipalType: Item.principalType,
           };
           if (principalId !== "0") {
-            // Resolved the principal ID and proceeding with the operation
             if (Item.awsEntityType === "account") {
               await sqsClientObject.send(
                 new SendMessageCommand({
@@ -215,7 +208,6 @@ export const handler = async (event: SNSEvent) => {
               });
             }
           } else {
-            // No related principalsfound for this link
             logger({
               handler: "permissionSetSyncHandler",
               logMode: "info",
@@ -228,8 +220,6 @@ export const handler = async (event: SNSEvent) => {
         })
       );
     } else {
-      // Ignoring permission set sync as there are no
-      // related links already provisioined for this permission set
       logger({
         handler: "permissionSetSyncHandler",
         logMode: "info",

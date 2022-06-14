@@ -1,9 +1,9 @@
-/*
-Objective: Implement lambda proxy for link importer API
-Trigger source: link API
-- Schema validation of the payload
-- Upsert / delete in links DDB table depending on the operation
-*/
+/**
+ * Objective: Implement lambda proxy for link importer API Trigger source: link API
+ *
+ * - Schema validation of the payload
+ * - Upsert / delete in links DDB table depending on the operation
+ */
 
 // Environment configuration read
 const { DdbTable, AWS_REGION, artefactsBucketName, linkProcessingTopicArn } =

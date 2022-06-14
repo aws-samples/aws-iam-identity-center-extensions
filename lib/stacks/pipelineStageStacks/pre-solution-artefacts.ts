@@ -1,8 +1,7 @@
-/*
-Deploys Core solution components
-The stack itself does not have any direct resource deployment
-and abstracts all resource deployments to the constructs
-*/
+/**
+ * Deploys Core solution components The stack itself does not have any direct
+ * resource deployment and abstracts all resource deployments to the constructs
+ */
 import { Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { BuildConfig } from "../../build/buildConfig";

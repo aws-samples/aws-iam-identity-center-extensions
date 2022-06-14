@@ -1,9 +1,10 @@
-/*
-Objective: Implement event notification handler for link objects S3 path
-Trigger source: link S3 path object notification for removed type events
-- Schema validation of the file name
-- delete in links DDB table parsing the file name
-*/
+/**
+ * Objective: Implement event notification handler for link objects S3 path
+ * Trigger source: link S3 path object notification for removed type events
+ *
+ * - Schema validation of the file name
+ * - Delete in links DDB table parsing the file name
+ */
 
 // Environment configuration read
 const {

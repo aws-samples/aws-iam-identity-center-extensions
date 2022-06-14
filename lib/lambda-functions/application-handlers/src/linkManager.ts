@@ -1,30 +1,29 @@
-/*
-Objective: Implement link provisioning/deprovisioning operations
-Trigger source: Link Manager SNS topic
-- assumes role in SSO account for calling SSO admin API
-- if the targetAccount is payerAccount, the operation is ignored as SSO Admin API does not allow this
-- determine if the link action type is create or delete
-- if create
-  - do a lookup into provisioned links table with the
-    link partition key
-  - if link already exists, stop the process
-  - if link does not exist yet, call sso create
-    account assignment operation
-  - wait until operation is complete/fail/time out
-  - if operation is complete , update provisioned links table
-- if delete
-  - do a lookup into provisioned links table with the
-    link partition key
-  - if link does not exist, stop the process
-  - if link exists, call sso delete account
-    assignment operation
-  - wait until operation is complete/fail/time out
-  - if operation is complete, delete item from provisioined links table
-- Catch all failures in a generic exception block
-  and post the error details to error notifications topics
-*/
+/**
+ * Objective: Implement link provisioning/deprovisioning operations Trigger
+ * source: Link Manager SNS topic
+ *
+ * - Assumes role in SSO account for calling SSO admin API
+ * - If the targetAccount is payerAccount, the operation is ignored as SSO Admin
+ *   API does not allow this
+ * - Determine if the link action type is create or delete
+ * - If create
+ *
+ *   - Do a lookup into provisioned links table with the link partition key
+ *   - If link already exists, stop the process
+ *   - If link does not exist yet, call sso create account assignment operation
+ *   - Wait until operation is complete/fail/time out
+ *   - If operation is complete , update provisioned links table
+ * - If delete
+ *
+ *   - Do a lookup into provisioned links table with the link partition key
+ *   - If link does not exist, stop the process
+ *   - If link exists, call sso delete account assignment operation
+ *   - Wait until operation is complete/fail/time out
+ *   - If operation is complete, delete item from provisioined links table
+ * - Catch all failures in a generic exception block and post the error details to
+ *   error notifications topics
+ */
 
-// Environment configuration read
 const {
   SSOAPIRoleArn,
   waiterHandlerSSOAPIRoleArn,
@@ -35,7 +34,6 @@ const {
   AWS_REGION,
 } = process.env;
 
-// SDK and third party client imports
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import {
@@ -61,7 +59,7 @@ import { waitUntilAccountAssignmentCreation } from "../../custom-waiters/src/wai
 import { waitUntilAccountAssignmentDeletion } from "../../custom-waiters/src/waitUntilAccountAssignmentDeletion";
 import { ErrorMessage, requestStatus } from "../../helpers/src/interfaces";
 import { logger } from "../../helpers/src/utilities";
-// SDK and third party client object initialistaion
+
 const ddbClientObject = new DynamoDBClient({
   region: AWS_REGION,
   maxAttempts: 2,
@@ -87,7 +85,6 @@ const ssoAdminWaiterClientObject = new SSOAdminClient({
   maxAttempts: 5 /** Aggressive retry to accommodate large no of account assignment processing */,
 });
 
-//Error notification
 const errorMessage: ErrorMessage = {
   Subject: "Error Processing link provisioning operation",
 };
@@ -133,7 +130,6 @@ export const handler = async (event: SQSEvent) => {
                 })
               );
             if (provisionedLinks.Item) {
-              // Link already exists, not creating again
               logger({
                 handler: "linkManagerHandler",
                 logMode: "info",
@@ -234,7 +230,6 @@ export const handler = async (event: SQSEvent) => {
                 statusMessage: `Link Manager delete operation completed successfully`,
               });
             } else {
-              // Link does not exist, so not triggering a delete again
               logger({
                 handler: "linkManagerHandler",
                 logMode: "info",
@@ -247,7 +242,6 @@ export const handler = async (event: SQSEvent) => {
             }
           }
         } else {
-          // Ignoring link provisioning/deprovisioning operation for payer account
           logger({
             handler: "linkManagerHandler",
             logMode: "info",

@@ -1,41 +1,33 @@
-/*
-Objective: Implement permission set CRUD operations
-Trigger source: permission set topic notifications
-- assumes role in SSO account for calling SSO admin API
-- if operation type is insert
-  - read complete permission set object from
-    ddb table
-  - create permission set object with the params
-    set for session duration, name, relay state
-    and description
-  - upsert into permissionsetArn table with the
-    value received from above
-  - apply tags to permission set if they exist
-  - apply managed policies to permission set if they
-    exit
-  - if inline policy exists, attach the inline
-    policy to the permission set
-- if operation type is modify
-  - determine if the delta is any of the following:
-    managed policies
-    inline policy
-    session duration
-    relay state
-    tags
-  - process update permission set if any of the above
-    fields are changed
-  - if the changes include managed policy or inline
-    policy changes, trigger a reprovisioning operation
-    as well and post the request id to waiter handler
-- if operation type is delete
-  - delete the permission set first
-  - then delete the permission set arn entry as well
-- if operation type is create/delete, post permission set
-  name, permission set arn, reprovision status to permission
-  set sync topic
-- Catch all failures in a generic exception block
-  and post the error details to error notifications topics
-*/
+/**
+ * Objective: Implement permission set CRUD operations Trigger source:
+ * permission set topic notifications
+ *
+ * - Assumes role in SSO account for calling SSO admin API
+ * - If operation type is insert
+ *
+ *   - Read complete permission set object from ddb table
+ *   - Create permission set object with the params set for session duration, name,
+ *       relay state and description
+ *   - Upsert into permissionsetArn table with the value received from above
+ *   - Apply tags to permission set if they exist
+ *   - Apply managed policies to permission set if they exit
+ *   - If inline policy exists, attach the inline policy to the permission set
+ * - If operation type is modify
+ *
+ *   - Determine if the delta is any of the following: managed policies inline
+ *       policy session duration relay state tags
+ *   - Process update permission set if any of the above fields are changed
+ *   - If the changes include managed policy or inline policy changes, trigger a
+ *       reprovisioning operation as well and post the request id to waiter handler
+ * - If operation type is delete
+ *
+ *   - Delete the permission set first
+ *   - Then delete the permission set arn entry as well
+ * - If operation type is create/delete, post permission set name, permission set
+ *   arn, reprovision status to permission set sync topic
+ * - Catch all failures in a generic exception block and post the error details to
+ *   error notifications topics
+ */
 
 const {
   SSOAPIRoleArn,
@@ -48,7 +40,6 @@ const {
   AWS_REGION,
 } = process.env;
 
-// SDK and third party client imports
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import {
@@ -109,7 +100,7 @@ const ssoAdminClientObject = new SSOAdminClient({
   }),
   maxAttempts: 2,
 });
-//Error notification
+
 const errorMessage: ErrorMessage = {
   Subject: "Error Processing Permission Set Provisioning operation",
 };

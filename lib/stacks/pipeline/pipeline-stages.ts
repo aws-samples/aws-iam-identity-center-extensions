@@ -1,6 +1,4 @@
-/*
-Pipeline stages abstraction
-*/
+/** Pipeline stages abstraction */
 
 import { DefaultStackSynthesizer, Stage, StageProps } from "aws-cdk-lib";
 import { Construct } from "constructs";

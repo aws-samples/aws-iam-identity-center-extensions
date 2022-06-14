@@ -1,6 +1,4 @@
-/*
-Objective: Update cloudformation with custom resource status
-*/
+/** Objective: Update cloudformation with custom resource status */
 const { smDescribeRoleArn, ssoRegion, ssoAccountId } = process.env;
 
 // Lambda types import

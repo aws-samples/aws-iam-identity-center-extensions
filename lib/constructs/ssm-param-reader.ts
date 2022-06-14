@@ -1,7 +1,7 @@
-/*
-Custom cloudformation resource construct that 
-allows cross account/cross region read of SSM parameter value
-*/
+/**
+ * Custom cloudformation resource construct that allows cross account/cross
+ * region read of SSM parameter value
+ */
 
 import { PolicyStatement } from "aws-cdk-lib/aws-iam";
 import {
@@ -12,10 +12,7 @@ import {
 import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";
 import { v4 as uuidv4 } from "uuid";
-
-function name(buildConfig: BuildConfig, resourcename: string): string {
-  return buildConfig.Environment + "-" + resourcename;
-}
+import { name } from "./helpers";
 
 const generateRandomString = uuidv4().toString().split("-")[0];
 

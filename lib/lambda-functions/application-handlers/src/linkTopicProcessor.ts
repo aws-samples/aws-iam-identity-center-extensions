@@ -1,31 +1,32 @@
-/*
-Objective: Implement link changes for link processing functionality
-Trigger source: links topic notifications
-- assumes role in SSO account for calling SSO admin API - listInstances
-- For each record in the stream,
-    - look up in permissionSetArn ddb table if the permission set referenced in the record exists
-      - if the permission set arn exists, then
-        - look up in AWS SSO Identity store if the user/group exists
-            - if the user/group exists
-                - determine if the operation is create/delete
-                - determine if link type is account /ou_id/root/account_tag
-                - if link type is account ,
-                    post the link provisioning/deprovisioning operation
-                    to the link manager queue
-                - if link type is ou_id, root,account_tag
-                    invoke org entities state machine
-            - if the user/group does not exist
-                - stop processing as we won't be able to proceed
-                  without the principal Arn
-      - if the permission set does not exist,
-        do nothing as we cannot do link
-        provisioning if the permission set
-        is not yet provisioned
-- Catch all failures in a generic exception block
-  and post the error details to error notifications topics
-*/
+/**
+ * Objective: Implement link changes for link processing functionality Trigger
+ * source: links topic notifications
+ *
+ * - Assumes role in SSO account for calling SSO admin API - listInstances
+ * - For each record in the stream,
+ *
+ *   - Look up in permissionSetArn ddb table if the permission set referenced in the
+ *       record exists
+ *
+ *       - If the permission set arn exists, then
+ *
+ *                     - Look up in AWS SSO Identity store if the user/group exists
+ *
+ *                   - If the user/group exists
+ *
+ *                                                   - Determine if the operation is create/delete
+ *                                                   - Determine if link type is account /ou_id/root/account_tag
+ *                                                   - If link type is account , post the link provisioning/deprovisioning operation to the link manager queue
+ *                                                   - If link type is ou_id, root,account_tag invoke org entities state machine
+ *                   - If the user/group does not exist
+ *
+ *                                                   - Stop processing as we won't be able to proceed without the principal Arn
+ *       - If the permission set does not exist, do nothing as we cannot do link
+ *               provisioning if the permission set is not yet provisioned
+ * - Catch all failures in a generic exception block and post the error details to
+ *   error notifications topics
+ */
 
-// Environment configuration read
 const {
   SSOAPIRoleArn,
   ISAPIRoleArn,
@@ -42,7 +43,6 @@ const {
   AWS_REGION,
 } = process.env;
 
-// SDK and third party client imports
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { IdentitystoreClient } from "@aws-sdk/client-identitystore";
 import { SFNClient } from "@aws-sdk/client-sfn";
@@ -72,7 +72,6 @@ import {
   resolvePrincipal,
 } from "../../helpers/src/utilities";
 
-// SDK and third party client object initialistaion
 const ddbClientObject = new DynamoDBClient({
   region: AWS_REGION,
   maxAttempts: 2,
@@ -108,7 +107,6 @@ const identityStoreClientObject = new IdentitystoreClient({
   maxAttempts: 2,
 });
 
-//Error notification
 const errorMessage: ErrorMessage = {
   Subject: "Error Processing link topic processor",
 };
@@ -118,14 +116,11 @@ export const handler = async (event: SNSEvent) => {
     const resolvedInstances: ListInstancesCommandOutput =
       await ssoAdminClientObject.send(new ListInstancesCommand({}));
 
-    // Instance Arn needed for SSO admin API's
     const instanceArn = resolvedInstances.Instances?.[0].InstanceArn;
-    // Identity store ID needed for SSO Identity Store API's
+
     const identityStoreId =
       resolvedInstances.Instances?.[0].IdentityStoreId + "";
 
-    // Because it's a stream handler, there
-    // could be more than one link updates coming through, hence the proimse all
     const message = JSON.parse(event.Records[0].Sns.Message);
     const { action, linkData, requestId } = message;
     logger({
@@ -136,13 +131,13 @@ export const handler = async (event: SNSEvent) => {
       status: requestStatus.InProgress,
       statusMessage: `Link topic processor ${action} operation in progress`,
     });
-    // Deconstruct and get the values for the SSO Admin API operations
+
     const delimeter = "%";
     const linkKeyArray = linkData.split(delimeter);
     const entityType = linkKeyArray?.[0];
     const entityValue = linkKeyArray?.[1];
     const permissionsetName = linkKeyArray?.[2];
-    //const principalName = linkKeyArray?.slice(3, -2).join(delimeter);
+
     const principalName = linkKeyArray?.[3];
     const principalType = linkKeyArray?.[4];
 
@@ -163,7 +158,7 @@ export const handler = async (event: SNSEvent) => {
 
     if (permissionSetRecord.Item) {
       const { permissionSetArn } = permissionSetRecord.Item;
-      // Compute user/group name based on whether Active Directory is the user store
+
       let principalNameToLookUp = principalName;
       if (adUsed === "true" && domainName !== "") {
         principalNameToLookUp = `${principalName}@${domainName}`;
@@ -238,7 +233,6 @@ export const handler = async (event: SNSEvent) => {
           });
         }
       } else {
-        // No related principals found for this link
         logger({
           handler: "linkTopicProcessor",
           logMode: "info",
@@ -249,7 +243,6 @@ export const handler = async (event: SNSEvent) => {
         });
       }
     } else {
-      // Permission set does not exist
       logger({
         handler: "linkTopicProcessor",
         logMode: "info",

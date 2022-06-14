@@ -1,6 +1,4 @@
-/*
-Objective: Custom waiter for account assignment creation
-*/
+/** Objective: Custom waiter for account assignment creation */
 
 import {
   DescribeAccountAssignmentCreationStatusCommand,

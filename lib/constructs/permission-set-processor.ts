@@ -1,25 +1,21 @@
-/*
-composite construct that sets up all resources
-for permission set life cycle provisioning
-*/
+/**
+ * Composite construct that sets up all resources for permission set life cycle
+ * provisioning
+ */
 
 import { Duration } from "aws-cdk-lib";
-import { ITable } from "aws-cdk-lib/aws-dynamodb"; // Importing external resources in CDK would use interfaces and not base objects
-import { IKey } from "aws-cdk-lib/aws-kms"; // Importing external resources in CDK would use interfaces and not base objects
-import * as lambda from "aws-cdk-lib/aws-lambda"; //Needed to avoid semgrep throwing up https://cwe.mitre.org/data/definitions/95.html
+import { ITable } from "aws-cdk-lib/aws-dynamodb";
+import { IKey } from "aws-cdk-lib/aws-kms";
+import { ILayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { ITopic, Topic } from "aws-cdk-lib/aws-sns";
 import { Construct } from "constructs";
 import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
-
-function name(buildConfig: BuildConfig, resourcename: string): string {
-  return buildConfig.Environment + "-" + resourcename;
-}
-
+import { name } from "./helpers";
 export interface PermissionSetProcessProps {
-  readonly nodeJsLayer: lambda.ILayerVersion;
+  readonly nodeJsLayer: ILayerVersion;
   readonly permissionSetTable: ITable;
   readonly PermissionSetArnTableName: string;
   readonly errorNotificationsTopic: ITopic;
@@ -62,7 +58,7 @@ export class PermissionSetProcessor extends Construct {
       name(buildConfig, "permissionSetTopicProcessor"),
       {
         functionName: name(buildConfig, "permissionSetTopicProcessor"),
-        runtime: lambda.Runtime.NODEJS_16_X,
+        runtime: Runtime.NODEJS_16_X,
         entry: join(
           __dirname,
           "../",
@@ -112,7 +108,7 @@ export class PermissionSetProcessor extends Construct {
       this,
       name(buildConfig, "permissionSetSyncHandler"),
       {
-        runtime: lambda.Runtime.NODEJS_16_X,
+        runtime: Runtime.NODEJS_16_X,
         functionName: name(buildConfig, "permissionSetSyncHandler"),
         entry: join(
           __dirname,

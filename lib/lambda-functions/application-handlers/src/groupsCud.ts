@@ -1,41 +1,36 @@
-/*
-Objective: Implement SSO group events handler for processing groups
-Trigger source: SSO group changes notification topic which in turn
-                receives event bridge notifications from SSO account
-                for group changes
-- assumes role in SSO account for calling SSO admin API - listInstances
-- determine if the event type is create or delete
-- determine the group name (SSO uses
-      different event schemas for this
-      event depending on the identity store)
-- if create/delete  
-  - determine if there are related links
-    already provisioned by looking up
-    links table
-  - if there are related links, then
-    - for each related link
-    - determine if permission set referenced
-      in the link is already provisioned by
-      looking up permissionsetArn ddb table
-        - if permission set is already
-          provisioned, then
-            - determine if the link type is
-              account, ou_id, account_tag or root
-            - if account, post the link
-              operation details to link manager
-              FIFO queue
-            - if ou_id, root, account_tag resolve the
-              actual accounts and post the link
-              operation details to org entities state machine in org account              
-        - if permission set is not provisioned,
-          stop the operation here
-    - if there are no related links, then
-      stop the operation here
-- Catch all failures in a generic exception block
-  and post the error details to error notifications topics
-*/
+/**
+ * Objective: Implement SSO group events handler for processing groups Trigger
+ * source: SSO group changes notification topic which in turn receives event
+ * bridge notifications from SSO account for group changes
+ *
+ * - Assumes role in SSO account for calling SSO admin API - listInstances
+ * - Determine if the event type is create or delete
+ * - Determine the group name (SSO uses different event schemas for this event
+ *   depending on the identity store)
+ * - If create/delete
+ *
+ *   - Determine if there are related links already provisioned by looking up links table
+ *   - If there are related links, then
+ *
+ *       - For each related link
+ *       - Determine if permission set referenced in the link is already provisioned by
+ *               looking up permissionsetArn ddb table
+ *
+ *                           - If permission set is already provisioned, then
+ *
+ *                                           - Determine if the link type is account, ou_id, account_tag or root
+ *                                           - If account, post the link operation details to link manager FIFO queue
+ *                                           - If ou_id, root, account_tag resolve the actual accounts and post the link
+ *                                                                           operation
+ *                                                                           details to org
+ *                                                                           entities state
+ *                                                                           machine in org account
+ *                           - If permission set is not provisioned, stop the operation here
+ *       - If there are no related links, then stop the operation here
+ * - Catch all failures in a generic exception block and post the error details to
+ *   error notifications topics
+ */
 
-// Environment configuration read
 const {
   SSOAPIRoleArn,
   orgListSMRoleArn,
@@ -50,7 +45,6 @@ const {
   AWS_REGION,
 } = process.env;
 
-// SDK and third party client imports
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { SFNClient } from "@aws-sdk/client-sfn";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
@@ -77,7 +71,7 @@ import {
   StaticSSOPayload,
 } from "../../helpers/src/interfaces";
 import { invokeStepFunction, logger } from "../../helpers/src/utilities";
-// SDK and third party client object initialistaion
+
 const ddbClientObject = new DynamoDBClient({
   region: AWS_REGION,
   maxAttempts: 2,
@@ -104,7 +98,6 @@ const sfnClientObject = new SFNClient({
   maxAttempts: 2,
 });
 
-//Error notification
 const errorMessage: ErrorMessage = {
   Subject: "Error Processing group trigger based link provisioning operation",
 };
@@ -127,8 +120,11 @@ export const handler = async (event: SNSEvent) => {
 
     if (message.detail.eventName === "CreateGroup") {
       groupId = message.detail.responseElements.group.groupId;
-      // To handle SSO generating cloudwatch events with different formats
-      // depending on the identity store being used
+      /**
+       * To handle SSO generating cloudwatch events with different formats
+       * depending on the identity store being used
+       */
+
       if (
         Object.prototype.hasOwnProperty.call(
           message.detail.responseElements.group,
@@ -155,8 +151,11 @@ export const handler = async (event: SNSEvent) => {
       });
 
       const relatedLinks: QueryCommandOutput = await ddbDocClientObject.send(
-        // QueryCommand is a pagniated call, however the logic requires
-        // checking only if the result set is greater than 0
+        /**
+         * QueryCommand is a pagniated call, however the logic requires checking
+         * only if the result set is greater than 0
+         */
+
         new QueryCommand({
           TableName: linkstable,
           IndexName: "principalName",
@@ -243,7 +242,7 @@ export const handler = async (event: SNSEvent) => {
                 });
               }
             } else {
-              // Permission set for the group-link does not exist
+              /** Permission set for the group-link does not exist */
               logger({
                 handler: "groupsHandler",
                 logMode: "info",
@@ -256,7 +255,7 @@ export const handler = async (event: SNSEvent) => {
           })
         );
       } else {
-        // No related links for the group being processed
+        /** No related links for the group being processed */
         logger({
           handler: "groupsHandler",
           logMode: "info",

@@ -1,9 +1,11 @@
-/*
-Objective: Implement event notification handler for link objects S3 path
-Trigger source: link S3 path object notification for both created and change type events
-- Schema validation of the file name
-- Upsert in links DDB table parsing the file name
-*/
+/**
+ * Objective: Implement event notification handler for link objects S3 path
+ * Trigger source: link S3 path object notification for both created and change
+ * type events
+ *
+ * - Schema validation of the file name
+ * - Upsert in links DDB table parsing the file name
+ */
 
 // Environment configuration read
 const {
