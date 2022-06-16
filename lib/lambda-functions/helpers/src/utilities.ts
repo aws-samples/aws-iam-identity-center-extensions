@@ -81,6 +81,26 @@ export function logger(logMessage: LogMessage) {
   }
 }
 
+export const constructExceptionMessage = (
+  handler: string,
+  name: string,
+  message: string,
+  relatedData: string
+) => {
+  return JSON.stringify(
+    JSON.parse(
+      JSON.stringify({
+        default: {
+          handler: handler,
+          exceptionName: name,
+          exceptionMessage: message,
+          relatedData: relatedData,
+        },
+      })
+    )
+  );
+};
+
 export class StateMachineError extends Error {
   constructor(public errorMessage: { message: string }) {
     super();

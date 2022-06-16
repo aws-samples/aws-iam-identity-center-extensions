@@ -17,13 +17,21 @@ const {
 
 // Lambda and other types import
 // SDK and third party client imports
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import {
+  DynamoDBClient,
+  DynamoDBServiceException,
+} from "@aws-sdk/client-dynamodb";
 import {
   GetObjectCommand,
   GetObjectCommandOutput,
   S3Client,
+  S3ServiceException,
 } from "@aws-sdk/client-s3";
-import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
+import {
+  PublishCommand,
+  SNSClient,
+  SNSServiceException,
+} from "@aws-sdk/client-sns";
 import {
   DynamoDBDocumentClient,
   GetCommand,
@@ -48,6 +56,7 @@ import {
   JSONParserError,
 } from "../../helpers/src/payload-validator";
 import {
+  constructExceptionMessage,
   logger,
   removeEmpty,
   streamToString,
@@ -76,11 +85,6 @@ const createUpdateSchemaDefinition = JSON.parse(
     .toString()
 );
 const createUpdateValidate = ajv.compile(createUpdateSchemaDefinition);
-
-//Error notification
-const errorMessage: ErrorMessage = {
-  Subject: "Error Processing Permission Set create/update via S3 Interface",
-};
 
 export const handler = async (event: S3Event) => {
   await Promise.all(
@@ -157,39 +161,74 @@ export const handler = async (event: S3Event) => {
           await snsClientObject.send(
             new PublishCommand({
               TopicArn: errorNotificationsTopicArn,
-              Message: JSON.stringify({
-                ...errorMessage,
-                eventDetail: record,
-                errorDetails: { errors: err.errors },
-              }),
+              Message: constructExceptionMessage(
+                "permissionSetCu.ts",
+                "Schema validation exception",
+                "Provided permission set S3 file does not pass the schema validation",
+                JSON.stringify(err.errors)
+              ),
             })
           );
           logger({
-            handler: "userInterface-permissionSetS3CreateUpdate",
+            handler: "permissionSetCu.ts",
             logMode: "error",
             status: requestStatus.FailedWithException,
-            statusMessage: `Permission Set operation failed due to schema validation errors:${JSON.stringify(
-              err.errors
-            )}`,
+            statusMessage: constructExceptionMessage(
+              "permissionSetCu.ts",
+              "Schema validation exception",
+              "Provided permission set S3 file does not pass the schema validation",
+              JSON.stringify(err.errors)
+            ),
+          });
+        } else if (
+          err instanceof S3ServiceException ||
+          err instanceof DynamoDBServiceException ||
+          err instanceof SNSServiceException
+        ) {
+          await snsClientObject.send(
+            new PublishCommand({
+              TopicArn: errorNotificationsTopicArn,
+              Message: constructExceptionMessage(
+                "permissionSetCu.ts",
+                err.name,
+                err.message,
+                ""
+              ),
+            })
+          );
+          logger({
+            handler: "permissionSetCu.ts",
+            logMode: "error",
+            status: requestStatus.FailedWithException,
+            statusMessage: constructExceptionMessage(
+              "permissionSetCu.ts",
+              err.name,
+              err.message,
+              ""
+            ),
           });
         } else {
           await snsClientObject.send(
             new PublishCommand({
               TopicArn: errorNotificationsTopicArn,
-              Message: JSON.stringify({
-                ...errorMessage,
-                eventDetail: record,
-                errorDetails: `Error processing permissionSet create/update via S3 interface with exception: ${err}`,
-              }),
+              Message: constructExceptionMessage(
+                "permissionSetCu.ts",
+                "Unhandled exception",
+                JSON.stringify(err),
+                ""
+              ),
             })
           );
           logger({
             handler: "userInterface-permissionSetS3CreateUpdate",
             logMode: "error",
             status: requestStatus.FailedWithException,
-            statusMessage: `Permission Set operation failed due to exception:${JSON.stringify(
-              err
-            )}`,
+            statusMessage: constructExceptionMessage(
+              "permissionSetCu.ts",
+              "Unhandled exception",
+              JSON.stringify(err),
+              ""
+            ),
           });
         }
       }
