@@ -83,8 +83,15 @@ export enum requestStatus {
   Aborted = "Aborted",
 }
 
+export enum logModes {
+  Exception = "Exception",
+  Info = "Info",
+  Debug = "Debug",
+  Warn = "Warn",
+}
+
 export interface LogMessage {
-  readonly logMode: string;
+  readonly logMode: logModes;
   readonly handler: string;
   readonly requestId?: string;
   readonly status: requestStatus;

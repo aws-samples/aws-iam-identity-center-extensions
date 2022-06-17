@@ -188,6 +188,7 @@ export class PermissionSetCRUD extends Construct {
               PermissionSetCRUDProps.errorNotificationsTopicArn,
             permissionSetProcessingTopicArn:
               this.permissionSetProcessingTopic.topicArn,
+            functionLogMode: buildConfig.Parameters.FunctionLogMode,
           },
         }
       );

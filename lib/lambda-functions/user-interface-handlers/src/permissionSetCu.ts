@@ -7,16 +7,13 @@
  * - Upsert in permission set DDB table parsing the file name
  */
 
-// Environment configuration read
 const {
   DdbTable,
   errorNotificationsTopicArn,
   AWS_REGION,
   permissionSetProcessingTopicArn,
+  functionLogMode,
 } = process.env;
-
-// Lambda and other types import
-// SDK and third party client imports
 import {
   DynamoDBClient,
   DynamoDBServiceException,
@@ -38,16 +35,15 @@ import {
   GetCommandOutput,
   PutCommand,
 } from "@aws-sdk/lib-dynamodb";
-//Import validator function and dependencies
 import Ajv from "ajv";
 import { S3Event, S3EventRecord } from "aws-lambda";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { Readable } from "stream";
 import { v4 as uuidv4 } from "uuid";
-//Import helper utilities and interfaces
 import {
   CreateUpdatePermissionSetPayload,
+  logModes,
   requestStatus,
 } from "../../helpers/src/interfaces";
 import {
@@ -56,11 +52,12 @@ import {
 } from "../../helpers/src/payload-validator";
 import {
   constructExceptionMessage,
+  constructExceptionMessageforLogger,
   logger,
   removeEmpty,
   streamToString,
 } from "../../helpers/src/utilities";
-// SDK and third party client object initialistaion
+
 const ddbClientObject = new DynamoDBClient({
   region: AWS_REGION,
   maxAttempts: 2,
@@ -69,7 +66,6 @@ const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
 const snsClientObject = new SNSClient({ region: AWS_REGION, maxAttempts: 2 });
 const s3clientObject = new S3Client({ region: AWS_REGION, maxAttempts: 2 });
 
-// Validator object initialisation
 const ajv = new Ajv({ allErrors: true });
 const createUpdateSchemaDefinition = JSON.parse(
   readFileSync(
@@ -88,23 +84,73 @@ const createUpdateValidate = ajv.compile(createUpdateSchemaDefinition);
 export const handler = async (event: S3Event) => {
   await Promise.all(
     event.Records.map(async (record: S3EventRecord) => {
+      const requestId = uuidv4().toString();
+      logger(
+        {
+          handler: "permissionSetCu.ts",
+          logMode: logModes.Info,
+          requestId: requestId,
+          status: requestStatus.InProgress,
+          statusMessage: `Permission Set create/update operation started`,
+        },
+        functionLogMode ? functionLogMode : "Exception"
+      );
       try {
-        const requestId = uuidv4().toString();
-        // Get original text from object in incoming event
         const originalText: GetObjectCommandOutput = await s3clientObject.send(
           new GetObjectCommand({
             Bucket: record.s3.bucket.name,
             Key: record.s3.object.key,
           })
         );
+        logger(
+          {
+            handler: "permissionSetCu.ts",
+            logMode: logModes.Debug,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            statusMessage: `Fetched S3 file content from permission_sets location - ${record.s3.bucket.name}/${record.s3.object.key}`,
+          },
+          functionLogMode
+        );
         const jsonData = JSON.parse(
           await streamToString(originalText.Body as Readable)
+        );
+        logger(
+          {
+            handler: "permissionSetCu.ts",
+            logMode: logModes.Debug,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            statusMessage: `Parsed file content successfuly`,
+          },
+          functionLogMode
         );
         const payload: CreateUpdatePermissionSetPayload = imperativeParseJSON(
           jsonData,
           createUpdateValidate
         );
+        logger(
+          {
+            handler: "permissionSetCu.ts",
+            logMode: logModes.Debug,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            statusMessage: `Completed imperative parsing to handle any malformed/null JSON values`,
+          },
+          functionLogMode
+        );
         const upsertData = removeEmpty(payload);
+        logger(
+          {
+            handler: "permissionSetCu.ts",
+            logMode: logModes.Debug,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            relatedData: upsertData.permissionSetName,
+            statusMessage: `Removed empty values from permission set JSON`,
+          },
+          functionLogMode
+        );
         const fetchPermissionSet: GetCommandOutput =
           await ddbDocClientObject.send(
             new GetCommand({
@@ -114,6 +160,17 @@ export const handler = async (event: S3Event) => {
               },
             })
           );
+        logger(
+          {
+            handler: "permissionSetCu.ts",
+            logMode: logModes.Debug,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            relatedData: upsertData.permissionSetName,
+            statusMessage: `Checked if the permission set already exists in the solution to determine create/update operation`,
+          },
+          functionLogMode
+        );
         await ddbDocClientObject.send(
           new PutCommand({
             TableName: DdbTable,
@@ -121,6 +178,17 @@ export const handler = async (event: S3Event) => {
               ...upsertData,
             },
           })
+        );
+        logger(
+          {
+            handler: "permissionSetCu.ts",
+            logMode: logModes.Info,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            relatedData: upsertData.permissionSetName,
+            statusMessage: `Processed upsert operation successfully`,
+          },
+          functionLogMode
         );
         if (fetchPermissionSet.Item) {
           await snsClientObject.send(
@@ -134,6 +202,17 @@ export const handler = async (event: S3Event) => {
               }),
             })
           );
+          logger(
+            {
+              handler: "permissionSetCu.ts",
+              logMode: logModes.Info,
+              requestId: requestId,
+              status: requestStatus.InProgress,
+              relatedData: upsertData.permissionSetName,
+              statusMessage: `Determined the operation is update type, posting to permissionSetProcessor topic`,
+            },
+            functionLogMode
+          );
         } else {
           await snsClientObject.send(
             new PublishCommand({
@@ -145,16 +224,18 @@ export const handler = async (event: S3Event) => {
               }),
             })
           );
+          logger(
+            {
+              handler: "permissionSetCu.ts",
+              logMode: logModes.Info,
+              requestId: requestId,
+              status: requestStatus.InProgress,
+              relatedData: upsertData.permissionSetName,
+              statusMessage: `Determined the operation is create type, posting to permissionSetProcessor topic`,
+            },
+            functionLogMode
+          );
         }
-
-        logger({
-          handler: "userInterface-permissionSetS3CreateUpdate",
-          logMode: "info",
-          relatedData: upsertData.permissionSetName,
-          requestId: requestId,
-          status: requestStatus.InProgress,
-          statusMessage: `Permission Set operation is being processed`,
-        });
       } catch (err) {
         if (err instanceof JSONParserError) {
           await snsClientObject.send(
@@ -162,7 +243,6 @@ export const handler = async (event: S3Event) => {
               TopicArn: errorNotificationsTopicArn,
               Subject:
                 "Exception in permission set processing through S3 interface",
-
               Message: constructExceptionMessage(
                 "permissionSetCu.ts",
                 "Schema validation exception",
@@ -173,9 +253,9 @@ export const handler = async (event: S3Event) => {
           );
           logger({
             handler: "permissionSetCu.ts",
-            logMode: "error",
+            logMode: logModes.Exception,
             status: requestStatus.FailedWithException,
-            statusMessage: constructExceptionMessage(
+            statusMessage: constructExceptionMessageforLogger(
               "permissionSetCu.ts",
               "Schema validation exception",
               "Provided permission set S3 file does not pass the schema validation",
@@ -192,7 +272,6 @@ export const handler = async (event: S3Event) => {
               TopicArn: errorNotificationsTopicArn,
               Subject:
                 "Exception in permission set processing through S3 interface",
-
               Message: constructExceptionMessage(
                 "permissionSetCu.ts",
                 err.name,
@@ -203,9 +282,9 @@ export const handler = async (event: S3Event) => {
           );
           logger({
             handler: "permissionSetCu.ts",
-            logMode: "error",
+            logMode: logModes.Exception,
             status: requestStatus.FailedWithException,
-            statusMessage: constructExceptionMessage(
+            statusMessage: constructExceptionMessageforLogger(
               "permissionSetCu.ts",
               err.name,
               err.message,
@@ -218,7 +297,6 @@ export const handler = async (event: S3Event) => {
               TopicArn: errorNotificationsTopicArn,
               Subject:
                 "Exception in permission set processing through S3 interface",
-
               Message: constructExceptionMessage(
                 "permissionSetCu.ts",
                 "Unhandled exception",
@@ -229,9 +307,9 @@ export const handler = async (event: S3Event) => {
           );
           logger({
             handler: "userInterface-permissionSetS3CreateUpdate",
-            logMode: "error",
+            logMode: logModes.Exception,
             status: requestStatus.FailedWithException,
-            statusMessage: constructExceptionMessage(
+            statusMessage: constructExceptionMessageforLogger(
               "permissionSetCu.ts",
               "Unhandled exception",
               JSON.stringify(err),

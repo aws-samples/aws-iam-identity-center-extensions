@@ -28,3 +28,4 @@ Parameters:
   ImportCurrentSSOConfiguration: true
   UpgradeFromVersionLessThanV303: false # Should be set to true, if upgrading from solution version 3.0.2/earlier
   SupportNestedOU: true
+  FunctionLogMode: "Debug" # Used for configuring lambda function logging level. Alowed values - ["Info", "Exception","Debug","Warn"]

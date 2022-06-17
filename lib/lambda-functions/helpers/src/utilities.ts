@@ -7,7 +7,7 @@ import {
 } from "@aws-sdk/client-identitystore";
 import { SFNClient, StartExecutionCommand } from "@aws-sdk/client-sfn";
 import { Readable } from "stream";
-import { LogMessage, StateMachinePayload } from "./interfaces";
+import { LogMessage, logModes, StateMachinePayload } from "./interfaces";
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 export const removeEmpty = (obj: { [x: string]: any }) => {
   Object.keys(obj).forEach(
@@ -60,18 +60,38 @@ export const invokeStepFunction = async (
   );
 };
 
-export function logger(logMessage: LogMessage) {
+export function logger(logMessage: LogMessage, functionLogMode?: string) {
   switch (logMessage.logMode) {
-    case "info": {
-      console.log(JSON.stringify(logMessage));
+    case logModes.Debug: {
+      if (
+        logMessage.logMode.valueOf() === functionLogMode ||
+        functionLogMode === logModes.Info.valueOf() ||
+        functionLogMode === logModes.Warn.valueOf() ||
+        functionLogMode === logModes.Exception.valueOf()
+      )
+        console.log(JSON.stringify(logMessage));
       break;
     }
-    case "warn": {
-      console.warn(JSON.stringify(logMessage));
+    case logModes.Info: {
+      if (
+        logMessage.logMode.valueOf() === functionLogMode ||
+        functionLogMode === logModes.Warn.valueOf() ||
+        functionLogMode === logModes.Exception.valueOf()
+      )
+        console.log(JSON.stringify(logMessage));
       break;
     }
-    case "error": {
-      console.error(JSON.stringify(logMessage));
+    case logModes.Warn: {
+      if (
+        logMessage.logMode.valueOf() === functionLogMode ||
+        functionLogMode === logModes.Exception.valueOf()
+      )
+        console.warn(JSON.stringify(logMessage));
+      break;
+    }
+    case logModes.Exception: {
+      if (logMessage.logMode.valueOf() === functionLogMode)
+        console.error(JSON.stringify(logMessage));
       break;
     }
     default: {
@@ -103,6 +123,15 @@ export const constructExceptionMessage = (
     null,
     2
   );
+};
+
+export const constructExceptionMessageforLogger = (
+  handler: string,
+  name: string,
+  message: string,
+  relatedData: string
+) => {
+  return `Exception ${name} occurred. Exception message is -> ${message} . Related data for the exception -> ${relatedData}`;
 };
 
 export class StateMachineError extends Error {

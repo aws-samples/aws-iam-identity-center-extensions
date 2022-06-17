@@ -4,12 +4,12 @@ import { App, DefaultStackSynthesizer, Tags } from "aws-cdk-lib";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { BuildConfig } from "../lib/build/buildConfig";
+import { RegionSwitchBuildConfig } from "../lib/build/regionSwitchBuildConfig";
 import { AwsSsoExtensionsForEnterprise } from "../lib/stacks/pipeline/aws-sso-extensions-for-enterprise";
+import { AwsSsoExtensionsRegionSwitchDeploy } from "../lib/stacks/region-switch/aws-sso-extensions-region-switch-deploy";
+import { AwsSsoExtensionsRegionSwitchDiscover } from "../lib/stacks/region-switch/aws-sso-extensions-region-switch-discover";
 
 import yaml = require("js-yaml");
-import { RegionSwitchBuildConfig } from "../lib/build/regionSwitchBuildConfig";
-import { AwsSsoExtensionsRegionSwitchDiscover } from "../lib/stacks/region-switch/aws-sso-extensions-region-switch-discover";
-import { AwsSsoExtensionsRegionSwitchDeploy } from "../lib/stacks/region-switch/aws-sso-extensions-region-switch-deploy";
 const app = new App();
 
 function ensureString(
@@ -176,6 +176,11 @@ function getConfig() {
       SupportNestedOU: ensureBoolean(
         unparsedEnv["Parameters"],
         "SupportNestedOU"
+      ),
+      FunctionLogMode: ensureValidString(
+        unparsedEnv["Parameters"],
+        "FunctionLogMode",
+        ["INFO", "WARN", "DEBUG", "EXCEPTION"]
       ),
     },
   };

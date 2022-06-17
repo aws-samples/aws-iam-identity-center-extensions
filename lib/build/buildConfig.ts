@@ -58,4 +58,6 @@ export interface Parameters {
    * Used as switch to determine whether OU traversal is parent level only (or)
    * full tree traversal
    */
+  readonly FunctionLogMode: string;
+  /** Used as switch to set the level of lambda function logging the solution should use */
 }
