@@ -16,16 +16,16 @@
  *       - Determine if permission set referenced in the link is already provisioned by
  *               looking up permissionsetArn ddb table
  *
- *                                                                                                                                                               - If permission set is already provisioned, then
+ *                                                                                                                                                                     - If permission set is already provisioned, then
  *
- *                                                 - Determine if the link type is account, ou_id, account_tag or root
- *                                                 - If account, post the link operation details to link manager FIFO queue
- *                                                 - If ou_id, root, account_tag resolve the actual accounts and post the link
- *                                                                                 operation
- *                                                                                 details to org
- *                                                                                 entities state
- *                                                                                 machine in org account
- *                                 - If permission set is not provisioned, stop the operation here
+ *                                     - Determine if the link type is account, ou_id, account_tag or root
+ *                                     - If account, post the link operation details to link manager FIFO queue
+ *                                     - If ou_id, root, account_tag resolve the actual accounts and post the link
+ *                                                                     operation
+ *                                                                     details to org
+ *                                                                     entities state
+ *                                                                     machine in org account
+ *                     - If permission set is not provisioned, stop the operation here
  *       - If there are no related links, then stop the operation here
  * - Catch all failures in a generic exception block and post the error details to
  *   error notifications topics
@@ -66,6 +66,7 @@ import { SNSEvent } from "aws-lambda";
 import { v4 as uuidv4 } from "uuid";
 import {
   ErrorMessage,
+  logModes,
   requestStatus,
   StateMachinePayload,
   StaticSSOPayload,
@@ -143,7 +144,7 @@ export const handler = async (event: SNSEvent) => {
 
       logger({
         handler: "groupsHandler",
-        logMode: "info",
+        logMode: logModes.Info,
         requestId: requestId,
         relatedData: `${groupName}`,
         status: requestStatus.InProgress,
@@ -201,7 +202,7 @@ export const handler = async (event: SNSEvent) => {
                 );
                 logger({
                   handler: "groupsHandler",
-                  logMode: "info",
+                  logMode: logModes.Info,
                   relatedData: `${groupName}`,
                   requestId: requestId,
                   status: requestStatus.Completed,
@@ -234,7 +235,7 @@ export const handler = async (event: SNSEvent) => {
                 );
                 logger({
                   handler: "groupsHandler",
-                  logMode: "info",
+                  logMode: logModes.Info,
                   relatedData: `${groupName}`,
                   requestId: requestId,
                   status: requestStatus.Completed,
@@ -245,7 +246,7 @@ export const handler = async (event: SNSEvent) => {
               /** Permission set for the group-link does not exist */
               logger({
                 handler: "groupsHandler",
-                logMode: "info",
+                logMode: logModes.Info,
                 relatedData: `${groupName}`,
                 requestId: requestId,
                 status: requestStatus.Completed,
@@ -258,7 +259,7 @@ export const handler = async (event: SNSEvent) => {
         /** No related links for the group being processed */
         logger({
           handler: "groupsHandler",
-          logMode: "info",
+          logMode: logModes.Info,
           relatedData: `${groupName}`,
           requestId: requestId,
           status: requestStatus.Completed,
@@ -268,7 +269,7 @@ export const handler = async (event: SNSEvent) => {
     } else if (message.detail.eventName === "DeleteGroup") {
       logger({
         handler: "groupsHandler",
-        logMode: "info",
+        logMode: logModes.Info,
         relatedData: `${groupName}`,
         requestId: requestId,
         status: requestStatus.Completed,
@@ -288,7 +289,7 @@ export const handler = async (event: SNSEvent) => {
     );
     logger({
       handler: "groupsHandler",
-      logMode: "error",
+      logMode: logModes.Exception,
       requestId: requestId,
       status: requestStatus.FailedWithException,
       statusMessage: `Groups operation - failed with exception: ${JSON.stringify(

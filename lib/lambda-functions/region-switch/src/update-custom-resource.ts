@@ -9,7 +9,7 @@ const { ssoRegion, ssoAccountId } = process.env;
 
 /** SDK and third party client imports */
 import { DescribeExecutionCommand, SFNClient } from "@aws-sdk/client-sfn";
-import { requestStatus } from "../../helpers/src/interfaces";
+import { logModes, requestStatus } from "../../helpers/src/interfaces";
 import { logger, StateMachineError } from "../../helpers/src/utilities";
 /**
  * SDK and third party client instantiations done as part of init context for
@@ -28,7 +28,7 @@ export const handler = async (event: any) => {
   try {
     logger({
       handler: "updateCustomResource",
-      logMode: "info",
+      logMode: logModes.Info,
       relatedData: `${stateMachineExecutionArn}`,
       requestId: requestId,
       status: requestStatus.InProgress,
@@ -49,7 +49,7 @@ export const handler = async (event: any) => {
       case "RUNNING": {
         logger({
           handler: "updateCustomResource",
-          logMode: "info",
+          logMode: logModes.Info,
           requestId: requestId,
           relatedData: `${stateMachineExecutionArn}`,
           status: requestStatus.InProgress,
@@ -62,7 +62,7 @@ export const handler = async (event: any) => {
       case "SUCCEEDED": {
         logger({
           handler: "updateCustomResource",
-          logMode: "info",
+          logMode: logModes.Info,
           requestId: requestId,
           relatedData: `${stateMachineExecutionArn}`,
           status: requestStatus.Completed,
@@ -75,7 +75,7 @@ export const handler = async (event: any) => {
       case "FAILED": {
         logger({
           handler: "updateCustomResource",
-          logMode: "error",
+          logMode: logModes.Exception,
           requestId: requestId,
           relatedData: `${stateMachineExecutionArn}`,
           status: requestStatus.FailedWithError,
@@ -88,7 +88,7 @@ export const handler = async (event: any) => {
       case "TIMED_OUT": {
         logger({
           handler: "updateCustomResource",
-          logMode: "error",
+          logMode: logModes.Exception,
           requestId: requestId,
           relatedData: `${stateMachineExecutionArn}`,
           status: requestStatus.FailedWithError,
@@ -101,7 +101,7 @@ export const handler = async (event: any) => {
       default: {
         logger({
           handler: "updateCustomResource",
-          logMode: "error",
+          logMode: logModes.Exception,
           relatedData: `${stateMachineExecutionArn}`,
           status: requestStatus.FailedWithError,
           statusMessage: `Custom resource update - stateMachine with execution arn: ${stateMachineExecutionArn} reached an unknown status. See details in ${ssoAccountId} account, ${ssoRegion} region`,
@@ -117,7 +117,7 @@ export const handler = async (event: any) => {
     } else {
       logger({
         handler: "updateCustomResource",
-        logMode: "error",
+        logMode: logModes.Exception,
         requestId: requestId,
         relatedData: `${stateMachineExecutionArn}`,
         status: requestStatus.FailedWithException,

@@ -13,7 +13,7 @@ const { AWS_REGION } = process.env;
 import { SFNClient, StartExecutionCommand } from "@aws-sdk/client-sfn";
 import { CloudFormationCustomResourceEvent } from "aws-lambda";
 import { v4 as uuidv4 } from "uuid";
-import { requestStatus } from "../../helpers/src/interfaces";
+import { logModes, requestStatus } from "../../helpers/src/interfaces";
 import { logger } from "../../helpers/src/utilities";
 
 const sfnClientObject = new SFNClient({
@@ -41,7 +41,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
     );
     logger({
       handler: "upgradeSM",
-      logMode: "info",
+      logMode: logModes.Info,
       relatedData: `${stateMachineExecution.executionArn}`,
       requestId: requestId,
       status: requestStatus.InProgress,
@@ -56,7 +56,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
   } catch (e) {
     logger({
       handler: "upgradeSM",
-      logMode: "error",
+      logMode: logModes.Exception,
       requestId: requestId,
       relatedData: `${upgradeV303SMArn}`,
       status: requestStatus.FailedWithException,

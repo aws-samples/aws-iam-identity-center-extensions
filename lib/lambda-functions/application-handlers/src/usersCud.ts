@@ -54,6 +54,7 @@ import { SNSEvent } from "aws-lambda";
 import { v4 as uuidv4 } from "uuid";
 import {
   ErrorMessage,
+  logModes,
   requestStatus,
   StateMachinePayload,
   StaticSSOPayload,
@@ -137,7 +138,7 @@ export const handler = async (event: SNSEvent) => {
     if (message.detail.eventName === "CreateUser") {
       logger({
         handler: "userHandler",
-        logMode: "info",
+        logMode: logModes.Info,
         requestId: requestId,
         relatedData: `${userName}`,
         status: requestStatus.InProgress,
@@ -192,7 +193,7 @@ export const handler = async (event: SNSEvent) => {
                 );
                 logger({
                   handler: "userHandler",
-                  logMode: "info",
+                  logMode: logModes.Info,
                   relatedData: `${userName}`,
                   requestId: requestId,
                   status: requestStatus.Completed,
@@ -225,7 +226,7 @@ export const handler = async (event: SNSEvent) => {
                 );
                 logger({
                   handler: "userHandler",
-                  logMode: "info",
+                  logMode: logModes.Info,
                   relatedData: `${userName}`,
                   requestId: requestId,
                   status: requestStatus.Completed,
@@ -236,7 +237,7 @@ export const handler = async (event: SNSEvent) => {
               // Permission set for the user-link does not exist
               logger({
                 handler: "userHandler",
-                logMode: "info",
+                logMode: logModes.Info,
                 relatedData: `${userName}`,
                 requestId: requestId,
                 status: requestStatus.Completed,
@@ -249,7 +250,7 @@ export const handler = async (event: SNSEvent) => {
         // No related links for the user being processed
         logger({
           handler: "userHandler",
-          logMode: "info",
+          logMode: logModes.Info,
           relatedData: `${userName}`,
           requestId: requestId,
           status: requestStatus.Completed,
@@ -259,7 +260,7 @@ export const handler = async (event: SNSEvent) => {
     } else if (message.detail.eventName === "DeleteUser") {
       logger({
         handler: "userHandler",
-        logMode: "info",
+        logMode: logModes.Info,
         relatedData: `${userName}`,
         requestId: requestId,
         status: requestStatus.Completed,
@@ -279,7 +280,7 @@ export const handler = async (event: SNSEvent) => {
     );
     logger({
       handler: "userHandler",
-      logMode: "error",
+      logMode: logModes.Exception,
       requestId: requestId,
       status: requestStatus.FailedWithException,
       statusMessage: `User operation - failed with exception: ${JSON.stringify(

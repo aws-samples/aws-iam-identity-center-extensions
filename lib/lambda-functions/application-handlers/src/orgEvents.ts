@@ -52,6 +52,7 @@ import { SNSEvent } from "aws-lambda";
 import { v4 as uuidv4 } from "uuid";
 import {
   ErrorMessage,
+  logModes,
   requestStatus,
   StaticSSOPayload,
 } from "../../helpers/src/interfaces";
@@ -149,7 +150,7 @@ export const tagBasedDeProvisioning = async (
         );
         logger({
           handler: "orgEventsProcessor",
-          logMode: "info",
+          logMode: logModes.Info,
           requestId: requestId,
           relatedData: `${parentLinkValue}`,
           status: requestStatus.Completed,
@@ -160,7 +161,7 @@ export const tagBasedDeProvisioning = async (
   } else {
     logger({
       handler: "orgEventsProcessor",
-      logMode: "info",
+      logMode: logModes.Info,
       status: requestStatus.Completed,
       requestId: requestId,
       statusMessage: `OrgEvents - ignoring de-provisioning logic check as the tag created/updated/deleted is not part of provisioned links`,
@@ -244,7 +245,7 @@ export const orgEventProvisioning = async (
             );
             logger({
               handler: "orgEventsProcessor",
-              logMode: "info",
+              logMode: logModes.Info,
               relatedData: `${entityData}`,
               status: requestStatus.Completed,
               requestId: requestId,
@@ -253,7 +254,7 @@ export const orgEventProvisioning = async (
           } else {
             logger({
               handler: "orgEventsProcessor",
-              logMode: "info",
+              logMode: logModes.Info,
               relatedData: `${entityData}`,
               status: requestStatus.Aborted,
               requestId: requestId,
@@ -263,7 +264,7 @@ export const orgEventProvisioning = async (
         } else {
           logger({
             handler: "orgEventsProcessor",
-            logMode: "info",
+            logMode: logModes.Info,
             relatedData: `${entityData}`,
             status: requestStatus.Aborted,
             requestId: requestId,
@@ -275,7 +276,7 @@ export const orgEventProvisioning = async (
   } else if (entityType === "account_tag") {
     logger({
       handler: "orgEventsProcessor",
-      logMode: "info",
+      logMode: logModes.Info,
       relatedData: `${entityData}`,
       requestId: requestId,
       status: requestStatus.Completed,
@@ -323,7 +324,7 @@ export const handler = async (event: SNSEvent) => {
        */
       logger({
         handler: "orgEventsProcessor",
-        logMode: "info",
+        logMode: logModes.Info,
         relatedData: `${message.detail.requestParameters.accountId}`,
         status: requestStatus.InProgress,
         requestId: requestId,
@@ -336,7 +337,7 @@ export const handler = async (event: SNSEvent) => {
       if (supportNestedOU === "true") {
         logger({
           handler: "orgEventsProcessor",
-          logMode: "info",
+          logMode: logModes.Info,
           relatedData: `${message.detail.requestParameters.accountId}`,
           status: requestStatus.InProgress,
           requestId: requestId,
@@ -422,7 +423,7 @@ export const handler = async (event: SNSEvent) => {
       );
       logger({
         handler: "orgEventsProcessor",
-        logMode: "info",
+        logMode: logModes.Info,
         relatedData: `${message.detail.requestParameters.accountId}`,
         status: requestStatus.InProgress,
         requestId: requestId,
@@ -432,7 +433,7 @@ export const handler = async (event: SNSEvent) => {
       });
       logger({
         handler: "orgEventsProcessor",
-        logMode: "info",
+        logMode: logModes.Info,
         relatedData: `${message.detail.requestParameters.accountId}`,
         status: requestStatus.InProgress,
         requestId: requestId,
@@ -492,7 +493,7 @@ export const handler = async (event: SNSEvent) => {
             // Account tag has been deleted
             logger({
               handler: "orgEventsProcessor",
-              logMode: "info",
+              logMode: logModes.Info,
               relatedData: `${changedTagKey}`,
               status: requestStatus.Completed,
               statusMessage: `OrgEvents - tag change , delta is a delete operation`,
@@ -509,7 +510,7 @@ export const handler = async (event: SNSEvent) => {
             // Account tag is either created/updated
             logger({
               handler: "orgEventsProcessor",
-              logMode: "info",
+              logMode: logModes.Info,
               relatedData: `${changedTagKey}`,
               status: requestStatus.Completed,
               requestId: requestId,
@@ -542,7 +543,7 @@ export const handler = async (event: SNSEvent) => {
     );
     logger({
       handler: "orgEventsProcessor",
-      logMode: "error",
+      logMode: logModes.Exception,
       status: requestStatus.FailedWithException,
       requestId: requestId,
       statusMessage: `org events processor failed with exception: ${JSON.stringify(

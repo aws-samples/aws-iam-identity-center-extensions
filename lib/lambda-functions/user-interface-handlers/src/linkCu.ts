@@ -24,6 +24,7 @@ import {
   ErrorMessage,
   LinkData,
   LinkS3Payload,
+  logModes,
   requestStatus,
 } from "../../helpers/src/interfaces";
 import { logger } from "../../helpers/src/utilities";
@@ -99,7 +100,7 @@ export const handler = async (event: S3Event) => {
         );
         logger({
           handler: "userInterface-s3CreateUpdate",
-          logMode: "info",
+          logMode: logModes.Info,
           relatedData: linkData,
           requestId: requestId,
           status: requestStatus.InProgress,
@@ -111,7 +112,7 @@ export const handler = async (event: S3Event) => {
         if (err instanceof JSONParserError) {
           logger({
             handler: "userInterface-s3CreateUpdate",
-            logMode: "error",
+            logMode: logModes.Exception,
             requestId: requestId,
             status: requestStatus.FailedWithException,
             statusMessage: `Error processing link operation through S3 interface due to schema errors for: ${JSON.stringify(
@@ -140,7 +141,7 @@ export const handler = async (event: S3Event) => {
           );
           logger({
             handler: "userInterface-s3CreateUpdate",
-            logMode: "error",
+            logMode: logModes.Exception,
             requestId: requestId,
             status: requestStatus.FailedWithException,
             statusMessage: `Account Assignment create operation failed with error: ${JSON.stringify(

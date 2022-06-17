@@ -21,7 +21,11 @@ import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import { DynamoDBDocumentClient, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { S3Event, S3EventRecord } from "aws-lambda";
 import { v4 as uuidv4 } from "uuid";
-import { ErrorMessage, requestStatus } from "../../helpers/src/interfaces";
+import {
+  ErrorMessage,
+  logModes,
+  requestStatus,
+} from "../../helpers/src/interfaces";
 import { JSONParserError } from "../../helpers/src/payload-validator";
 import { logger } from "../../helpers/src/utilities";
 // SDK and third party client object initialistaion
@@ -69,7 +73,7 @@ export const handler = async (event: S3Event) => {
           );
           logger({
             handler: "userInterface-permissionSetS3Delete",
-            logMode: "warn",
+            logMode: logModes.Warn,
             relatedData: keyValue,
             requestId: requestId,
             status: requestStatus.Aborted,
@@ -88,7 +92,7 @@ export const handler = async (event: S3Event) => {
           );
           logger({
             handler: "userInterface-permissionSetS3Delete",
-            logMode: "info",
+            logMode: logModes.Info,
             relatedData: keyValue,
             requestId: requestId,
             status: requestStatus.InProgress,
@@ -109,7 +113,7 @@ export const handler = async (event: S3Event) => {
           );
           logger({
             handler: "userInterface-permissionSetS3Delete",
-            logMode: "error",
+            logMode: logModes.Exception,
             status: requestStatus.FailedWithException,
             statusMessage: `Permission Set operation failed due to schema validation errors:${JSON.stringify(
               err.errors
@@ -128,7 +132,7 @@ export const handler = async (event: S3Event) => {
           );
           logger({
             handler: "userInterface-permissionSetS3Delete",
-            logMode: "error",
+            logMode: logModes.Exception,
             status: requestStatus.FailedWithException,
             statusMessage: `Permission Set operation failed due to exception:${JSON.stringify(
               err

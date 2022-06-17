@@ -57,7 +57,11 @@ import { SQSEvent } from "aws-lambda";
 import { v4 as uuidv4 } from "uuid";
 import { waitUntilAccountAssignmentCreation } from "../../custom-waiters/src/waitUntilAccountAssignmentCreation";
 import { waitUntilAccountAssignmentDeletion } from "../../custom-waiters/src/waitUntilAccountAssignmentDeletion";
-import { ErrorMessage, requestStatus } from "../../helpers/src/interfaces";
+import {
+  ErrorMessage,
+  logModes,
+  requestStatus,
+} from "../../helpers/src/interfaces";
 import { logger } from "../../helpers/src/utilities";
 
 const ddbClientObject = new DynamoDBClient({
@@ -108,7 +112,7 @@ export const handler = async (event: SQSEvent) => {
         }`;
         logger({
           handler: "linkManagerHandler",
-          logMode: "info",
+          logMode: logModes.Info,
           relatedData: `${provisionedLinksKey}`,
           requestId: requestId,
           sourceRequestId: message.sourceRequestId,
@@ -132,7 +136,7 @@ export const handler = async (event: SQSEvent) => {
             if (provisionedLinks.Item) {
               logger({
                 handler: "linkManagerHandler",
-                logMode: "info",
+                logMode: logModes.Info,
                 relatedData: `${provisionedLinksKey}`,
                 requestId: requestId,
                 sourceRequestId: message.sourceRequestId,
@@ -173,7 +177,7 @@ export const handler = async (event: SQSEvent) => {
               );
               logger({
                 handler: "linkManagerHandler",
-                logMode: "info",
+                logMode: logModes.Info,
                 relatedData: `${provisionedLinksKey}`,
                 requestId: requestId,
                 sourceRequestId: message.sourceRequestId,
@@ -222,7 +226,7 @@ export const handler = async (event: SQSEvent) => {
               );
               logger({
                 handler: "linkManagerHandler",
-                logMode: "info",
+                logMode: logModes.Info,
                 relatedData: `${provisionedLinksKey}`,
                 requestId: requestId,
                 sourceRequestId: message.sourceRequestId,
@@ -232,7 +236,7 @@ export const handler = async (event: SQSEvent) => {
             } else {
               logger({
                 handler: "linkManagerHandler",
-                logMode: "info",
+                logMode: logModes.Info,
                 relatedData: `${provisionedLinksKey}`,
                 requestId: requestId,
                 sourceRequestId: message.sourceRequestId,
@@ -244,7 +248,7 @@ export const handler = async (event: SQSEvent) => {
         } else {
           logger({
             handler: "linkManagerHandler",
-            logMode: "info",
+            logMode: logModes.Info,
             relatedData: `${provisionedLinksKey}`,
             requestId: requestId,
             sourceRequestId: message.sourceRequestId,
@@ -265,7 +269,7 @@ export const handler = async (event: SQSEvent) => {
         );
         logger({
           handler: "linkManagerHandler",
-          logMode: "error",
+          logMode: logModes.Exception,
           requestId: requestId,
           status: requestStatus.FailedWithException,
           statusMessage: `Link Manager operation failed with exception: ${JSON.stringify(

@@ -48,6 +48,7 @@ import { SNSEvent } from "aws-lambda";
 import { v4 as uuidv4 } from "uuid";
 import {
   ErrorMessage,
+  logModes,
   requestStatus,
   StateMachinePayload,
   StaticSSOPayload,
@@ -114,7 +115,7 @@ export const handler = async (event: SNSEvent) => {
     );
     logger({
       handler: "permissionSetSyncHandler",
-      logMode: "info",
+      logMode: logModes.Info,
       requestId: requestId,
       relatedData: `${message.permission_set_name}`,
       status: requestStatus.InProgress,
@@ -167,7 +168,7 @@ export const handler = async (event: SNSEvent) => {
               );
               logger({
                 handler: "permissionSetSyncHandler",
-                logMode: "info",
+                logMode: logModes.Info,
                 relatedData: `${message.permission_set_name}`,
                 status: requestStatus.Completed,
                 requestId: requestId,
@@ -200,7 +201,7 @@ export const handler = async (event: SNSEvent) => {
               );
               logger({
                 handler: "permissionSetSyncHandler",
-                logMode: "info",
+                logMode: logModes.Info,
                 relatedData: `${message.permission_set_name}`,
                 requestId: requestId,
                 status: requestStatus.Completed,
@@ -210,7 +211,7 @@ export const handler = async (event: SNSEvent) => {
           } else {
             logger({
               handler: "permissionSetSyncHandler",
-              logMode: "info",
+              logMode: logModes.Info,
               relatedData: `${message.permission_set_name}`,
               requestId: requestId,
               status: requestStatus.Completed,
@@ -222,7 +223,7 @@ export const handler = async (event: SNSEvent) => {
     } else {
       logger({
         handler: "permissionSetSyncHandler",
-        logMode: "info",
+        logMode: logModes.Info,
         relatedData: `${message.permission_set_name}`,
         requestId: requestId,
         status: requestStatus.Completed,
@@ -242,7 +243,7 @@ export const handler = async (event: SNSEvent) => {
     );
     logger({
       handler: "permissionSetSyncHandler",
-      logMode: "error",
+      logMode: logModes.Exception,
       status: requestStatus.FailedWithException,
       requestId: requestId,
       statusMessage: `permission set sync processor failed with exception: ${JSON.stringify(

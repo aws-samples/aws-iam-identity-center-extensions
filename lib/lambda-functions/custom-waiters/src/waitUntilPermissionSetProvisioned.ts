@@ -13,7 +13,7 @@ import {
   WaiterResult,
   WaiterState,
 } from "@aws-sdk/util-waiter";
-import { requestStatus } from "../../helpers/src/interfaces";
+import { logModes, requestStatus } from "../../helpers/src/interfaces";
 import { logger } from "../../helpers/src/utilities";
 
 const checkState = async (
@@ -47,7 +47,7 @@ export const waitUntilPermissionSetProvisioned = async (
 ): Promise<WaiterResult> => {
   logger({
     handler: "permissionSetProvisioningWaiter",
-    logMode: "info",
+    logMode: logModes.Info,
     relatedData: `${input.ProvisionPermissionSetRequestId}`,
     requestId: requestId,
     status: requestStatus.InProgress,
@@ -61,7 +61,7 @@ export const waitUntilPermissionSetProvisioned = async (
   );
   logger({
     handler: "permissionSetProvisioningWaiter",
-    logMode: "info",
+    logMode: logModes.Info,
     relatedData: `${input.ProvisionPermissionSetRequestId}`,
     requestId: requestId,
     status: requestStatus.Completed,

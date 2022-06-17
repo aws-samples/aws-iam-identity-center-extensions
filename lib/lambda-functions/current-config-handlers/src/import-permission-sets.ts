@@ -31,7 +31,7 @@ import {
 import { SNSEvent } from "aws-lambda";
 import { diff } from "json-diff";
 import { v4 as uuidv4 } from "uuid";
-import { requestStatus } from "../../helpers/src/interfaces";
+import { logModes, requestStatus } from "../../helpers/src/interfaces";
 import { getMinutesFromISODurationString } from "../../helpers/src/isoDurationUtility";
 import { logger } from "../../helpers/src/utilities";
 
@@ -61,7 +61,7 @@ export const handler = async (event: SNSEvent) => {
       message.describePermissionSet.PermissionSet.PermissionSetArn;
     logger({
       handler: "permissionSetImporter",
-      logMode: "info",
+      logMode: logModes.Info,
       requestId: requestId,
       relatedData: permissionSetName,
       status: requestStatus.InProgress,
@@ -147,7 +147,7 @@ export const handler = async (event: SNSEvent) => {
       if (fetchPermissionSet.Item && fetchArn.Item) {
         logger({
           handler: "permissionSetImporter",
-          logMode: "info",
+          logMode: logModes.Info,
           requestId: requestId,
           relatedData: permissionSetName,
           status: requestStatus.InProgress,
@@ -167,7 +167,7 @@ export const handler = async (event: SNSEvent) => {
         if (diffCalculated === undefined) {
           logger({
             handler: "permissionSetImporter",
-            logMode: "info",
+            logMode: logModes.Info,
             requestId: requestId,
             relatedData: permissionSetName,
             status: requestStatus.Completed,
@@ -196,7 +196,7 @@ export const handler = async (event: SNSEvent) => {
           );
           logger({
             handler: "permissionSetImporter",
-            logMode: "info",
+            logMode: logModes.Info,
             requestId: requestId,
             relatedData: permissionSetName,
             status: requestStatus.InProgress,
@@ -219,7 +219,7 @@ export const handler = async (event: SNSEvent) => {
             );
             logger({
               handler: "permissionSetImporter",
-              logMode: "info",
+              logMode: logModes.Info,
               requestId: requestId,
               relatedData: permissionSetName,
               status: requestStatus.InProgress,
@@ -229,7 +229,7 @@ export const handler = async (event: SNSEvent) => {
           }
           logger({
             handler: "permissionSetImporter",
-            logMode: "info",
+            logMode: logModes.Info,
             requestId: requestId,
             relatedData: permissionSetName,
             status: requestStatus.Completed,
@@ -268,7 +268,7 @@ export const handler = async (event: SNSEvent) => {
         );
         logger({
           handler: "permissionSetImporter",
-          logMode: "info",
+          logMode: logModes.Info,
           requestId: requestId,
           relatedData: permissionSetName,
           status: requestStatus.InProgress,
@@ -279,7 +279,7 @@ export const handler = async (event: SNSEvent) => {
     } else {
       logger({
         handler: "permissionSetImporter",
-        logMode: "info",
+        logMode: logModes.Info,
         requestId: requestId,
         relatedData: permissionSetName,
         status: requestStatus.Completed,
@@ -290,7 +290,7 @@ export const handler = async (event: SNSEvent) => {
   } catch (err) {
     logger({
       handler: "permissionSetImporter",
-      logMode: "error",
+      logMode: logModes.Exception,
       status: requestStatus.FailedWithException,
       statusMessage: `Permission set import operation failed with exception: ${JSON.stringify(
         err

@@ -13,7 +13,7 @@ import {
   WaiterResult,
   WaiterState,
 } from "@aws-sdk/util-waiter";
-import { requestStatus } from "../../helpers/src/interfaces";
+import { logModes, requestStatus } from "../../helpers/src/interfaces";
 import { logger } from "../../helpers/src/utilities";
 
 const checkState = async (
@@ -47,7 +47,7 @@ export const waitUntilAccountAssignmentDeletion = async (
 ): Promise<WaiterResult> => {
   logger({
     handler: "accountAssignmentDeletionWaiter",
-    logMode: "info",
+    logMode: logModes.Info,
     relatedData: `${input.AccountAssignmentDeletionRequestId}`,
     requestId: requestId,
     status: requestStatus.InProgress,
@@ -61,7 +61,7 @@ export const waitUntilAccountAssignmentDeletion = async (
   );
   logger({
     handler: "accountAssignmentDeletionWaiter",
-    logMode: "info",
+    logMode: logModes.Info,
     relatedData: `${input.AccountAssignmentDeletionRequestId}`,
     requestId: requestId,
     status: requestStatus.Completed,

@@ -40,6 +40,7 @@ import { join } from "path";
 import {
   CreateUpdatePermissionSetPayload,
   DeletePermissionSetPayload,
+  logModes,
   requestStatus,
 } from "../../helpers/src/interfaces";
 //Import helper utilities and interfaces
@@ -151,7 +152,7 @@ export const handler = async (
 
         logger({
           handler: "userInterface-permissionSetApi",
-          logMode: "info",
+          logMode: logModes.Info,
           relatedData: payload.permissionSetData.permissionSetName,
           requestId: requestId,
           status: requestStatus.InProgress,
@@ -188,7 +189,7 @@ export const handler = async (
         if (relatedLinks.Items?.length !== 0) {
           logger({
             handler: "userInterface-permissionSetApi",
-            logMode: "warn",
+            logMode: logModes.Warn,
             relatedData: payload.permissionSetData.permissionSetName,
             requestId: requestId,
             status: requestStatus.Aborted,
@@ -220,7 +221,7 @@ export const handler = async (
           );
           logger({
             handler: "userInterface-permissionSetApi",
-            logMode: "info",
+            logMode: logModes.Info,
             relatedData: payload.permissionSetData.permissionSetName,
             requestId: requestId,
             status: requestStatus.InProgress,
@@ -237,7 +238,7 @@ export const handler = async (
       } else {
         logger({
           handler: "userInterface-permissionSetApi",
-          logMode: "error",
+          logMode: logModes.Exception,
           requestId: requestId,
           status: requestStatus.FailedWithError,
           statusMessage: `Permission Set operation failed due to invalid action - ${body.action}`,
@@ -254,7 +255,7 @@ export const handler = async (
       if (err instanceof JSONParserError) {
         logger({
           handler: "userInterface-permissionSetApi",
-          logMode: "error",
+          logMode: logModes.Exception,
           status: requestStatus.FailedWithException,
           statusMessage: `Permission Set operation failed due to schema validation errors:${JSON.stringify(
             err.errors
@@ -267,7 +268,7 @@ export const handler = async (
       } else {
         logger({
           handler: "userInterface-permissionSetApi",
-          logMode: "error",
+          logMode: logModes.Exception,
           status: requestStatus.FailedWithException,
           statusMessage: `Permission Set operation failed due to exception:${JSON.stringify(
             err
@@ -284,7 +285,7 @@ export const handler = async (
   } else {
     logger({
       handler: "userInterface-permissionSetApi",
-      logMode: "error",
+      logMode: logModes.Exception,
       status: requestStatus.FailedWithException,
       statusMessage: `Permission Set operation failed due to invalid message body`,
     });

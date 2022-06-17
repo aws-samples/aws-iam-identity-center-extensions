@@ -15,7 +15,11 @@ const { errorNotificationsTopicArn, linkQueueUrl, AWS_REGION } = process.env;
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { SNSEvent } from "aws-lambda";
-import { ErrorMessage, requestStatus } from "../../helpers/src/interfaces";
+import {
+  ErrorMessage,
+  logModes,
+  requestStatus,
+} from "../../helpers/src/interfaces";
 import { logger } from "../../helpers/src/utilities";
 // SDK and third party client object initialistaion
 const snsClientObject = new SNSClient({ region: AWS_REGION, maxAttempts: 2 });
@@ -60,7 +64,7 @@ export const handler = async (event: SNSEvent) => {
     );
     logger({
       handler: "processTargetAccountSMListener",
-      logMode: "info",
+      logMode: logModes.Info,
       relatedData: `${targetId}`,
       requestId: message.sourceRequestId,
       status: requestStatus.InProgress,
@@ -79,7 +83,7 @@ export const handler = async (event: SNSEvent) => {
     );
     logger({
       handler: "processTargetAccountSMListener",
-      logMode: "error",
+      logMode: logModes.Exception,
       status: requestStatus.FailedWithException,
       statusMessage: `Target account listener failed with exception: ${JSON.stringify(
         err

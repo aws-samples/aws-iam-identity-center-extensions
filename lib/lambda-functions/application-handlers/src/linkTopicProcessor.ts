@@ -10,17 +10,17 @@
  *
  *       - If the permission set arn exists, then
  *
- *                                                                                                                                                         - Look up in AWS SSO Identity store if the user/group exists
+ *                                                                                                                                                               - Look up in AWS SSO Identity store if the user/group exists
  *
- *                         - If the user/group exists
+ *                               - If the user/group exists
  *
- *                                                         - Determine if the operation is create/delete
- *                                                         - Determine if link type is account /ou_id/root/account_tag
- *                                                         - If link type is account , post the link provisioning/deprovisioning operation to the link manager queue
- *                                                         - If link type is ou_id, root,account_tag invoke org entities state machine
- *                         - If the user/group does not exist
+ *                                                               - Determine if the operation is create/delete
+ *                                                               - Determine if link type is account /ou_id/root/account_tag
+ *                                                               - If link type is account , post the link provisioning/deprovisioning operation to the link manager queue
+ *                                                               - If link type is ou_id, root,account_tag invoke org entities state machine
+ *                               - If the user/group does not exist
  *
- *                                                         - Stop processing as we won't be able to proceed without the principal Arn
+ *                                                               - Stop processing as we won't be able to proceed without the principal Arn
  *       - If the permission set does not exist, do nothing as we cannot do link
  *               provisioning if the permission set is not yet provisioned
  * - Catch all failures in a generic exception block and post the error details to
@@ -62,6 +62,7 @@ import {
 import { SNSEvent } from "aws-lambda";
 import {
   ErrorMessage,
+  logModes,
   requestStatus,
   StateMachinePayload,
   StaticSSOPayload,
@@ -125,7 +126,7 @@ export const handler = async (event: SNSEvent) => {
     const { action, linkData, requestId } = message;
     logger({
       handler: "linkTopicProcessor",
-      logMode: "info",
+      logMode: logModes.Info,
       requestId: requestId,
       relatedData: `${linkData}`,
       status: requestStatus.InProgress,
@@ -192,7 +193,7 @@ export const handler = async (event: SNSEvent) => {
           );
           logger({
             handler: "linkTopicProcessor",
-            logMode: "info",
+            logMode: logModes.Info,
             relatedData: `${linkData}`,
             requestId: requestId,
             status: requestStatus.Completed,
@@ -225,7 +226,7 @@ export const handler = async (event: SNSEvent) => {
           );
           logger({
             handler: "linkTopicProcessor",
-            logMode: "info",
+            logMode: logModes.Info,
             requestId: requestId,
             relatedData: `${linkData}`,
             status: requestStatus.Completed,
@@ -235,7 +236,7 @@ export const handler = async (event: SNSEvent) => {
       } else {
         logger({
           handler: "linkTopicProcessor",
-          logMode: "info",
+          logMode: logModes.Info,
           relatedData: `${linkData}`,
           requestId: requestId,
           status: requestStatus.Completed,
@@ -245,7 +246,7 @@ export const handler = async (event: SNSEvent) => {
     } else {
       logger({
         handler: "linkTopicProcessor",
-        logMode: "info",
+        logMode: logModes.Info,
         relatedData: `${linkData}`,
         requestId: requestId,
         status: requestStatus.Aborted,
@@ -265,7 +266,7 @@ export const handler = async (event: SNSEvent) => {
     );
     logger({
       handler: "linkTopicProcessor",
-      logMode: "error",
+      logMode: logModes.Exception,
       status: requestStatus.FailedWithException,
       statusMessage: `Link topic processor failed with exception: ${JSON.stringify(
         err

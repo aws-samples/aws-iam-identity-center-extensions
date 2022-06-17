@@ -69,7 +69,12 @@ import {
 import { SNSEvent } from "aws-lambda";
 import { diff } from "json-diff";
 import { waitUntilPermissionSetProvisioned } from "../../custom-waiters/src/waitUntilPermissionSetProvisioned";
-import { ErrorMessage, requestStatus, Tag } from "../../helpers/src/interfaces";
+import {
+  ErrorMessage,
+  logModes,
+  requestStatus,
+  Tag,
+} from "../../helpers/src/interfaces";
 import { serializeDurationToISOFormat } from "../../helpers/src/isoDurationUtility";
 import { logger } from "../../helpers/src/utilities";
 
@@ -126,7 +131,7 @@ export const handler = async (event: SNSEvent) => {
 
     logger({
       handler: "permissionSetTopicProcessor",
-      logMode: "info",
+      logMode: logModes.Info,
       requestId: requestId,
       relatedData: permissionSetName,
       status: requestStatus.InProgress,
@@ -155,7 +160,7 @@ export const handler = async (event: SNSEvent) => {
         );
         logger({
           handler: "permissionSetTopicProcessor",
-          logMode: "info",
+          logMode: logModes.Info,
           requestId: requestId,
           relatedData: permissionSetName,
           status: requestStatus.InProgress,
@@ -192,7 +197,7 @@ export const handler = async (event: SNSEvent) => {
             );
             logger({
               handler: "permissionSetTopicProcessor",
-              logMode: "info",
+              logMode: logModes.Info,
               requestId: requestId,
               relatedData: permissionSetName,
               status: requestStatus.InProgress,
@@ -211,7 +216,7 @@ export const handler = async (event: SNSEvent) => {
             );
             logger({
               handler: "permissionSetTopicProcessor",
-              logMode: "info",
+              logMode: logModes.Info,
               requestId: requestId,
               relatedData: permissionSetName,
               status: requestStatus.InProgress,
@@ -232,7 +237,7 @@ export const handler = async (event: SNSEvent) => {
             );
             logger({
               handler: "permissionSetTopicProcessor",
-              logMode: "info",
+              logMode: logModes.Info,
               requestId: requestId,
               relatedData: permissionSetName,
               status: requestStatus.InProgress,
@@ -255,7 +260,7 @@ export const handler = async (event: SNSEvent) => {
         );
         logger({
           handler: "permissionSetTopicProcessor",
-          logMode: "info",
+          logMode: logModes.Info,
           requestId: requestId,
           relatedData: permissionSetName,
           status: requestStatus.InProgress,
@@ -271,7 +276,7 @@ export const handler = async (event: SNSEvent) => {
           );
           logger({
             handler: "permissionSetTopicProcessor",
-            logMode: "info",
+            logMode: logModes.Info,
             requestId: requestId,
             relatedData: permissionSetName,
             status: requestStatus.InProgress,
@@ -295,7 +300,7 @@ export const handler = async (event: SNSEvent) => {
           );
           logger({
             handler: "permissionSetTopicProcessor",
-            logMode: "info",
+            logMode: logModes.Info,
             requestId: requestId,
             relatedData: permissionSetName,
             status: requestStatus.InProgress,
@@ -315,7 +320,7 @@ export const handler = async (event: SNSEvent) => {
 
             logger({
               handler: "permissionSetTopicProcessor",
-              logMode: "info",
+              logMode: logModes.Info,
               requestId: requestId,
               relatedData: permissionSetName,
               status: requestStatus.InProgress,
@@ -326,7 +331,7 @@ export const handler = async (event: SNSEvent) => {
         syncPermissionSet = true;
         logger({
           handler: "permissionSetTopicProcessor",
-          logMode: "info",
+          logMode: logModes.Info,
           requestId: requestId,
           relatedData: permissionSetName,
           status: requestStatus.Completed,
@@ -349,7 +354,7 @@ export const handler = async (event: SNSEvent) => {
 
         logger({
           handler: "permissionSetTopicProcessor",
-          logMode: "info",
+          logMode: logModes.Info,
           requestId: requestId,
           relatedData: permissionSetName,
           status: requestStatus.InProgress,
@@ -361,7 +366,7 @@ export const handler = async (event: SNSEvent) => {
         if (diffCalculated === undefined) {
           logger({
             handler: "permissionSetTopicProcessor",
-            logMode: "info",
+            logMode: logModes.Info,
             requestId: requestId,
             relatedData: permissionSetName,
             status: requestStatus.Completed,
@@ -379,7 +384,7 @@ export const handler = async (event: SNSEvent) => {
           if (fetchArn.Item) {
             logger({
               handler: "permissionSetTopicProcessor",
-              logMode: "info",
+              logMode: logModes.Info,
               requestId: requestId,
               relatedData: permissionSetName,
               status: requestStatus.InProgress,
@@ -441,7 +446,7 @@ export const handler = async (event: SNSEvent) => {
                   reProvision = true;
                   logger({
                     handler: "permissionSetTopicProcessor",
-                    logMode: "info",
+                    logMode: logModes.Info,
                     requestId: requestId,
                     relatedData: permissionSetName,
                     status: requestStatus.InProgress,
@@ -464,7 +469,7 @@ export const handler = async (event: SNSEvent) => {
                   reProvision = true;
                   logger({
                     handler: "permissionSetTopicProcessor",
-                    logMode: "info",
+                    logMode: logModes.Info,
                     requestId: requestId,
                     relatedData: permissionSetName,
                     status: requestStatus.InProgress,
@@ -511,7 +516,7 @@ export const handler = async (event: SNSEvent) => {
                     reProvision = true;
                     logger({
                       handler: "permissionSetTopicProcessor",
-                      logMode: "info",
+                      logMode: logModes.Info,
                       requestId: requestId,
                       relatedData: permissionSetName,
                       status: requestStatus.InProgress,
@@ -531,7 +536,7 @@ export const handler = async (event: SNSEvent) => {
 
                     logger({
                       handler: "permissionSetTopicProcessor",
-                      logMode: "info",
+                      logMode: logModes.Info,
                       requestId: requestId,
                       relatedData: permissionSetName,
                       status: requestStatus.InProgress,
@@ -555,7 +560,7 @@ export const handler = async (event: SNSEvent) => {
                     );
                     logger({
                       handler: "permissionSetTopicProcessor",
-                      logMode: "info",
+                      logMode: logModes.Info,
                       requestId: requestId,
                       relatedData: permissionSetName,
                       status: requestStatus.InProgress,
@@ -574,7 +579,7 @@ export const handler = async (event: SNSEvent) => {
                   );
                   logger({
                     handler: "permissionSetTopicProcessor",
-                    logMode: "info",
+                    logMode: logModes.Info,
                     requestId: requestId,
                     relatedData: permissionSetName,
                     status: requestStatus.InProgress,
@@ -596,7 +601,7 @@ export const handler = async (event: SNSEvent) => {
                   reProvision = true;
                   logger({
                     handler: "permissionSetTopicProcessor",
-                    logMode: "info",
+                    logMode: logModes.Info,
                     requestId: requestId,
                     relatedData: permissionSetName,
                     status: requestStatus.InProgress,
@@ -614,7 +619,7 @@ export const handler = async (event: SNSEvent) => {
                   );
                   logger({
                     handler: "permissionSetTopicProcessor",
-                    logMode: "info",
+                    logMode: logModes.Info,
                     requestId: requestId,
                     relatedData: permissionSetName,
                     status: requestStatus.InProgress,
@@ -642,7 +647,7 @@ export const handler = async (event: SNSEvent) => {
                     );
                     logger({
                       handler: "permissionSetTopicProcessor",
-                      logMode: "info",
+                      logMode: logModes.Info,
                       requestId: requestId,
                       relatedData: permissionSetName,
                       status: requestStatus.InProgress,
@@ -659,7 +664,7 @@ export const handler = async (event: SNSEvent) => {
                     );
                     logger({
                       handler: "permissionSetTopicProcessor",
-                      logMode: "info",
+                      logMode: logModes.Info,
                       requestId: requestId,
                       relatedData: permissionSetName,
                       status: requestStatus.InProgress,
@@ -671,7 +676,7 @@ export const handler = async (event: SNSEvent) => {
                 default: {
                   logger({
                     handler: "permissionSetTopicProcessor",
-                    logMode: "error",
+                    logMode: logModes.Exception,
                     requestId: requestId,
                     relatedData: permissionSetName,
                     status: requestStatus.FailedWithError,
@@ -692,7 +697,7 @@ export const handler = async (event: SNSEvent) => {
               );
               logger({
                 handler: "permissionSetTopicProcessor",
-                logMode: "info",
+                logMode: logModes.Info,
                 requestId: requestId,
                 relatedData: permissionSetName,
                 status: requestStatus.InProgress,
@@ -721,7 +726,7 @@ export const handler = async (event: SNSEvent) => {
                 );
                 logger({
                   handler: "permissionSetTopicProcessor",
-                  logMode: "info",
+                  logMode: logModes.Info,
                   requestId: requestId,
                   relatedData: permissionSetName,
                   status: requestStatus.InProgress,
@@ -737,7 +742,7 @@ export const handler = async (event: SNSEvent) => {
                 );
                 logger({
                   handler: "permissionSetTopicProcessor",
-                  logMode: "info",
+                  logMode: logModes.Info,
                   requestId: requestId,
                   relatedData: permissionSetName,
                   status: requestStatus.InProgress,
@@ -755,7 +760,7 @@ export const handler = async (event: SNSEvent) => {
                 );
                 logger({
                   handler: "permissionSetTopicProcessor",
-                  logMode: "info",
+                  logMode: logModes.Info,
                   requestId: requestId,
                   relatedData: permissionSetName,
                   status: requestStatus.InProgress,
@@ -788,7 +793,7 @@ export const handler = async (event: SNSEvent) => {
                 );
                 logger({
                   handler: "permissionSetTopicProcessor",
-                  logMode: "info",
+                  logMode: logModes.Info,
                   requestId: requestId,
                   relatedData: permissionSetName,
                   status: requestStatus.InProgress,
@@ -808,7 +813,7 @@ export const handler = async (event: SNSEvent) => {
                 );
                 logger({
                   handler: "permissionSetTopicProcessor",
-                  logMode: "info",
+                  logMode: logModes.Info,
                   requestId: requestId,
                   relatedData: permissionSetName,
                   status: requestStatus.InProgress,
@@ -823,7 +828,7 @@ export const handler = async (event: SNSEvent) => {
           }
           logger({
             handler: "permissionSetTopicProcessor",
-            logMode: "info",
+            logMode: logModes.Info,
             requestId: requestId,
             relatedData: permissionSetName,
             status: requestStatus.Completed,
@@ -865,7 +870,7 @@ export const handler = async (event: SNSEvent) => {
           );
           logger({
             handler: "permissionSetTopicProcessor",
-            logMode: "info",
+            logMode: logModes.Info,
             requestId: requestId,
             relatedData: permissionSetName,
             status: requestStatus.Completed,
@@ -874,7 +879,7 @@ export const handler = async (event: SNSEvent) => {
         }
         logger({
           handler: "permissionSetTopicProcessor",
-          logMode: "info",
+          logMode: logModes.Info,
           requestId: requestId,
           relatedData: permissionSetName,
           status: requestStatus.Completed,
@@ -896,7 +901,7 @@ export const handler = async (event: SNSEvent) => {
     } else {
       logger({
         handler: "permissionSetTopicProcessor",
-        logMode: "info",
+        logMode: logModes.Info,
         requestId: requestId,
         relatedData: permissionSetName,
         status: requestStatus.Completed,

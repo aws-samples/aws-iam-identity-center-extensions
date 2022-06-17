@@ -32,6 +32,7 @@ import { join } from "path";
 import {
   LinkData,
   LinkPayload,
+  logModes,
   requestStatus,
 } from "../../helpers/src/interfaces";
 import {
@@ -107,7 +108,7 @@ export const handler = async (
         );
         logger({
           handler: "userInterface-linkApi",
-          logMode: "info",
+          logMode: logModes.Info,
           relatedData: linkData,
           requestId: requestId,
           hasRelatedRequests:
@@ -149,7 +150,7 @@ export const handler = async (
         );
         logger({
           handler: "userInterface-linkApi",
-          logMode: "info",
+          logMode: logModes.Info,
           relatedData: linkData,
           requestId: requestId,
           hasRelatedRequests:
@@ -168,7 +169,7 @@ export const handler = async (
         //TS flow path completion
         logger({
           handler: "userInterface-linkApi",
-          logMode: "error",
+          logMode: logModes.Exception,
           relatedData: linkData,
           requestId: requestId,
           status: requestStatus.FailedWithError,
@@ -185,7 +186,7 @@ export const handler = async (
       if (err instanceof JSONParserError) {
         logger({
           handler: "userInterface-linkApi",
-          logMode: "error",
+          logMode: logModes.Exception,
           requestId: requestId,
           status: requestStatus.FailedWithException,
           statusMessage: `Error processing link operation through API interface due to schema errors for: ${JSON.stringify(
@@ -199,7 +200,7 @@ export const handler = async (
       } else {
         logger({
           handler: "userInterface-linkApi",
-          logMode: "error",
+          logMode: logModes.Exception,
           requestId: requestId,
           status: requestStatus.FailedWithException,
           statusMessage: `Error processing link operation through API interface due to schema errors for: ${JSON.stringify(
@@ -217,7 +218,7 @@ export const handler = async (
   } else {
     logger({
       handler: "userInterface-linkApi",
-      logMode: "error",
+      logMode: logModes.Exception,
       requestId: requestId,
       status: requestStatus.FailedWithException,
       statusMessage: `Invalid message body provided`,

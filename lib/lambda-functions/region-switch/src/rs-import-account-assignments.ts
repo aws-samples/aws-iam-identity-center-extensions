@@ -11,7 +11,11 @@ import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 /** SDK and third party client imports */
 import { SNSEvent } from "aws-lambda";
 import { v4 as uuidv4 } from "uuid";
-import { LinkData, requestStatus } from "../../helpers/src/interfaces";
+import {
+  LinkData,
+  logModes,
+  requestStatus,
+} from "../../helpers/src/interfaces";
 import { logger } from "../../helpers/src/utilities";
 
 /**
@@ -44,7 +48,7 @@ export const handler = async (event: SNSEvent) => {
     };
     logger({
       handler: "rs-accountAssignmentImporter",
-      logMode: "info",
+      logMode: logModes.Info,
       requestId: requestId,
       relatedData: linkParams.awsEntityId,
       status: requestStatus.InProgress,
@@ -62,7 +66,7 @@ export const handler = async (event: SNSEvent) => {
     );
     logger({
       handler: "rs-accountAssignmentImporter",
-      logMode: "info",
+      logMode: logModes.Info,
       requestId: requestId,
       relatedData: linkParams.awsEntityId,
       status: requestStatus.Completed,
@@ -72,7 +76,7 @@ export const handler = async (event: SNSEvent) => {
   } catch (err) {
     logger({
       handler: "rs-accountAssignmentImporter",
-      logMode: "error",
+      logMode: logModes.Exception,
       status: requestStatus.FailedWithException,
       statusMessage: `Account assignment import operation failed with exception: ${JSON.stringify(
         err
