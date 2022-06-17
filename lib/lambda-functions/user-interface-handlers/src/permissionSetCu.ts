@@ -82,6 +82,9 @@ const createUpdateSchemaDefinition = JSON.parse(
 );
 const createUpdateValidate = ajv.compile(createUpdateSchemaDefinition);
 const handlerName = AWS_LAMBDA_FUNCTION_NAME + "";
+let permissionSetFileName = "";
+const messageSubject =
+  "Exception in permission set create/update operation through S3 interface";
 
 export const handler = async (event: S3Event) => {
   await Promise.all(
@@ -114,6 +117,7 @@ export const handler = async (event: S3Event) => {
           },
           functionLogMode
         );
+        permissionSetFileName = record.s3.object.key;
         const jsonData = JSON.parse(
           await streamToString(originalText.Body as Readable)
         );
@@ -243,24 +247,24 @@ export const handler = async (event: S3Event) => {
           await snsClientObject.send(
             new PublishCommand({
               TopicArn: errorNotificationsTopicArn,
-              Subject:
-                "Exception in permission set processing through S3 interface",
+              Subject: messageSubject,
               Message: constructExceptionMessage(
-                "permissionSetCu.ts",
+                handlerName,
                 "Schema validation exception",
-                "Provided permission set S3 file does not pass the schema validation",
+                `Provided permission set ${permissionSetFileName} S3 file does not pass the schema validation`,
                 JSON.stringify(err.errors)
               ),
             })
           );
           logger({
             handler: handlerName,
+            requestId: requestId,
             logMode: logModes.Exception,
             status: requestStatus.FailedWithException,
             statusMessage: constructExceptionMessageforLogger(
-              "permissionSetCu.ts",
+              handlerName,
               "Schema validation exception",
-              "Provided permission set S3 file does not pass the schema validation",
+              `Provided permission set ${permissionSetFileName} S3 file does not pass the schema validation`,
               JSON.stringify(err.errors)
             ),
           });
@@ -272,50 +276,50 @@ export const handler = async (event: S3Event) => {
           await snsClientObject.send(
             new PublishCommand({
               TopicArn: errorNotificationsTopicArn,
-              Subject:
-                "Exception in permission set processing through S3 interface",
+              Subject: messageSubject,
               Message: constructExceptionMessage(
-                "permissionSetCu.ts",
+                handlerName,
                 err.name,
                 err.message,
-                ""
+                permissionSetFileName
               ),
             })
           );
           logger({
             handler: handlerName,
+            requestId: requestId,
             logMode: logModes.Exception,
             status: requestStatus.FailedWithException,
             statusMessage: constructExceptionMessageforLogger(
-              "permissionSetCu.ts",
+              handlerName,
               err.name,
               err.message,
-              ""
+              permissionSetFileName
             ),
           });
         } else {
           await snsClientObject.send(
             new PublishCommand({
               TopicArn: errorNotificationsTopicArn,
-              Subject:
-                "Exception in permission set processing through S3 interface",
+              Subject: messageSubject,
               Message: constructExceptionMessage(
-                "permissionSetCu.ts",
+                handlerName,
                 "Unhandled exception",
                 JSON.stringify(err),
-                ""
+                permissionSetFileName
               ),
             })
           );
           logger({
             handler: handlerName,
+            requestId: requestId,
             logMode: logModes.Exception,
             status: requestStatus.FailedWithException,
             statusMessage: constructExceptionMessageforLogger(
-              "permissionSetCu.ts",
+              handlerName,
               "Unhandled exception",
               JSON.stringify(err),
-              ""
+              permissionSetFileName
             ),
           });
         }
