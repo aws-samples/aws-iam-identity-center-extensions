@@ -248,6 +248,7 @@ export class PermissionSetCRUD extends Construct {
             linksTable: PermissionSetCRUDProps.linksTableName,
             permissionSetProcessingTopicArn:
               this.permissionSetProcessingTopic.topicArn,
+            functionLogMode: buildConfig.Parameters.FunctionLogMode,
           },
         }
       );
