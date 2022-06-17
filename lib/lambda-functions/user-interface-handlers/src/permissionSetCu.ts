@@ -162,6 +162,7 @@ export const handler = async (event: S3Event) => {
               TopicArn: errorNotificationsTopicArn,
               Subject:
                 "Exception in permission set processing through S3 interface",
+              MessageStructure: "json",
               Message: constructExceptionMessage(
                 "permissionSetCu.ts",
                 "Schema validation exception",
@@ -191,6 +192,7 @@ export const handler = async (event: S3Event) => {
               TopicArn: errorNotificationsTopicArn,
               Subject:
                 "Exception in permission set processing through S3 interface",
+              MessageStructure: "json",
               Message: constructExceptionMessage(
                 "permissionSetCu.ts",
                 err.name,
@@ -216,6 +218,7 @@ export const handler = async (event: S3Event) => {
               TopicArn: errorNotificationsTopicArn,
               Subject:
                 "Exception in permission set processing through S3 interface",
+              MessageStructure: "json",
               Message: constructExceptionMessage(
                 "permissionSetCu.ts",
                 "Unhandled exception",
