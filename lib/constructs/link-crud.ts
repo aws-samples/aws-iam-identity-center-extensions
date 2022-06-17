@@ -164,6 +164,7 @@ export class LinkCRUD extends Construct {
             AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
             artefactsBucketName: linkCRUDProps.ssoArtefactsBucket.bucketName,
             linkProcessingTopicArn: this.linkProcessingTopic.topicArn,
+            functionLogMode: buildConfig.Parameters.FunctionLogMode,
           },
         }
       );
@@ -216,6 +217,7 @@ export class LinkCRUD extends Construct {
             errorNotificationsTopicArn:
               linkCRUDProps.errorNotificationsTopicArn,
             linkProcessingTopicArn: this.linkProcessingTopic.topicArn,
+            functionLogMode: buildConfig.Parameters.FunctionLogMode,
           },
         }
       );
@@ -261,6 +263,7 @@ export class LinkCRUD extends Construct {
             errorNotificationsTopicArn:
               linkCRUDProps.errorNotificationsTopicArn,
             linkProcessingTopicArn: this.linkProcessingTopic.topicArn,
+            functionLogMode: buildConfig.Parameters.FunctionLogMode,
           },
         }
       );

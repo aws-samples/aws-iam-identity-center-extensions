@@ -185,6 +185,9 @@ export class UpgradeToV303 extends Stack {
           externalModules: ["@aws-sdk/client-sfn", "uuid"],
           minify: true,
         },
+        environment: {
+          functionLogMode: buildConfig.Parameters.FunctionLogMode,
+        },
       }
     );
 
@@ -214,6 +217,9 @@ export class UpgradeToV303 extends Stack {
         bundling: {
           externalModules: ["@aws-sdk/client-sfn", "uuid"],
           minify: true,
+        },
+        environment: {
+          functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
       }
     );

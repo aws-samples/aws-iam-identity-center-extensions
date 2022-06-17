@@ -77,6 +77,7 @@ export class SSOGroupProcessor extends Construct {
           processTargetAccountSMArn: `arn:aws:states:us-east-1:${buildConfig.PipelineSettings.OrgMainAccountId}:stateMachine:${buildConfig.Environment}-processTargetAccountSM`,
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
           supportNestedOU: String(buildConfig.Parameters.SupportNestedOU),
+          functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
       }
     );
@@ -131,6 +132,7 @@ export class SSOGroupProcessor extends Construct {
           processTargetAccountSMArn: `arn:aws:states:us-east-1:${buildConfig.PipelineSettings.OrgMainAccountId}:stateMachine:${buildConfig.Environment}-processTargetAccountSM`,
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
           supportNestedOU: String(buildConfig.Parameters.SupportNestedOU),
+          functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
       }
     );

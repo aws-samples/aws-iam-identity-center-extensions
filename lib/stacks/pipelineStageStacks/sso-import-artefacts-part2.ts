@@ -63,6 +63,7 @@ export class SSOImportArtefactsPart2 extends Stack {
             deployImportArtefacts.importedProvisionedLinksTable.tableName,
           artefactsBucketName:
             deployImportArtefacts.importedSsoArtefactsBucket.bucketName,
+          functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
       }
     );
@@ -124,6 +125,7 @@ export class SSOImportArtefactsPart2 extends Stack {
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
           artefactsBucketName:
             deployImportArtefacts.importedSsoArtefactsBucket.bucketName,
+          functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
       }
     );
@@ -186,6 +188,7 @@ export class SSOImportArtefactsPart2 extends Stack {
             deployImportArtefacts.currentConfigSMDescribeRoleArn,
           ssoAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
+          functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
       }
     );
@@ -227,6 +230,9 @@ export class SSOImportArtefactsPart2 extends Stack {
             "uuid",
           ],
           minify: true,
+          environment: {
+            functionLogMode: buildConfig.Parameters.FunctionLogMode,
+          },
         },
       }
     );
@@ -262,6 +268,7 @@ export class SSOImportArtefactsPart2 extends Stack {
             deployImportArtefacts.permissionSetImportTopic.topicArn,
           temporaryPermissionSetTableName: `${buildConfig.Environment}-temp-PermissionSets`,
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
+          functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
       }
     );

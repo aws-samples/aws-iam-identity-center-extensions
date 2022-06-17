@@ -134,6 +134,7 @@ export class PermissionSetCRUD extends Construct {
               PermissionSetCRUDProps.ssoArtefactsBucket.bucketName,
             permissionSetProcessingTopicArn:
               this.permissionSetProcessingTopic.topicArn,
+            functionLogMode: buildConfig.Parameters.FunctionLogMode,
           },
         }
       );

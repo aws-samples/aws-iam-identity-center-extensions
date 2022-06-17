@@ -76,6 +76,7 @@ export class OrgEvents extends Construct {
           provisionedLinksTable: orgEventsProps.provisionedlinksTableName,
           supportNestedOU: String(buildConfig.Parameters.SupportNestedOU),
           orgListParentsRoleArn: orgEventsProps.orgListParentsRoleArn,
+          functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
         timeout: Duration.minutes(5), //aggressive timeout to accommodate for child OU's having many parents
       }
