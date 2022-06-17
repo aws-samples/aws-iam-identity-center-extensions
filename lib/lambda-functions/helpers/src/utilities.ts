@@ -91,12 +91,10 @@ export const constructExceptionMessage = (
     JSON.parse(
       JSON.stringify(
         {
-          default: {
-            handler: handler,
-            exceptionName: name,
-            exceptionMessage: message,
-            relatedData: relatedData,
-          },
+          handler: handler,
+          exceptionName: name,
+          exceptionMessage: message,
+          relatedData: relatedData,
         },
         null,
         2
