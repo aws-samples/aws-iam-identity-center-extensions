@@ -13,6 +13,7 @@ const {
   AWS_REGION,
   permissionSetProcessingTopicArn,
   functionLogMode,
+  AWS_LAMBDA_FUNCTION_NAME,
 } = process.env;
 import {
   DynamoDBClient,
@@ -80,6 +81,7 @@ const createUpdateSchemaDefinition = JSON.parse(
     .toString()
 );
 const createUpdateValidate = ajv.compile(createUpdateSchemaDefinition);
+const handlerName = AWS_LAMBDA_FUNCTION_NAME + "";
 
 export const handler = async (event: S3Event) => {
   await Promise.all(
@@ -87,13 +89,13 @@ export const handler = async (event: S3Event) => {
       const requestId = uuidv4().toString();
       logger(
         {
-          handler: "permissionSetCu.ts",
+          handler: handlerName,
           logMode: logModes.Info,
           requestId: requestId,
           status: requestStatus.InProgress,
           statusMessage: `Permission Set create/update operation started`,
         },
-        functionLogMode ? functionLogMode : "Exception"
+        functionLogMode
       );
       try {
         const originalText: GetObjectCommandOutput = await s3clientObject.send(
@@ -104,7 +106,7 @@ export const handler = async (event: S3Event) => {
         );
         logger(
           {
-            handler: "permissionSetCu.ts",
+            handler: handlerName,
             logMode: logModes.Debug,
             requestId: requestId,
             status: requestStatus.InProgress,
@@ -117,7 +119,7 @@ export const handler = async (event: S3Event) => {
         );
         logger(
           {
-            handler: "permissionSetCu.ts",
+            handler: handlerName,
             logMode: logModes.Debug,
             requestId: requestId,
             status: requestStatus.InProgress,
@@ -131,7 +133,7 @@ export const handler = async (event: S3Event) => {
         );
         logger(
           {
-            handler: "permissionSetCu.ts",
+            handler: handlerName,
             logMode: logModes.Debug,
             requestId: requestId,
             status: requestStatus.InProgress,
@@ -142,7 +144,7 @@ export const handler = async (event: S3Event) => {
         const upsertData = removeEmpty(payload);
         logger(
           {
-            handler: "permissionSetCu.ts",
+            handler: handlerName,
             logMode: logModes.Debug,
             requestId: requestId,
             status: requestStatus.InProgress,
@@ -162,7 +164,7 @@ export const handler = async (event: S3Event) => {
           );
         logger(
           {
-            handler: "permissionSetCu.ts",
+            handler: handlerName,
             logMode: logModes.Debug,
             requestId: requestId,
             status: requestStatus.InProgress,
@@ -181,7 +183,7 @@ export const handler = async (event: S3Event) => {
         );
         logger(
           {
-            handler: "permissionSetCu.ts",
+            handler: handlerName,
             logMode: logModes.Info,
             requestId: requestId,
             status: requestStatus.InProgress,
@@ -204,7 +206,7 @@ export const handler = async (event: S3Event) => {
           );
           logger(
             {
-              handler: "permissionSetCu.ts",
+              handler: handlerName,
               logMode: logModes.Info,
               requestId: requestId,
               status: requestStatus.InProgress,
@@ -226,7 +228,7 @@ export const handler = async (event: S3Event) => {
           );
           logger(
             {
-              handler: "permissionSetCu.ts",
+              handler: handlerName,
               logMode: logModes.Info,
               requestId: requestId,
               status: requestStatus.InProgress,
@@ -252,7 +254,7 @@ export const handler = async (event: S3Event) => {
             })
           );
           logger({
-            handler: "permissionSetCu.ts",
+            handler: handlerName,
             logMode: logModes.Exception,
             status: requestStatus.FailedWithException,
             statusMessage: constructExceptionMessageforLogger(
@@ -281,7 +283,7 @@ export const handler = async (event: S3Event) => {
             })
           );
           logger({
-            handler: "permissionSetCu.ts",
+            handler: handlerName,
             logMode: logModes.Exception,
             status: requestStatus.FailedWithException,
             statusMessage: constructExceptionMessageforLogger(
@@ -306,7 +308,7 @@ export const handler = async (event: S3Event) => {
             })
           );
           logger({
-            handler: "userInterface-permissionSetS3CreateUpdate",
+            handler: handlerName,
             logMode: logModes.Exception,
             status: requestStatus.FailedWithException,
             statusMessage: constructExceptionMessageforLogger(
