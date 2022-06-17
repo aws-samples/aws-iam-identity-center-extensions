@@ -48,7 +48,6 @@ import { v4 as uuidv4 } from "uuid";
 //Import helper utilities and interfaces
 import {
   CreateUpdatePermissionSetPayload,
-  ErrorMessage,
   requestStatus,
 } from "../../helpers/src/interfaces";
 import {
@@ -161,6 +160,8 @@ export const handler = async (event: S3Event) => {
           await snsClientObject.send(
             new PublishCommand({
               TopicArn: errorNotificationsTopicArn,
+              Subject:
+                "Exception in permission set processing through S3 interface",
               Message: constructExceptionMessage(
                 "permissionSetCu.ts",
                 "Schema validation exception",
@@ -188,6 +189,8 @@ export const handler = async (event: S3Event) => {
           await snsClientObject.send(
             new PublishCommand({
               TopicArn: errorNotificationsTopicArn,
+              Subject:
+                "Exception in permission set processing through S3 interface",
               Message: constructExceptionMessage(
                 "permissionSetCu.ts",
                 err.name,
@@ -211,6 +214,8 @@ export const handler = async (event: S3Event) => {
           await snsClientObject.send(
             new PublishCommand({
               TopicArn: errorNotificationsTopicArn,
+              Subject:
+                "Exception in permission set processing through S3 interface",
               Message: constructExceptionMessage(
                 "permissionSetCu.ts",
                 "Unhandled exception",
