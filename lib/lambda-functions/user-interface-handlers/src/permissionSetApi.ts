@@ -434,12 +434,15 @@ export const handler = async (
         });
         return {
           statusCode: 500,
-          body: constructExceptionMessage(
-            handlerName,
-            "Schema validation exception",
-            `Provided permission set ${permissionSetName} payload does not pass the schema validation`,
-            JSON.stringify(err.errors)
-          ),
+          body: JSON.stringify({
+            message: constructExceptionMessage(
+              handlerName,
+              "Schema validation exception",
+              `Provided permission set ${permissionSetName} payload does not pass the schema validation`,
+              JSON.stringify(err.errors)
+            ),
+            requestId: requestId,
+          }),
         };
       } else if (
         err instanceof S3ServiceException ||
@@ -460,12 +463,15 @@ export const handler = async (
         });
         return {
           statusCode: 500,
-          body: constructExceptionMessage(
-            handlerName,
-            err.name,
-            err.message,
-            permissionSetName
-          ),
+          body: JSON.stringify({
+            message: constructExceptionMessage(
+              handlerName,
+              err.name,
+              err.message,
+              permissionSetName
+            ),
+            requestId: requestId,
+          }),
         };
       } else {
         logger({
@@ -483,6 +489,7 @@ export const handler = async (
         return {
           statusCode: 500,
           body: JSON.stringify({
+            requestId: requestId,
             message: constructExceptionMessage(
               handlerName,
               "Unhandled exception",
@@ -509,6 +516,7 @@ export const handler = async (
     return {
       statusCode: 400,
       body: JSON.stringify({
+        requestId: requestId,
         message: constructExceptionMessage(
           handlerName,
           "Invalid message body exception",
