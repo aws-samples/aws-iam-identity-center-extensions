@@ -18,7 +18,7 @@ PipelineSettings:
 
 Parameters:
   LinksProvisioningMode: "s3"
-  PermissionSetProvisioningMode: "s3"
+  PermissionSetProvisioningMode: "api"
   LinkCallerRoleArn: "arn:aws:iam::270869494959:role/LinkCallerRole"
   PermissionSetCallerRoleArn: "arn:aws:iam::270869494959:role/PermissionSetCallerRole"
   NotificationEmail: "leela.ssoextensions@gmail.com"
