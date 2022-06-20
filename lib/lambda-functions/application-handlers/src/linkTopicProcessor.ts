@@ -10,7 +10,7 @@
  *
  *       - If the permission set arn exists, then
  *
- *                                                                                                                                                                                                                                                                                                                                       - Look up in AWS SSO Identity store if the user/group exists
+ *                                                                                                                                                                                                                                                                                                                                                                                                               - Look up in AWS SSO Identity store if the user/group exists
  *
  *                   - If the user/group exists
  *

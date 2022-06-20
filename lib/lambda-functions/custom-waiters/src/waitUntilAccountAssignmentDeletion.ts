@@ -5,6 +5,7 @@ import {
   DescribeAccountAssignmentDeletionStatusCommandOutput,
   SSOAdminClient,
   StatusValues,
+  SSOAdminServiceException,
 } from "@aws-sdk/client-sso-admin";
 import {
   checkExceptions,
@@ -35,37 +36,60 @@ const checkState = async (
       return { state: WaiterState.RETRY, reason };
     }
   } catch (exception) {
-    reason = exception;
-    return { state: WaiterState.FAILURE, reason };
+    if (exception instanceof SSOAdminServiceException) {
+      reason = exception.message;
+      return { state: WaiterState.FAILURE, reason };
+    } else {
+      reason = exception;
+      return { state: WaiterState.FAILURE, reason };
+    }
   }
 };
 
 export const waitUntilAccountAssignmentDeletion = async (
   params: WaiterConfiguration<SSOAdminClient>,
   input: DescribeAccountAssignmentDeletionStatusCommandInput,
-  requestId: string
+  requestId: string,
+  functionLogMode: string
 ): Promise<WaiterResult> => {
-  logger({
-    handler: "accountAssignmentDeletionWaiter",
-    logMode: logModes.Info,
-    relatedData: `${input.AccountAssignmentDeletionRequestId}`,
-    requestId: requestId,
-    status: requestStatus.InProgress,
-    statusMessage: `Waiter invoked for deleteAccountAssignment Operation`,
-  });
+  logger(
+    {
+      handler: "accountAssignmentDeletionWaiter",
+      logMode: logModes.Debug,
+      requestId: requestId,
+      relatedData: `${input.AccountAssignmentDeletionRequestId}`,
+      status: requestStatus.InProgress,
+      statusMessage: `Setting service defaults`,
+    },
+    functionLogMode
+  );
   const serviceDefaults = { minDelay: 60, maxDelay: 120 };
+  logger(
+    {
+      handler: "accountAssignmentDeletionWaiter",
+      logMode: logModes.Info,
+      requestId: requestId,
+      relatedData: `${input.AccountAssignmentDeletionRequestId}`,
+      status: requestStatus.InProgress,
+      statusMessage: `Invoking waiter for deleteAccountAssignment operation`,
+    },
+    functionLogMode
+  );
   const result = await createWaiter(
     { ...serviceDefaults, ...params },
     input,
     checkState
   );
-  logger({
-    handler: "accountAssignmentDeletionWaiter",
-    logMode: logModes.Info,
-    relatedData: `${input.AccountAssignmentDeletionRequestId}`,
-    requestId: requestId,
-    status: requestStatus.Completed,
-    statusMessage: `Waiter Completed with result: ${JSON.stringify(result)}`,
-  });
+  logger(
+    {
+      handler: "accountAssignmentDeletionWaiter",
+      logMode: logModes.Info,
+      requestId: requestId,
+      relatedData: `${input.AccountAssignmentDeletionRequestId}`,
+      status: requestStatus.InProgress,
+      statusMessage: `Waiter completed with result: ${JSON.stringify(result)}`,
+    },
+    functionLogMode
+  );
   return checkExceptions(result);
 };

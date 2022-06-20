@@ -7,7 +7,6 @@
  * - Upsert in links DDB table parsing the file name
  */
 
-// Environment configuration read
 const {
   DdbTable,
   errorNotificationsTopicArn,
@@ -17,7 +16,6 @@ const {
   AWS_LAMBDA_FUNCTION_NAME,
 } = process.env;
 
-// SDK and third party client imports
 import {
   DynamoDBClient,
   DynamoDBServiceException,
@@ -48,7 +46,7 @@ import {
   constructExceptionMessageforLogger,
   logger,
 } from "../../helpers/src/utilities";
-// SDK and third party client object initialistaion
+
 const ddbClientObject = new DynamoDBClient({
   region: AWS_REGION,
   maxAttempts: 2,
@@ -80,7 +78,7 @@ export const handler = async (event: S3Event) => {
           logMode: logModes.Info,
           requestId: requestId,
           status: requestStatus.InProgress,
-          statusMessage: `Account assignment create/delete operation started`,
+          statusMessage: `Account assignment create/update operation started`,
         },
         functionLogMode
       );

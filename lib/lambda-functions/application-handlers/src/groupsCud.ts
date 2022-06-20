@@ -16,7 +16,7 @@
  *       - Determine if permission set referenced in the link is already provisioned by
  *               looking up permissionsetArn ddb table
  *
- *                                                                                                                                                                                                                                                                                                                                             - If permission set is already provisioned, then
+ *                                                                                                                                                                                                                                                                                                                                                                                                                     - If permission set is already provisioned, then
  *
  *                                           - Determine if the link type is account, ou_id, account_tag or root
  *                                           - If account, post the link operation details to link manager FIFO queue
@@ -43,12 +43,25 @@ const {
   ssoRegion,
   supportNestedOU,
   AWS_REGION,
+  functionLogMode,
+  AWS_LAMBDA_FUNCTION_NAME,
 } = process.env;
 
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { SFNClient } from "@aws-sdk/client-sfn";
-import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
-import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
+import {
+  DynamoDBClient,
+  DynamoDBServiceException,
+} from "@aws-sdk/client-dynamodb";
+import { SFNClient, SFNServiceException } from "@aws-sdk/client-sfn";
+import {
+  PublishCommand,
+  SNSClient,
+  SNSServiceException,
+} from "@aws-sdk/client-sns";
+import {
+  SendMessageCommand,
+  SQSClient,
+  SQSServiceException,
+} from "@aws-sdk/client-sqs";
 import {
   ListInstancesCommand,
   ListInstancesCommandOutput,
@@ -65,13 +78,17 @@ import {
 import { SNSEvent } from "aws-lambda";
 import { v4 as uuidv4 } from "uuid";
 import {
-  ErrorMessage,
   logModes,
   requestStatus,
   StateMachinePayload,
   StaticSSOPayload,
 } from "../../helpers/src/interfaces";
-import { invokeStepFunction, logger } from "../../helpers/src/utilities";
+import {
+  constructExceptionMessage,
+  constructExceptionMessageforLogger,
+  invokeStepFunction,
+  logger,
+} from "../../helpers/src/utilities";
 
 const ddbClientObject = new DynamoDBClient({
   region: AWS_REGION,
@@ -99,16 +116,36 @@ const sfnClientObject = new SFNClient({
   maxAttempts: 2,
 });
 
-const errorMessage: ErrorMessage = {
-  Subject: "Error Processing group trigger based link provisioning operation",
-};
+const handlerName = AWS_LAMBDA_FUNCTION_NAME + "";
+const messageSubject = "Exception in AWS SSO group event processing logic";
+let groupNameValue = "";
 
 export const handler = async (event: SNSEvent) => {
   const requestId = uuidv4().toString();
+  logger(
+    {
+      handler: handlerName,
+      logMode: logModes.Info,
+      requestId: requestId,
+      status: requestStatus.InProgress,
+      statusMessage: `SSO group event triggered event bridge rule, started processing`,
+    },
+    functionLogMode
+  );
   try {
     const message = JSON.parse(event.Records[0].Sns.Message);
     const resolvedInstances: ListInstancesCommandOutput =
       await ssoAdminClientObject.send(new ListInstancesCommand({}));
+    logger(
+      {
+        handler: handlerName,
+        logMode: logModes.Debug,
+        requestId: requestId,
+        status: requestStatus.InProgress,
+        statusMessage: `Resolved SSO instance arn`,
+      },
+      functionLogMode
+    );
     const instanceArn = resolvedInstances.Instances?.[0].InstanceArn;
     const staticSSOPayload: StaticSSOPayload = {
       InstanceArn: instanceArn + "",
@@ -120,7 +157,28 @@ export const handler = async (event: SNSEvent) => {
     let groupName = "";
 
     if (message.detail.eventName === "CreateGroup") {
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Info,
+          requestId: requestId,
+          status: requestStatus.InProgress,
+          statusMessage: `Determined event is CreateGroup`,
+        },
+        functionLogMode
+      );
       groupId = message.detail.responseElements.group.groupId;
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Debug,
+          requestId: requestId,
+          status: requestStatus.InProgress,
+          relatedData: groupId,
+          statusMessage: `Set groupID value as read from the event payload`,
+        },
+        functionLogMode
+      );
       /**
        * To handle SSO generating cloudwatch events with different formats
        * depending on the identity store being used
@@ -133,6 +191,17 @@ export const handler = async (event: SNSEvent) => {
         )
       ) {
         groupName = message.detail.responseElements.group.displayName;
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Debug,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            relatedData: groupId,
+            statusMessage: `Event sent displayName value for groupName, using this value - ${groupName}`,
+          },
+          functionLogMode
+        );
       } else if (
         Object.prototype.hasOwnProperty.call(
           message.detail.responseElements.group,
@@ -140,17 +209,19 @@ export const handler = async (event: SNSEvent) => {
         )
       ) {
         groupName = message.detail.responseElements.group.groupName;
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Debug,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            relatedData: groupId,
+            statusMessage: `Event sent groupName value for groupName, using this value - ${groupName}`,
+          },
+          functionLogMode
+        );
       }
-
-      logger({
-        handler: "groupsHandler",
-        logMode: logModes.Info,
-        requestId: requestId,
-        relatedData: `${groupName}`,
-        status: requestStatus.InProgress,
-        statusMessage: `CreateGroup operation - resolved groupName`,
-      });
-
+      groupNameValue = groupName;
       const relatedLinks: QueryCommandOutput = await ddbDocClientObject.send(
         /**
          * QueryCommand is a pagniated call, however the logic requires checking
@@ -165,8 +236,30 @@ export const handler = async (event: SNSEvent) => {
           ExpressionAttributeValues: { ":principalName": groupName },
         })
       );
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Debug,
+          requestId: requestId,
+          status: requestStatus.InProgress,
+          relatedData: groupId,
+          statusMessage: `Querying if there are any related account assignments for group ${groupName}`,
+        },
+        functionLogMode
+      );
 
       if (relatedLinks.Items && relatedLinks.Items?.length !== 0) {
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Info,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            relatedData: groupId,
+            statusMessage: `Determined there are ${relatedLinks.Items.length} no of account assignments for group ${groupName}`,
+          },
+          functionLogMode
+        );
         await Promise.all(
           relatedLinks.Items?.map(async (Item) => {
             const { awsEntityType, awsEntityData, permissionSetName } = Item;
@@ -181,7 +274,31 @@ export const handler = async (event: SNSEvent) => {
               );
             if (permissionSetFetch.Item) {
               const { permissionSetArn } = permissionSetFetch.Item;
+              logger(
+                {
+                  handler: handlerName,
+                  logMode: logModes.Debug,
+                  requestId: requestId,
+                  status: requestStatus.InProgress,
+                  relatedData: groupId,
+                  statusMessage: `Determined permission set ${permissionSetName} for the account assignments is provisioned already with permissionSetArn ${permissionSetArn}`,
+                },
+                functionLogMode
+              );
+
               if (awsEntityType === "account") {
+                logger(
+                  {
+                    handler: handlerName,
+                    logMode: logModes.Debug,
+                    requestId: requestId,
+                    status: requestStatus.InProgress,
+                    relatedData: groupId,
+                    statusMessage: `Determined entity type is account for this account assignment type`,
+                  },
+                  functionLogMode
+                );
+
                 await sqsClientObject.send(
                   new SendMessageCommand({
                     QueueUrl: linkQueueUrl,
@@ -200,19 +317,33 @@ export const handler = async (event: SNSEvent) => {
                     MessageGroupId: awsEntityData.slice(-1),
                   })
                 );
-                logger({
-                  handler: "groupsHandler",
-                  logMode: logModes.Info,
-                  relatedData: `${groupName}`,
-                  requestId: requestId,
-                  status: requestStatus.Completed,
-                  statusMessage: `CreateGroup operation - triggered account assignment provisioning operation`,
-                });
+                logger(
+                  {
+                    handler: handlerName,
+                    logMode: logModes.Info,
+                    requestId: requestId,
+                    status: requestStatus.InProgress,
+                    relatedData: groupId,
+                    statusMessage: `Sent payload to account assignment queue with account ID ${awsEntityData}, for permissionSetArn ${permissionSetArn} and group ${groupName}`,
+                  },
+                  functionLogMode
+                );
               } else if (
                 awsEntityType === "ou_id" ||
                 awsEntityType === "root" ||
                 awsEntityType === "account_tag"
               ) {
+                logger(
+                  {
+                    handler: handlerName,
+                    logMode: logModes.Debug,
+                    requestId: requestId,
+                    status: requestStatus.InProgress,
+                    relatedData: groupId,
+                    statusMessage: `Determined entity type is ${awsEntityType} for this account assignment type`,
+                  },
+                  functionLogMode
+                );
                 const stateMachinePayload: StateMachinePayload = {
                   action: "create",
                   entityType: awsEntityType,
@@ -233,68 +364,118 @@ export const handler = async (event: SNSEvent) => {
                   processTargetAccountSMArn + "",
                   sfnClientObject
                 );
-                logger({
-                  handler: "groupsHandler",
-                  logMode: logModes.Info,
-                  relatedData: `${groupName}`,
-                  requestId: requestId,
-                  status: requestStatus.Completed,
-                  statusMessage: `CreateGroup operation - triggered step function for org based resolution`,
-                });
+                logger(
+                  {
+                    handler: handlerName,
+                    logMode: logModes.Info,
+                    requestId: requestId,
+                    status: requestStatus.InProgress,
+                    relatedData: groupId,
+                    statusMessage: `Invoked state machine for procesing group event with entityType ${awsEntityType} for groupID ${groupId} , permissionSetArn ${permissionSetArn} , targetType ${staticSSOPayload.TargetType} and entityData ${awsEntityData} `,
+                  },
+                  functionLogMode
+                );
               }
             } else {
               /** Permission set for the group-link does not exist */
-              logger({
-                handler: "groupsHandler",
-                logMode: logModes.Info,
-                relatedData: `${groupName}`,
-                requestId: requestId,
-                status: requestStatus.Completed,
-                statusMessage: `CreateGroup operation - permission set referenced in related account assignments not found`,
-              });
+              logger(
+                {
+                  handler: handlerName,
+                  logMode: logModes.Info,
+                  requestId: requestId,
+                  status: requestStatus.Aborted,
+                  relatedData: groupId,
+                  statusMessage: `Determined that permissionSet ${permissionSetName} does not yet exist in the solution, so aborting the operation`,
+                },
+                functionLogMode
+              );
             }
           })
         );
       } else {
         /** No related links for the group being processed */
-        logger({
-          handler: "groupsHandler",
-          logMode: logModes.Info,
-          relatedData: `${groupName}`,
-          requestId: requestId,
-          status: requestStatus.Completed,
-          statusMessage: `CreateGroup operation - no related account assignments found for the group`,
-        });
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Info,
+            requestId: requestId,
+            status: requestStatus.Aborted,
+            relatedData: groupId,
+            statusMessage: `Determined that there are no related account assignments for this group, aborting the operation`,
+          },
+          functionLogMode
+        );
       }
     } else if (message.detail.eventName === "DeleteGroup") {
-      logger({
-        handler: "groupsHandler",
-        logMode: logModes.Info,
-        relatedData: `${groupName}`,
-        requestId: requestId,
-        status: requestStatus.Completed,
-        statusMessage: `DeleteGroup operation - no actions being done as the group is deleted directly`,
-      });
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Info,
+          requestId: requestId,
+          status: requestStatus.Aborted,
+          statusMessage: `Determined event is DeleteGroup, no actions being done as the group is deletec directly`,
+        },
+        functionLogMode
+      );
     }
   } catch (err) {
-    await snsClientObject.send(
-      new PublishCommand({
-        TopicArn: errorNotificationsTopicArn,
-        Message: JSON.stringify({
-          ...errorMessage,
-          eventDetail: event,
-          errorDetails: err,
-        }),
-      })
-    );
-    logger({
-      handler: "groupsHandler",
-      logMode: logModes.Exception,
-      requestId: requestId,
-      status: requestStatus.FailedWithException,
-      statusMessage: `Groups operation - failed with exception: ${JSON.stringify(
-        err
-      )} for eventDetail: ${event}`,
-    });
+    if (
+      err instanceof DynamoDBServiceException ||
+      err instanceof SFNServiceException ||
+      err instanceof SNSServiceException ||
+      err instanceof SQSServiceException
+    ) {
+      await snsClientObject.send(
+        new PublishCommand({
+          TopicArn: errorNotificationsTopicArn,
+          Subject: messageSubject,
+          Message: constructExceptionMessage(
+            requestId,
+            handlerName,
+            err.name,
+            err.message,
+            groupNameValue
+          ),
+        })
+      );
+      logger({
+        handler: handlerName,
+        requestId: requestId,
+        logMode: logModes.Exception,
+        status: requestStatus.FailedWithException,
+        statusMessage: constructExceptionMessageforLogger(
+          requestId,
+          err.name,
+          err.message,
+          groupNameValue
+        ),
+      });
+    } else {
+      await snsClientObject.send(
+        new PublishCommand({
+          TopicArn: errorNotificationsTopicArn,
+          Subject: messageSubject,
+          Message: constructExceptionMessage(
+            requestId,
+            handlerName,
+            "Unhandled exception",
+            JSON.stringify(err),
+            groupNameValue
+          ),
+        })
+      );
+      logger({
+        handler: handlerName,
+        requestId: requestId,
+        logMode: logModes.Exception,
+        status: requestStatus.FailedWithException,
+        statusMessage: constructExceptionMessageforLogger(
+          requestId,
+          "Unhandled exception",
+          JSON.stringify(err),
+          groupNameValue
+        ),
+      });
+    }
   }
 };
