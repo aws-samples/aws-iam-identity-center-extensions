@@ -249,6 +249,7 @@ export const handler = async (event: S3Event) => {
               TopicArn: errorNotificationsTopicArn,
               Subject: messageSubject,
               Message: constructExceptionMessage(
+                requestId,
                 handlerName,
                 "Schema validation exception",
                 `Provided permission set ${permissionSetFileName} S3 file does not pass the schema validation`,
@@ -262,7 +263,7 @@ export const handler = async (event: S3Event) => {
             logMode: logModes.Exception,
             status: requestStatus.FailedWithException,
             statusMessage: constructExceptionMessageforLogger(
-              handlerName,
+              requestId,
               "Schema validation exception",
               `Provided permission set ${permissionSetFileName} S3 file does not pass the schema validation`,
               JSON.stringify(err.errors)
@@ -278,6 +279,7 @@ export const handler = async (event: S3Event) => {
               TopicArn: errorNotificationsTopicArn,
               Subject: messageSubject,
               Message: constructExceptionMessage(
+                requestId,
                 handlerName,
                 err.name,
                 err.message,
@@ -291,7 +293,7 @@ export const handler = async (event: S3Event) => {
             logMode: logModes.Exception,
             status: requestStatus.FailedWithException,
             statusMessage: constructExceptionMessageforLogger(
-              handlerName,
+              requestId,
               err.name,
               err.message,
               permissionSetFileName
@@ -303,6 +305,7 @@ export const handler = async (event: S3Event) => {
               TopicArn: errorNotificationsTopicArn,
               Subject: messageSubject,
               Message: constructExceptionMessage(
+                requestId,
                 handlerName,
                 "Unhandled exception",
                 JSON.stringify(err),
@@ -316,7 +319,7 @@ export const handler = async (event: S3Event) => {
             logMode: logModes.Exception,
             status: requestStatus.FailedWithException,
             statusMessage: constructExceptionMessageforLogger(
-              handlerName,
+              requestId,
               "Unhandled exception",
               JSON.stringify(err),
               permissionSetFileName

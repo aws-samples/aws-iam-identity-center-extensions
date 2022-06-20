@@ -51,7 +51,6 @@ import {
   JSONParserError,
 } from "../../helpers/src/payload-validator";
 import {
-  constructExceptionMessage,
   constructExceptionMessageforLogger,
   logger,
 } from "../../helpers/src/utilities";
@@ -329,7 +328,7 @@ export const handler = async (
           logMode: logModes.Exception,
           status: requestStatus.FailedWithException,
           statusMessage: constructExceptionMessageforLogger(
-            handlerName,
+            requestId,
             "Schema validation exception",
             `Provided account does not pass the schema validation`,
             JSON.stringify(err.errors)
@@ -338,8 +337,8 @@ export const handler = async (
         return {
           statusCode: 500,
           body: JSON.stringify({
-            message: constructExceptionMessage(
-              handlerName,
+            message: constructExceptionMessageforLogger(
+              requestId,
               "Schema validation exception",
               `Provided account does not pass the schema validation`,
               JSON.stringify(err.errors)
@@ -358,7 +357,7 @@ export const handler = async (
           logMode: logModes.Exception,
           status: requestStatus.FailedWithException,
           statusMessage: constructExceptionMessageforLogger(
-            handlerName,
+            requestId,
             err.name,
             err.message,
             linkDataValue
@@ -367,8 +366,8 @@ export const handler = async (
         return {
           statusCode: 500,
           body: JSON.stringify({
-            message: constructExceptionMessage(
-              handlerName,
+            message: constructExceptionMessageforLogger(
+              requestId,
               err.name,
               err.message,
               linkDataValue
@@ -383,7 +382,7 @@ export const handler = async (
           logMode: logModes.Exception,
           status: requestStatus.FailedWithException,
           statusMessage: constructExceptionMessageforLogger(
-            handlerName,
+            requestId,
             "Unhandled exception",
             JSON.stringify(err),
             linkDataValue
@@ -392,8 +391,8 @@ export const handler = async (
         return {
           statusCode: 500,
           body: JSON.stringify({
-            message: constructExceptionMessage(
-              handlerName,
+            message: constructExceptionMessageforLogger(
+              requestId,
               "Unhandled exception",
               JSON.stringify(err),
               linkDataValue
@@ -410,7 +409,7 @@ export const handler = async (
       logMode: logModes.Exception,
       status: requestStatus.FailedWithException,
       statusMessage: constructExceptionMessageforLogger(
-        handlerName,
+        requestId,
         "Invalid message body exception",
         "Message body provided is invalid",
         linkDataValue
@@ -419,8 +418,8 @@ export const handler = async (
     return {
       statusCode: 400,
       body: JSON.stringify({
-        message: constructExceptionMessage(
-          handlerName,
+        message: constructExceptionMessageforLogger(
+          requestId,
           "Invalid message body exception",
           "Message body provided is invalid",
           linkDataValue

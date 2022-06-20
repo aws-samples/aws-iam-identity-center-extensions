@@ -125,12 +125,14 @@ export const constructExceptionMessage = (
   handler: string,
   name: string,
   message: string,
-  relatedData: string
+  relatedData: string,
+  requestId: string
 ) => {
   return JSON.stringify(
     JSON.parse(
       JSON.stringify(
         {
+          requestId: requestId,
           handler: handler,
           exceptionName: name,
           exceptionMessage: message,
@@ -146,12 +148,12 @@ export const constructExceptionMessage = (
 };
 
 export const constructExceptionMessageforLogger = (
-  handler: string,
+  requestId: string,
   name: string,
   message: string,
   relatedData: string
 ) => {
-  return `Exception ${name} occurred. Exception message is -> ${message} . Related data for the exception -> ${relatedData}`;
+  return `For requestID: ${requestId} , exception with exception name -> ${name} occurred. Exception message is -> ${message} . Related data for the exception -> ${relatedData}`;
 };
 
 export class StateMachineError extends Error {

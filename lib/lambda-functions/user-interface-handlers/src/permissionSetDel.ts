@@ -105,6 +105,7 @@ export const handler = async (event: S3Event) => {
               TopicArn: errorNotificationsTopicArn,
               Subject: messageSubject,
               Message: constructExceptionMessage(
+                requestId,
                 handlerName,
                 "Constraint violation exception",
                 "There are related account assignments for this permission set, and cannot be deleted without deleting the account assignments first",
@@ -155,6 +156,7 @@ export const handler = async (event: S3Event) => {
               TopicArn: errorNotificationsTopicArn,
               Subject: messageSubject,
               Message: constructExceptionMessage(
+                requestId,
                 handlerName,
                 "Schema validation exception",
                 `Provided permission set ${permissionSetFileName} S3 file does not pass the schema validation`,
@@ -183,6 +185,7 @@ export const handler = async (event: S3Event) => {
               TopicArn: errorNotificationsTopicArn,
               Subject: messageSubject,
               Message: constructExceptionMessage(
+                requestId,
                 handlerName,
                 err.name,
                 err.message,
@@ -208,6 +211,7 @@ export const handler = async (event: S3Event) => {
               TopicArn: errorNotificationsTopicArn,
               Subject: messageSubject,
               Message: constructExceptionMessage(
+                requestId,
                 handlerName,
                 "Unhandled exception",
                 JSON.stringify(err),

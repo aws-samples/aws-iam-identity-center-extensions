@@ -425,7 +425,7 @@ export const handler = async (
           logMode: logModes.Exception,
           status: requestStatus.FailedWithException,
           statusMessage: constructExceptionMessageforLogger(
-            handlerName,
+            requestId,
             "Schema validation exception",
             `Provided permission set ${permissionSetName} payload does not pass the schema validation`,
             JSON.stringify(err.errors)
@@ -435,7 +435,7 @@ export const handler = async (
           statusCode: 500,
           body: JSON.stringify({
             message: constructExceptionMessageforLogger(
-              handlerName,
+              requestId,
               "Schema validation exception",
               `Provided permission set ${permissionSetName} payload does not pass the schema validation`,
               JSON.stringify(err.errors)
@@ -454,7 +454,7 @@ export const handler = async (
           logMode: logModes.Exception,
           status: requestStatus.FailedWithException,
           statusMessage: constructExceptionMessageforLogger(
-            handlerName,
+            requestId,
             err.name,
             err.message,
             permissionSetName
@@ -464,7 +464,7 @@ export const handler = async (
           statusCode: 500,
           body: JSON.stringify({
             message: constructExceptionMessageforLogger(
-              handlerName,
+              requestId,
               err.name,
               err.message,
               permissionSetName
@@ -479,7 +479,7 @@ export const handler = async (
           logMode: logModes.Exception,
           status: requestStatus.FailedWithException,
           statusMessage: constructExceptionMessageforLogger(
-            handlerName,
+            requestId,
             "Unhandled exception",
             JSON.stringify(err),
             permissionSetName
@@ -490,7 +490,7 @@ export const handler = async (
           body: JSON.stringify({
             requestId: requestId,
             message: constructExceptionMessageforLogger(
-              handlerName,
+              requestId,
               "Unhandled exception",
               JSON.stringify(err),
               permissionSetName
@@ -506,7 +506,7 @@ export const handler = async (
       logMode: logModes.Exception,
       status: requestStatus.FailedWithException,
       statusMessage: constructExceptionMessageforLogger(
-        handlerName,
+        requestId,
         "Invalid message body exception",
         "Message body provided is invalid",
         permissionSetName
@@ -517,7 +517,7 @@ export const handler = async (
       body: JSON.stringify({
         requestId: requestId,
         message: constructExceptionMessageforLogger(
-          handlerName,
+          requestId,
           "Invalid message body exception",
           "Message body provided is invalid",
           permissionSetName

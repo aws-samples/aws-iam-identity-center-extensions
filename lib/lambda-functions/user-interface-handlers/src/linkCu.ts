@@ -13,29 +13,41 @@ const {
   errorNotificationsTopicArn,
   AWS_REGION,
   linkProcessingTopicArn,
+  functionLogMode,
+  AWS_LAMBDA_FUNCTION_NAME,
 } = process.env;
 
 // SDK and third party client imports
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
-import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
-import { S3Event, S3EventRecord } from "aws-lambda";
 import {
-  ErrorMessage,
+  DynamoDBClient,
+  DynamoDBServiceException,
+} from "@aws-sdk/client-dynamodb";
+import {
+  PublishCommand,
+  SNSClient,
+  SNSServiceException,
+} from "@aws-sdk/client-sns";
+import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
+import Ajv from "ajv";
+import { S3Event, S3EventRecord } from "aws-lambda";
+import { readFileSync } from "fs";
+import { join } from "path";
+import { v4 as uuidv4 } from "uuid";
+import {
   LinkData,
   LinkS3Payload,
   logModes,
   requestStatus,
 } from "../../helpers/src/interfaces";
-import { logger } from "../../helpers/src/utilities";
-import Ajv from "ajv";
-import { readFileSync } from "fs";
-import { join } from "path";
-import { v4 as uuidv4 } from "uuid";
 import {
   imperativeParseJSON,
   JSONParserError,
 } from "../../helpers/src/payload-validator";
+import {
+  constructExceptionMessage,
+  constructExceptionMessageforLogger,
+  logger,
+} from "../../helpers/src/utilities";
 // SDK and third party client object initialistaion
 const ddbClientObject = new DynamoDBClient({
   region: AWS_REGION,
@@ -44,10 +56,6 @@ const ddbClientObject = new DynamoDBClient({
 const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
 const snsClientObject = new SNSClient({ region: AWS_REGION, maxAttempts: 2 });
 
-//Error notification
-const errorMessage: ErrorMessage = {
-  Subject: "Error Processing Link create/update via S3 Interface",
-};
 const ajv = new Ajv({ allErrors: true });
 const schemaDefinition = JSON.parse(
   readFileSync(
@@ -57,19 +65,45 @@ const schemaDefinition = JSON.parse(
     .toString()
 );
 const validate = ajv.compile(schemaDefinition);
+const handlerName = AWS_LAMBDA_FUNCTION_NAME + "";
+let linkDataValue = "";
+const messageSubject =
+  "Exception in account assignment create/update operation through S3 interface";
 
 export const handler = async (event: S3Event) => {
   await Promise.all(
     event.Records.map(async (record: S3EventRecord) => {
       const requestId = uuidv4().toString();
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Info,
+          requestId: requestId,
+          status: requestStatus.InProgress,
+          statusMessage: `Account assignment create/delete operation started`,
+        },
+        functionLogMode
+      );
+
       try {
         const fileName = decodeURIComponent(record.s3.object.key.split("/")[1]);
-        console.log(`fileName received: ${fileName}`);
+
         const payload: LinkS3Payload = imperativeParseJSON(
           { linkData: fileName },
           validate
         );
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Debug,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            statusMessage: `Account assignment payload successfully parsed`,
+          },
+          functionLogMode
+        );
         const { linkData } = payload;
+        linkDataValue = linkData;
         const delimeter = "%";
         const keyValue = linkData.split(delimeter);
         const upsertData: LinkData = {
@@ -88,6 +122,19 @@ export const handler = async (event: S3Event) => {
             },
           })
         );
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Debug,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            statusMessage: `Successfully processed upsert into Dynamo DB`,
+            relatedData: linkDataValue,
+            hasRelatedRequests:
+              upsertData.awsEntityType === "account" ? false : true,
+          },
+          functionLogMode
+        );
         await snsClientObject.send(
           new PublishCommand({
             TopicArn: linkProcessingTopicArn + "",
@@ -98,55 +145,100 @@ export const handler = async (event: S3Event) => {
             }),
           })
         );
-        logger({
-          handler: "userInterface-s3CreateUpdate",
-          logMode: logModes.Info,
-          relatedData: linkData,
-          requestId: requestId,
-          status: requestStatus.InProgress,
-          hasRelatedRequests:
-            upsertData.awsEntityType === "account" ? false : true,
-          statusMessage: `Account Assignment create operation is being processed`,
-        });
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Info,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            statusMessage: `Sent payload to account assignment processing topic`,
+            relatedData: linkDataValue,
+            hasRelatedRequests:
+              upsertData.awsEntityType === "account" ? false : true,
+          },
+          functionLogMode
+        );
       } catch (err) {
         if (err instanceof JSONParserError) {
-          logger({
-            handler: "userInterface-s3CreateUpdate",
-            logMode: logModes.Exception,
-            requestId: requestId,
-            status: requestStatus.FailedWithException,
-            statusMessage: `Error processing link operation through S3 interface due to schema errors for: ${JSON.stringify(
-              err.errors
-            )}`,
-          });
           await snsClientObject.send(
             new PublishCommand({
               TopicArn: errorNotificationsTopicArn,
-              Message: JSON.stringify({
-                errorMessage: `Error processing link operation through S3 interface due to schema errors`,
-                errors: err.errors,
-              }),
+              Subject: messageSubject,
+              Message: constructExceptionMessage(
+                requestId,
+                handlerName,
+                "Schema validation exception",
+                `Provided account assignment ${linkDataValue} S3 file does not pass the schema validation`,
+                JSON.stringify(err.errors)
+              ),
             })
           );
+          logger({
+            handler: handlerName,
+            requestId: requestId,
+            logMode: logModes.Exception,
+            status: requestStatus.FailedWithException,
+            statusMessage: constructExceptionMessageforLogger(
+              requestId,
+              "Schema validation exception",
+              `Provided account assignment ${linkDataValue} S3 file does not pass the schema validation`,
+              JSON.stringify(err.errors)
+            ),
+          });
+        } else if (
+          err instanceof SNSServiceException ||
+          err instanceof DynamoDBServiceException
+        ) {
+          await snsClientObject.send(
+            new PublishCommand({
+              TopicArn: errorNotificationsTopicArn,
+              Subject: messageSubject,
+              Message: constructExceptionMessage(
+                requestId,
+                handlerName,
+                err.name,
+                err.message,
+                linkDataValue
+              ),
+            })
+          );
+          logger({
+            handler: handlerName,
+            requestId: requestId,
+            logMode: logModes.Exception,
+            status: requestStatus.FailedWithException,
+            statusMessage: constructExceptionMessageforLogger(
+              requestId,
+              err.name,
+              err.message,
+              linkDataValue
+            ),
+          });
         } else {
           await snsClientObject.send(
             new PublishCommand({
               TopicArn: errorNotificationsTopicArn,
-              Message: JSON.stringify({
-                ...errorMessage,
-                eventDetail: record,
-                errorDetails: err,
-              }),
+              Subject: messageSubject,
+              Message: constructExceptionMessage(
+                requestId,
+                handlerName,
+                "Unhandled exception",
+                JSON.stringify(err),
+                linkDataValue
+              ),
             })
           );
           logger({
-            handler: "userInterface-s3CreateUpdate",
-            logMode: logModes.Exception,
+            handler: handlerName,
             requestId: requestId,
+            logMode: logModes.Exception,
             status: requestStatus.FailedWithException,
-            statusMessage: `Account Assignment create operation failed with error: ${JSON.stringify(
-              err
-            )}`,
+            statusMessage: constructExceptionMessageforLogger(
+              requestId,
+              "Unhandled exception",
+              JSON.stringify(err),
+              linkDataValue
+            ),
           });
         }
       }
