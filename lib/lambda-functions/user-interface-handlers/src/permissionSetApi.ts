@@ -51,13 +51,12 @@ import {
   requestStatus,
 } from "../../helpers/src/interfaces";
 
+import { v4 as uuidv4 } from "uuid";
 import {
   imperativeParseJSON,
   JSONParserError,
 } from "../../helpers/src/payload-validator";
-import { v4 as uuidv4 } from "uuid";
 import {
-  constructExceptionMessage,
   constructExceptionMessageforLogger,
   logger,
 } from "../../helpers/src/utilities";
@@ -435,7 +434,7 @@ export const handler = async (
         return {
           statusCode: 500,
           body: JSON.stringify({
-            message: constructExceptionMessage(
+            message: constructExceptionMessageforLogger(
               handlerName,
               "Schema validation exception",
               `Provided permission set ${permissionSetName} payload does not pass the schema validation`,
@@ -464,7 +463,7 @@ export const handler = async (
         return {
           statusCode: 500,
           body: JSON.stringify({
-            message: constructExceptionMessage(
+            message: constructExceptionMessageforLogger(
               handlerName,
               err.name,
               err.message,
@@ -490,7 +489,7 @@ export const handler = async (
           statusCode: 500,
           body: JSON.stringify({
             requestId: requestId,
-            message: constructExceptionMessage(
+            message: constructExceptionMessageforLogger(
               handlerName,
               "Unhandled exception",
               JSON.stringify(err),
@@ -517,7 +516,7 @@ export const handler = async (
       statusCode: 400,
       body: JSON.stringify({
         requestId: requestId,
-        message: constructExceptionMessage(
+        message: constructExceptionMessageforLogger(
           handlerName,
           "Invalid message body exception",
           "Message body provided is invalid",
