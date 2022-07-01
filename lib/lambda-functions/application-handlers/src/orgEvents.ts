@@ -23,12 +23,18 @@ const {
   errorNotificationsTopicArn,
   ssoRegion,
   provisionedLinksTable,
+  supportNestedOU,
+  orgListParentsRoleArn,
   AWS_REGION,
 } = process.env;
 
 // SDK and third party client imports
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { IdentitystoreClient } from "@aws-sdk/client-identitystore";
+import {
+  ListParentsCommand,
+  OrganizationsClient,
+} from "@aws-sdk/client-organizations";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
 import {
@@ -74,6 +80,15 @@ const identityStoreClientObject = new IdentitystoreClient({
   credentials: fromTemporaryCredentials({
     params: {
       RoleArn: ISAPIRoleArn,
+    },
+  }),
+  maxAttempts: 2,
+});
+const organizationsClientObject = new OrganizationsClient({
+  region: "us-east-1",
+  credentials: fromTemporaryCredentials({
+    params: {
+      RoleArn: orgListParentsRoleArn,
     },
   }),
   maxAttempts: 2,
@@ -134,8 +149,7 @@ export const tagBasedDeProvisioning = async (
               tagKeyLookUp: `${passedTagKey}^${targetId}`,
               sourceRequestId: requestId,
             }),
-            MessageDeduplicationId: `delete-${targetId}-${parentLinkItems[3]}-${parentLinkItems[0]}`,
-            MessageGroupId: `${targetId}-${parentLinkItems[3]}-${parentLinkItems[0]}`,
+            MessageGroupId: targetId.slice(-1),
           })
         );
         logger({
@@ -236,16 +250,7 @@ export const orgEventProvisioning = async (
                   tagKeyLookUp: tagKeyLookupValue,
                   sourceRequestId: requestId,
                 }),
-                MessageDeduplicationId: `${actionType}-${targetId}-${
-                  permissionSetFetch.Item.permissionSetArn
-                    .toString()
-                    .split("/")[2]
-                }-${principalId}`,
-                MessageGroupId: `${targetId}-${
-                  permissionSetFetch.Item.permissionSetArn
-                    .toString()
-                    .split("/")[2]
-                }-${principalId}`,
+                MessageGroupId: targetId.slice(-1),
               })
             );
             logger({
@@ -322,24 +327,158 @@ export const handler = async (event: SNSEvent) => {
         requestId
       );
     } else if (message.detail.eventName === "MoveAccount") {
-      await orgEventProvisioning(
-        instanceArn,
-        message.detail.requestParameters.accountId,
-        "delete",
-        message.detail.requestParameters.sourceParentId,
-        "ou_id",
-        identityStoreId,
-        requestId
+      /**
+       * If nesteOU support is enabled, then the function removes any related
+       * account assignments that has been provisioned for any of the parents of
+       * the old OU until root. It would also assign any related account
+       * assignments for any of the parents of the new OU until root. Both
+       * removal and addition is inclusive of the actual OU ID and exclusive of
+       * root If nested OU support is not enabled, then the function would
+       * simply remove and add any related account assignments for the old and new OU's
+       */
+      logger({
+        handler: "orgEventsProcessor",
+        logMode: "info",
+        relatedData: `${message.detail.requestParameters.accountId}`,
+        status: requestStatus.InProgress,
+        requestId: requestId,
+        statusMessage: `OrgEvents - org move, determining the list of OU ID's`,
+      });
+      let oldParentsList: Array<string> = [];
+      let newParentsList: Array<string> = [];
+      oldParentsList.push(message.detail.requestParameters.sourceParentId);
+      newParentsList.push(message.detail.requestParameters.destinationParentId);
+      if (supportNestedOU === "true") {
+        logger({
+          handler: "orgEventsProcessor",
+          logMode: "info",
+          relatedData: `${message.detail.requestParameters.accountId}`,
+          status: requestStatus.InProgress,
+          requestId: requestId,
+          statusMessage: `OrgEvents - org move, nestedOU support enabled, traversing through the org tree for delta`,
+        });
+        /**
+         * Orgs API listParents call only returns the parent up to one level up.
+         * The below code would traverse the tree until it reaches root
+         */
+        if (
+          !message.detail.requestParameters.sourceParentId
+            .toString()
+            .match(/r-.*/)
+        ) {
+          let loop = true;
+          let previousParentId =
+            message.detail.requestParameters.sourceParentId;
+          while (loop) {
+            const currentParentOutput = await organizationsClientObject.send(
+              new ListParentsCommand({
+                ChildId: previousParentId,
+              })
+            );
+
+            if (currentParentOutput.Parents) {
+              if (currentParentOutput.Parents[0].Type === "ROOT") {
+                loop = false;
+              } else {
+                if (currentParentOutput.Parents[0].Id) {
+                  oldParentsList.push(currentParentOutput.Parents[0].Id);
+                  previousParentId = currentParentOutput.Parents[0].Id;
+                }
+              }
+            } else {
+              loop = false;
+            }
+          }
+        }
+
+        if (
+          !message.detail.requestParameters.destinationParentId
+            .toString()
+            .match(/r-.*/)
+        ) {
+          let loop = true;
+          let previousParentId =
+            message.detail.requestParameters.destinationParentId;
+          while (loop) {
+            const currentParentOutput = await organizationsClientObject.send(
+              new ListParentsCommand({
+                ChildId: previousParentId,
+              })
+            );
+
+            if (currentParentOutput.Parents) {
+              if (currentParentOutput.Parents[0].Type === "ROOT") {
+                loop = false;
+              } else {
+                if (currentParentOutput.Parents[0].Id) {
+                  newParentsList.push(currentParentOutput.Parents[0].Id);
+                  previousParentId = currentParentOutput.Parents[0].Id;
+                }
+              }
+            } else {
+              loop = false;
+            }
+          }
+        }
+        /** Remove root parents from both old and new parents list */
+        oldParentsList = oldParentsList.filter(
+          (parent) => !parent.match(/r-.*/)
+        );
+        newParentsList = newParentsList.filter(
+          (parent) => !parent.match(/r-.*/)
+        );
+      }
+
+      const parentsToRemove: Array<string> = oldParentsList.filter(
+        (parent) => !newParentsList.includes(parent)
       );
-      await orgEventProvisioning(
-        instanceArn,
-        message.detail.requestParameters.accountId,
-        "create",
-        message.detail.requestParameters.destinationParentId,
-        "ou_id",
-        identityStoreId,
-        requestId
+      const parentsToAdd: Array<string> = newParentsList.filter(
+        (parent) => !oldParentsList.includes(parent)
       );
+      logger({
+        handler: "orgEventsProcessor",
+        logMode: "info",
+        relatedData: `${message.detail.requestParameters.accountId}`,
+        status: requestStatus.InProgress,
+        requestId: requestId,
+        statusMessage: `OrgEvents - account move, list of OU ID's calculated for de-provisioning: ${JSON.stringify(
+          parentsToRemove
+        )}`,
+      });
+      logger({
+        handler: "orgEventsProcessor",
+        logMode: "info",
+        relatedData: `${message.detail.requestParameters.accountId}`,
+        status: requestStatus.InProgress,
+        requestId: requestId,
+        statusMessage: `OrgEvents - account move, list of OU ID's calculated for provisioning: ${JSON.stringify(
+          parentsToAdd
+        )}`,
+      });
+      /** Start processing deletion of any related account assignments for old parents list */
+      for (const parent of parentsToRemove) {
+        await orgEventProvisioning(
+          instanceArn,
+          message.detail.requestParameters.accountId,
+          "delete",
+          parent,
+          "ou_id",
+          identityStoreId,
+          requestId
+        );
+      }
+      /** Start processing addition of any related account assignments for new parents list */
+      for (const parent of parentsToAdd) {
+        await orgEventProvisioning(
+          instanceArn,
+          message.detail.requestParameters.accountId,
+          "create",
+          parent,
+          "ou_id",
+          identityStoreId,
+          requestId
+        );
+      }
     } else if (message["detail-type"] === "Tag Change on Resource") {
       // When tag changes are recieved by the lambda
       // handler it would contain changed-tag-keys

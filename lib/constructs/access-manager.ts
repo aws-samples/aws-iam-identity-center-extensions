@@ -233,6 +233,7 @@ export class AccessManager extends Construct {
           accessManagerProps.FetchCrossStackValues.listInstancesSSOAPIRoleArn,
           accessManagerProps.FetchCrossStackValues
             .listGroupsIdentityStoreAPIRoleArn,
+          accessManagerProps.FetchCrossStackValues.orgListParentsRoleArn,
         ],
         actions: ["sts:AssumeRole"],
       })

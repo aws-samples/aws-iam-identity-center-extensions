@@ -230,6 +230,45 @@
     "@aws-sdk/util-utf8-node" "3.55.0"
     tslib "^2.3.1"
 
+"@aws-sdk/client-organizations@^3.100.0":
+  version "3.100.0"
+  resolved "https://registry.yarnpkg.com/@aws-sdk/client-organizations/-/client-organizations-3.100.0.tgz#c2b837b3855927cd87238c86085657d13eaab426"
+  integrity sha512-PUya9XP1P6dC+4Rqmcn4iYb3ypRh6wnFn54k1VRJ5TUshwB1uG4bwLNXSoopz5Iz0Oel0e3ogMJ/5eD+QsTG3A==
+  dependencies:
+    "@aws-crypto/sha256-browser" "2.0.0"
+    "@aws-crypto/sha256-js" "2.0.0"
+    "@aws-sdk/client-sts" "3.100.0"
+    "@aws-sdk/config-resolver" "3.80.0"
+    "@aws-sdk/credential-provider-node" "3.100.0"
+    "@aws-sdk/fetch-http-handler" "3.78.0"
+    "@aws-sdk/hash-node" "3.78.0"
+    "@aws-sdk/invalid-dependency" "3.78.0"
+    "@aws-sdk/middleware-content-length" "3.78.0"
+    "@aws-sdk/middleware-host-header" "3.78.0"
+    "@aws-sdk/middleware-logger" "3.78.0"
+    "@aws-sdk/middleware-retry" "3.80.0"
+    "@aws-sdk/middleware-serde" "3.78.0"
+    "@aws-sdk/middleware-signing" "3.78.0"
+    "@aws-sdk/middleware-stack" "3.78.0"
+    "@aws-sdk/middleware-user-agent" "3.78.0"
+    "@aws-sdk/node-config-provider" "3.80.0"
+    "@aws-sdk/node-http-handler" "3.94.0"
+    "@aws-sdk/protocol-http" "3.78.0"
+    "@aws-sdk/smithy-client" "3.99.0"
+    "@aws-sdk/types" "3.78.0"
+    "@aws-sdk/url-parser" "3.78.0"
+    "@aws-sdk/util-base64-browser" "3.58.0"
+    "@aws-sdk/util-base64-node" "3.55.0"
+    "@aws-sdk/util-body-length-browser" "3.55.0"
+    "@aws-sdk/util-body-length-node" "3.55.0"
+    "@aws-sdk/util-defaults-mode-browser" "3.99.0"
+    "@aws-sdk/util-defaults-mode-node" "3.99.0"
+    "@aws-sdk/util-user-agent-browser" "3.78.0"
+    "@aws-sdk/util-user-agent-node" "3.80.0"
+    "@aws-sdk/util-utf8-browser" "3.55.0"
+    "@aws-sdk/util-utf8-node" "3.55.0"
+    tslib "^2.3.1"
+
 "@aws-sdk/client-s3@^3.100.0":
   version "3.100.0"
   resolved "https://registry.yarnpkg.com/@aws-sdk/client-s3/-/client-s3-3.100.0.tgz#6cae596da29889848b009e34a4126842038906b0"
@@ -1421,10 +1460,10 @@ is-promise@^2.2.2:
   resolved "https://registry.yarnpkg.com/is-promise/-/is-promise-2.2.2.tgz#39ab959ccbf9a774cf079f7b40c7a26f763135f1"
   integrity sha512-+lP4/6lKUBfQjZ2pdxThZvLUAafmZb8OAxFb8XXtiQmS35INgr85hdOGoEs124ez1FCnZJt6jau/T+alh58QFQ==
 
-json-diff@^0.7.4:
-  version "0.7.4"
-  resolved "https://registry.yarnpkg.com/json-diff/-/json-diff-0.7.4.tgz#b9089e2d29dd1b99cf3529dc1a5b72ca2ac7a8dc"
-  integrity sha512-FJ2P+ShDbzu9epF+kCKgoSUhPIUW7Ta7A4XlIT0L5LzgaR/z1TBF1mm0XhRGj8RlA3Xm0j+c/FsWOHDtuoYejA==
+json-diff@^0.9.0:
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/json-diff/-/json-diff-0.9.0.tgz#e7c536798053cb409113d7403c774849e8a0d7ff"
+  integrity sha512-cVnggDrVkAAA3OvFfHpFEhOnmcsUpleEKq4d4O8sQWWSH40MBrWstKigVB1kGrgLWzuom+7rRdaCsnBD6VyObQ==
   dependencies:
     cli-color "^2.0.0"
     difflib "~0.2.1"

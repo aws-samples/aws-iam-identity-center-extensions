@@ -43,7 +43,7 @@
         "Sid": "AllowOtherIAMActions"
       },
       {
-        "Action": ["iam:List*", "iam:Generate*", "iam:Get*", "iam:Simulate*"],
+        "Action": "iam:List*",
         "Resource": "*",
         "Effect": "Allow",
         "Sid": "AllowReadIAMActions"

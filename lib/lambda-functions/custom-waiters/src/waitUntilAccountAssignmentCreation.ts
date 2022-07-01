@@ -56,7 +56,7 @@ export const waitUntilAccountAssignmentCreation = async (
     status: requestStatus.InProgress,
     statusMessage: `Waiter invoked for createAccountAssignment Operation`,
   });
-  const serviceDefaults = { minDelay: 1, maxDelay: 5 };
+  const serviceDefaults = { minDelay: 60, maxDelay: 120 };
   const result = await createWaiter(
     { ...serviceDefaults, ...params },
     input,

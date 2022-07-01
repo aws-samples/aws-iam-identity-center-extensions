@@ -130,6 +130,8 @@ export const handler = async (event: SNSEvent) => {
     let sortedManagedPoliciesArnList: Array<string> = [];
     let currentRelayState = "";
     let currentPermissionSetDescription = permissionSetName;
+    let sessionDurationPresent = false;
+    let relayStatePresent = false;
 
     logger({
       handler: "permissionSetTopicProcessor",
@@ -158,10 +160,6 @@ export const handler = async (event: SNSEvent) => {
             Description: currentItem.description
               ? currentItem.description
               : permissionSetName,
-            RelayState: currentItem.relayState + "",
-            SessionDuration: serializeDurationToISOFormat({
-              minutes: parseInt(currentItem.sessionDurationInMinutes + ""),
-            }),
           })
         );
         logger({
@@ -175,6 +173,83 @@ export const handler = async (event: SNSEvent) => {
 
         permissionSetArn =
           createOp.PermissionSet?.PermissionSetArn?.toString() + "";
+        /**
+         * Update relayState and sessionDuration if they match length greater
+         * than 0 SSO Admin API sets sessionDuration to 60 mins when
+         * un-specified Additionally, when only relayState is specified in the
+         * updatePermissionSet call, the service updates the sessionDuration to
+         * 60 mins irrespective of what it's previous value is So, the below
+         * logic tries to circumvent this behaviour of the SSO admin API and
+         * ensure that the end values reflect correctly
+         */
+        if (currentItem.relayState || currentItem.sessionDurationInMinutes) {
+          if (
+            currentItem.relayState &&
+            currentItem.relayState.length > 0 &&
+            currentItem.sessionDurationInMinutes &&
+            currentItem.sessionDurationInMinutes.length > 0
+          ) {
+            await ssoAdminClientObject.send(
+              new UpdatePermissionSetCommand({
+                InstanceArn: instanceArn,
+                PermissionSetArn: permissionSetArn,
+                RelayState: currentItem.relayState,
+                SessionDuration: serializeDurationToISOFormat({
+                  minutes: parseInt(currentItem.sessionDurationInMinutes),
+                }),
+              })
+            );
+            logger({
+              handler: "permissionSetTopicProcessor",
+              logMode: "info",
+              requestId: requestId,
+              relatedData: permissionSetName,
+              status: requestStatus.InProgress,
+              statusMessage: `PermissionSet create operation - updated relayState and currentSessionDuration`,
+            });
+          } else if (
+            currentItem.relayState &&
+            currentItem.relayState.length > 0
+          ) {
+            await ssoAdminClientObject.send(
+              new UpdatePermissionSetCommand({
+                InstanceArn: instanceArn,
+                PermissionSetArn: permissionSetArn,
+                RelayState: currentItem.relayState,
+              })
+            );
+            logger({
+              handler: "permissionSetTopicProcessor",
+              logMode: "info",
+              requestId: requestId,
+              relatedData: permissionSetName,
+              status: requestStatus.InProgress,
+              statusMessage: `PermissionSet create operation - updated relayState`,
+            });
+          } else if (
+            currentItem.sessionDurationInMinutes &&
+            currentItem.sessionDurationInMinutes.length > 0
+          ) {
+            await ssoAdminClientObject.send(
+              new UpdatePermissionSetCommand({
+                InstanceArn: instanceArn,
+                PermissionSetArn: permissionSetArn,
+                SessionDuration: serializeDurationToISOFormat({
+                  minutes: parseInt(currentItem.sessionDurationInMinutes),
+                }),
+              })
+            );
+            logger({
+              handler: "permissionSetTopicProcessor",
+              logMode: "info",
+              requestId: requestId,
+              relatedData: permissionSetName,
+              status: requestStatus.InProgress,
+              statusMessage: `PermissionSet update operation - updated currentSessionDuration`,
+            });
+          }
+        }
+
         await ddbDocClientObject.send(
           new UpdateCommand({
             TableName: Arntable,
@@ -320,11 +395,16 @@ export const handler = async (event: SNSEvent) => {
               statusMessage: `PermissionSet update operation - object and arn found, progressing with delta`,
             });
 
-            if (currentItem.sessionDurationInMinutes.length !== 0) {
+            if (
+              currentItem.sessionDurationInMinutes &&
+              currentItem.sessionDurationInMinutes.length > 0
+            ) {
               currentSessionDuration = currentItem.sessionDurationInMinutes;
+              sessionDurationPresent = true;
             }
-            if (currentItem.relayState.length !== 0) {
+            if (currentItem.relayState && currentItem.relayState.length > 0) {
               currentRelayState = currentItem.relayState;
+              relayStatePresent = true;
             }
             if (currentItem.sortedManagedPoliciesArnList) {
               sortedManagedPoliciesArnList =
@@ -617,10 +697,6 @@ export const handler = async (event: SNSEvent) => {
                   PermissionSetArn: permissionSetArn,
                   InstanceArn: instanceArn,
                   Description: currentPermissionSetDescription,
-                  SessionDuration: serializeDurationToISOFormat({
-                    minutes: parseInt(currentSessionDuration),
-                  }),
-                  RelayState: currentRelayState,
                 })
               );
               logger({
@@ -631,6 +707,70 @@ export const handler = async (event: SNSEvent) => {
                 status: requestStatus.InProgress,
                 statusMessage: `PermissionSet update operation - updated Permission set attributes`,
               });
+              /**
+               * Update relayState and sessionDuration if they match length
+               * greater than 0 SSO Admin API sets sessionDuration to 60 mins
+               * when un-specified Additionally, when only relayState is
+               * specified in the updatePermissionSet call, the service updates
+               * the sessionDuration to 60 mins irrespective of what it's
+               * previous value is So, the below logic tries to circumvent this
+               * behaviour of the SSO admin API and ensure that the end values
+               * reflect correctly
+               */
+              if (relayStatePresent && sessionDurationPresent) {
+                await ssoAdminClientObject.send(
+                  new UpdatePermissionSetCommand({
+                    PermissionSetArn: permissionSetArn,
+                    InstanceArn: instanceArn,
+                    RelayState: currentRelayState,
+                    SessionDuration: serializeDurationToISOFormat({
+                      minutes: parseInt(currentSessionDuration),
+                    }),
+                  })
+                );
+                logger({
+                  handler: "permissionSetTopicProcessor",
+                  logMode: "info",
+                  requestId: requestId,
+                  relatedData: permissionSetName,
+                  status: requestStatus.InProgress,
+                  statusMessage: `PermissionSet update operation - updated relayState and currentSessionDuration`,
+                });
+              } else if (relayStatePresent) {
+                await ssoAdminClientObject.send(
+                  new UpdatePermissionSetCommand({
+                    PermissionSetArn: permissionSetArn,
+                    InstanceArn: instanceArn,
+                    RelayState: currentRelayState,
+                  })
+                );
+                logger({
+                  handler: "permissionSetTopicProcessor",
+                  logMode: "info",
+                  requestId: requestId,
+                  relatedData: permissionSetName,
+                  status: requestStatus.InProgress,
+                  statusMessage: `PermissionSet update operation - updated relayState`,
+                });
+              } else if (sessionDurationPresent) {
+                await ssoAdminClientObject.send(
+                  new UpdatePermissionSetCommand({
+                    PermissionSetArn: permissionSetArn,
+                    InstanceArn: instanceArn,
+                    SessionDuration: serializeDurationToISOFormat({
+                      minutes: parseInt(currentSessionDuration),
+                    }),
+                  })
+                );
+                logger({
+                  handler: "permissionSetTopicProcessor",
+                  logMode: "info",
+                  requestId: requestId,
+                  relatedData: permissionSetName,
+                  status: requestStatus.InProgress,
+                  statusMessage: `PermissionSet update operation - updated sessionDuration`,
+                });
+              }
             }
 
             if (reProvision) {

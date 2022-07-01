@@ -42,6 +42,7 @@ export class FetchCrossStackValues extends Construct {
   public readonly listInstancesSSOAPIRoleArn: string;
   public readonly listGroupsIdentityStoreAPIRoleArn: string;
   public readonly orgListSMRoleArn: string;
+  public readonly orgListParentsRoleArn: string;
   public readonly waiterHandlerSSOAPIRoleArn: string;
 
   constructor(scope: Construct, id: string, buildConfig: BuildConfig) {
@@ -255,6 +256,17 @@ export class FetchCrossStackValues extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.OrgMainAccountId,
         ParamRegion: "us-east-1", // Organizations discovery can only be done in us-east-1, hence the step functions and related roles are declared in that region
         ParamNameKey: "orgListSM-orgapi-roleArn",
+      }
+    ).paramValue;
+
+    this.orgListParentsRoleArn = new SSMParamReader(
+      this,
+      name(buildConfig, "orgListParentsRoleArnpr"),
+      buildConfig,
+      {
+        ParamAccountId: buildConfig.PipelineSettings.OrgMainAccountId,
+        ParamRegion: "us-east-1", // Organizations discovery can only be done in us-east-1, hence the step functions and related roles are declared in that region
+        ParamNameKey: "orgListParents-orgapi-roleArn",
       }
     ).paramValue;
 

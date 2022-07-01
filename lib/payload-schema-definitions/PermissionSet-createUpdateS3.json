@@ -4,20 +4,13 @@
   "type": "object",
   "title": "Permission Set Object",
   "description": "Permission Set Object",
-  "default": {},
-  "required": [
-    "permissionSetName",
-    "sessionDurationInMinutes",
-    "managedPoliciesArnList",
-    "inlinePolicyDocument"
-  ],
+  "required": ["permissionSetName"],
   "properties": {
     "permissionSetName": {
       "$id": "#/properties/permissionSetName",
       "type": "string",
       "title": "Permission Set Name",
       "description": "Permission Set Name",
-      "default": "",
       "minLength": 1,
       "maxLength": 32,
       "pattern": "[\\w+=,.@-]+"
@@ -27,7 +20,6 @@
       "type": "string",
       "title": "description",
       "description": "Permission set description",
-      "default": "",
       "minLength": 1,
       "maxLength": 700,
       "pattern": "[\\u0009\\u000A\\u000D\\u0020-\\u007E\\u00A1-\\u00FF]*"
@@ -37,7 +29,6 @@
       "type": "string",
       "title": "sessionDurationInMinutes",
       "description": "sessionDurationInMinutes",
-      "default": "",
       "minLength": 1,
       "pattern": "^(720|7[0-1][0-9]|[1-6][0-9][0-9]|[6-9][0-9])$"
     },
@@ -46,8 +37,7 @@
       "type": "string",
       "title": "relayState",
       "description": "relayState",
-      "default": "",
-      "minLength": 0,
+      "minLength": 1,
       "maxLength": 240,
       "pattern": "[A-Za-z0-9_:/=\\+\\-@#]+"
     },
@@ -73,7 +63,6 @@
                 "type": "string",
                 "title": "tag object key",
                 "description": "tag object key",
-                "default": "",
                 "minLength": 1,
                 "maxLength": 128,
                 "pattern": "^[A-Za-z0-9_:/=\\+\\-@]*$"
@@ -108,7 +97,6 @@
             "type": "string",
             "title": "Managed Policies $schema",
             "description": "Managed Policies $schema",
-            "default": "",
             "pattern": "arn:aws:iam::aws:policy/[A-Za-z]+"
           }
         ]
@@ -126,7 +114,8 @@
           "type": "string",
           "title": "The Version $schema",
           "description": "An explanation about the purpose of this instance.",
-          "default": ""
+          "enum": ["2012-10-17", "2008-10-17"],
+          "default": "2012-10-17"
         },
         "Statement": {
           "$id": "#/properties/inlinePolicyDocument/properties/Statement",
@@ -143,26 +132,36 @@
                 "title": "Statement object",
                 "description": "Statement object",
                 "default": {},
-                "required": ["Action", "Resource", "Effect"],
+                "required": ["Effect"],
                 "properties": {
                   "Action": {
                     "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Action",
-                    "type": "array",
-                    "title": "The Action $schema",
-                    "description": "The permitted actions",
-                    "default": [],
-                    "items": {
-                      "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Action/items",
-                      "anyOf": [
-                        {
-                          "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Action/items/anyOf/0",
-                          "type": "string",
-                          "title": "Permitted actions",
-                          "description": "The permitted actions",
-                          "default": ""
+                    "anyOf": [
+                      {
+                        "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Action/anyOf/0",
+                        "type": ["array"],
+                        "title": "The Action $schema",
+                        "description": "The permitted actions",
+                        "default": [],
+                        "items": {
+                          "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Action/anyOf/0/items",
+                          "anyOf": [
+                            {
+                              "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Action/items/anyOf/0/items/anyOf/0",
+                              "type": "string",
+                              "title": "Permitted actions",
+                              "description": "The permitted actions"
+                            }
+                          ]
                         }
-                      ]
-                    }
+                      },
+                      {
+                        "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Action/anyOf/1",
+                        "type": "string",
+                        "title": "The Action $schema",
+                        "description": "The permitted actions"
+                      }
+                    ]
                   },
                   "Resource": {
                     "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Resource",
@@ -180,8 +179,7 @@
                               "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Resource/anyOf/0/items/anyOf/0",
                               "type": "string",
                               "title": "Permitted resources",
-                              "description": "The permitted resources",
-                              "default": ""
+                              "description": "The permitted resources"
                             }
                           ]
                         }
@@ -190,17 +188,9 @@
                         "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Resource/anyOf/1",
                         "type": "string",
                         "title": "The Resource $schema",
-                        "description": "The resource that has the permission",
-                        "default": ""
+                        "description": "The resource that has the permission"
                       }
                     ]
-                  },
-                  "Condition": {
-                    "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Condition",
-                    "type": "object",
-                    "title": "Condition object",
-                    "description": "Condition object",
-                    "default": {}
                   },
                   "Effect": {
                     "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Effect",
@@ -214,8 +204,75 @@
                     "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Sid",
                     "type": "string",
                     "title": "The Sid $schema",
-                    "description": "Statement id - optional identifier for the statement",
-                    "default": ""
+                    "description": "Statement id - optional identifier for the statement"
+                  },
+                  "Condition": {
+                    "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Condition",
+                    "type": "object",
+                    "title": "Condition object",
+                    "description": "Condition object",
+                    "default": {}
+                  },
+                  "Principal": {
+                    "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/Principal",
+                    "type": "object",
+                    "title": "Principal object",
+                    "description": "Principal object",
+                    "default": {}
+                  },
+                  "NotPrincipal": {
+                    "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/NotPrincipal",
+                    "type": "object",
+                    "title": "NotPrincipal object",
+                    "description": "NotPrincipal object",
+                    "default": {}
+                  },
+                  "NotAction": {
+                    "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/NotAction",
+                    "type": "array",
+                    "title": "The NotAction $schema",
+                    "description": "The non-permitted actions",
+                    "default": [],
+                    "items": {
+                      "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/NotAction/items",
+                      "anyOf": [
+                        {
+                          "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/NotAction/items/anyOf/0",
+                          "type": "string",
+                          "title": "Non-permitted actions",
+                          "description": "The non-permitted actions"
+                        }
+                      ]
+                    }
+                  },
+                  "NotResource": {
+                    "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/NotResource",
+                    "anyOf": [
+                      {
+                        "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/NotResource/anyOf/0",
+                        "type": ["array"],
+                        "title": "The NotResource $schema",
+                        "description": "The resource that is excluded from the permission",
+                        "default": [],
+                        "items": {
+                          "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/NotResource/anyOf/0/items",
+                          "anyOf": [
+                            {
+                              "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/NotResource/anyOf/0/items/anyOf/0",
+                              "type": "string",
+                              "title": "Non-permitted resources",
+                              "description": "The non permitted resources"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "$id": "#/properties/inlinePolicyDocument/properties/Statement/items/anyOf/0/properties/NotResource/anyOf/1",
+                        "type": "string",
+                        "title": "The NotResource $schema",
+                        "description": "The resource that does not have the permission"
+                      }
+                    ]
                   }
                 },
                 "additionalProperties": false

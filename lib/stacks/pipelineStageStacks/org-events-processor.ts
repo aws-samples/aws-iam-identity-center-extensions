@@ -209,6 +209,34 @@ export class OrgEventsProcessor extends Stack {
       })
     );
 
+    /**
+     * Add permissions for recursive invocation of the same state machine , to
+     * handle nested OU's
+     */
+    processTargetAccountSMRole.addToPrincipalPolicy(
+      new PolicyStatement({
+        actions: ["states:StartExecution"],
+        resources: [
+          `arn:aws:states:us-east-1:${buildConfig.PipelineSettings.OrgMainAccountId}:stateMachine:${buildConfig.Environment}-processTargetAccountSM`,
+        ],
+      })
+    );
+
+    processTargetAccountSMRole.addToPrincipalPolicy(
+      new PolicyStatement({
+        actions: ["states:DescribeExecution", "states:StopExecution"],
+        resources: ["*"],
+      })
+    );
+    processTargetAccountSMRole.addToPrincipalPolicy(
+      new PolicyStatement({
+        actions: ["events:PutTargets", "events:PutRule", "events:DescribeRule"],
+        resources: [
+          `arn:aws:events:us-east-1:${buildConfig.PipelineSettings.OrgMainAccountId}:rule/StepFunctionsGetEventsForStepFunctionsExecutionRule`,
+        ],
+      })
+    );
+
     orgArtefactsKey.grantEncryptDecrypt(processTargetAccountSMRole);
 
     const processTargetAccountSM = new CfnStateMachine(
@@ -221,6 +249,12 @@ export class OrgEventsProcessor extends Stack {
       }
     );
 
+    /**
+     * Explicit dependency to ensure the inline policy is created and attached
+     * prior to the state machine creation
+     */
+    processTargetAccountSM.node.addDependency(processTargetAccountSMRole);
+
     new CrossAccountRole(
       this,
       name(buildConfig, "orgListSMRole"),
@@ -231,6 +265,20 @@ export class OrgEventsProcessor extends Stack {
         policyStatement: new PolicyStatement({
           resources: [processTargetAccountSM.ref],
           actions: ["states:StartExecution"],
+        }),
+      }
+    );
+
+    new CrossAccountRole(
+      this,
+      name(buildConfig, "orgListParentsRole"),
+      buildConfig,
+      {
+        assumeAccountID: buildConfig.PipelineSettings.TargetAccountId,
+        roleNameKey: "orgListParents-orgapi",
+        policyStatement: new PolicyStatement({
+          resources: ["*"],
+          actions: ["organizations:ListParents"],
         }),
       }
     );
