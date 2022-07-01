@@ -184,7 +184,7 @@ function getConfig() {
       ),
       SupportNestedOU: ensureBoolean(
         unparsedEnv["Parameters"],
-        "EnableNightlyRun"
+        "SupportNestedOU"
       ),
     },
   };
