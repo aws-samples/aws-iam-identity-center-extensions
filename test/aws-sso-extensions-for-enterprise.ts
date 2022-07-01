@@ -176,7 +176,8 @@ test("Empty Stack", () => {
         NightlyRunRemediationMode: ensureValidString(
           unparsedEnv["Parameters"],
           "NightlyRunRemediationMode",
-          ["NOTIFY", "AUTOREMEDIATE"]),
+          ["NOTIFY", "AUTOREMEDIATE"]
+        ),
         SupportNestedOU: ensureBoolean(
           unparsedEnv["Parameters"],
           "SupportNestedOU"
