@@ -46,7 +46,7 @@ export class SSOObjectsDiscoveryPart1 extends Construct {
       name(buildConfig, "ssoArtefactsKeyforImport"),
       {
         enableKeyRotation: true,
-        alias: name(buildConfig, "ssoArtefactsKeyforImport"),
+        alias: name(buildConfig, "ssoArtefactsKeyForImport"),
       }
     );
     ssoArtefactsKeyforImport.grantEncryptDecrypt(
@@ -109,7 +109,7 @@ export class SSOObjectsDiscoveryPart1 extends Construct {
       name(buildConfig, "permissionSetImportTopicArn"),
       buildConfig,
       {
-        ParamNameKey: "permissionSetImportTopicArn",
+        ParamNameKey: "importPermissionSetTopicArn",
         ParamValue: this.permissionSetImportTopic.topicArn,
         ReaderAccountId: buildConfig.PipelineSettings.TargetAccountId,
       }
@@ -119,7 +119,7 @@ export class SSOObjectsDiscoveryPart1 extends Construct {
       name(buildConfig, "accountAssignmentImportTopicArn"),
       buildConfig,
       {
-        ParamNameKey: "accountAssignmentImportTopicArn",
+        ParamNameKey: "importAccountAssignmentTopicArn",
         ParamValue: this.accountAssignmentImportTopic.topicArn,
         ReaderAccountId: buildConfig.PipelineSettings.TargetAccountId,
       }
@@ -215,11 +215,11 @@ export class SSOObjectsDiscoveryPart1 extends Construct {
     /** Create import account assignment state machine definition */
     const importAccountAssignmentSM = new CfnStateMachine(
       this,
-      name(buildConfig, "importAccountAssignmentSM"),
+      name(buildConfig, "importAccountAssignmentsSM"),
       {
         roleArn: importAccountAssignmentsSMRole.roleArn,
         definitionString: JSON.stringify(importAccountAssignmentsSMJSON),
-        stateMachineName: name(buildConfig, "importAccountAssignmentSM"),
+        stateMachineName: name(buildConfig, "importAccountAssignmentsSM"),
         loggingConfiguration: {
           destinations: [
             {
@@ -239,7 +239,7 @@ export class SSOObjectsDiscoveryPart1 extends Construct {
     /** Create import permission set state machine role and policy definitions */
     const importPermissionSetSMRole = new Role(
       this,
-      name(buildConfig, "importPermissionSetSMRole"),
+      name(buildConfig, "importPermissionSetsSMRole"),
       {
         roleName: name(buildConfig, "permissionSetsImportRole"),
         assumedBy: new ServicePrincipal("states.amazonaws.com"),
@@ -315,11 +315,11 @@ export class SSOObjectsDiscoveryPart1 extends Construct {
     /** Create import permission set state machine definition */
     const importPermissionSetSM = new CfnStateMachine(
       this,
-      name(buildConfig, "importPermissionSetSM"),
+      name(buildConfig, "importPermissionSetsSM"),
       {
         roleArn: importPermissionSetSMRole.roleArn,
         definitionString: JSON.stringify(importPermissionSetsSMJSON),
-        stateMachineName: name(buildConfig, "importPermissionSetSM"),
+        stateMachineName: name(buildConfig, "importPermissionSetsSM"),
         loggingConfiguration: {
           destinations: [
             {
@@ -403,11 +403,11 @@ export class SSOObjectsDiscoveryPart1 extends Construct {
     /** Create import current config state machine definition */
     const importCurrentConfigSM = new CfnStateMachine(
       this,
-      name(buildConfig, "importCurrentConfigSM"),
+      name(buildConfig, "importCurrentSSOConfigSM"),
       {
         roleArn: importCurrentConfigSMRole.roleArn,
         definitionString: JSON.stringify(importCurrentConfigSMJSON),
-        stateMachineName: name(buildConfig, "importCurrentConfigSM"),
+        stateMachineName: name(buildConfig, "importCurrentSSOConfigSM"),
         loggingConfiguration: {
           destinations: [
             {
@@ -451,7 +451,7 @@ export class SSOObjectsDiscoveryPart1 extends Construct {
       buildConfig,
       {
         assumeAccountID: buildConfig.PipelineSettings.TargetAccountId,
-        roleNameKey: "smDescribe-ssoapi",
+        roleNameKey: "smDescribeSsoApi",
         policyStatement: new PolicyStatement({
           resources: ["*"],
           actions: ["states:DescribeExecution"],
@@ -464,7 +464,7 @@ export class SSOObjectsDiscoveryPart1 extends Construct {
       this,
       name(buildConfig, "importCurrentSSOConfiguration-errors"),
       {
-        name: name(buildConfig, "importCurrentSSOConfiguration-errors"),
+        name: name(buildConfig, "importCurrentSsoConfiguration-errors"),
         queryString:
           "filter @message like 'solutionError' and details.name not like 'Catchall'| sort id asc",
         logGroupNames: [importArtefactsSMLogGroup.logGroupName],

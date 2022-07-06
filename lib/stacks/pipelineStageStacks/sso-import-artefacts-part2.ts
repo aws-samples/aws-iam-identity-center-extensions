@@ -28,56 +28,8 @@ export class SSOImportArtefactsPart2 extends Stack {
 
     const deploySSOObjectsDiscoveryPart2 = new SSOObjectsDiscoveryPart2(
       this,
-      name(buildConfig, `importAccountAssignmentHandler`),
-      {
-        runtime: lambda.Runtime.NODEJS_16_X,
-        functionName: name(buildConfig, `importAccountAssignmentHandler`),
-        layers: [deployImportArtefacts.nodeJsLayer],
-        entry: join(
-          __dirname,
-          "../../../",
-          "lib",
-          "lambda-functions",
-          "current-config-handlers",
-          "src",
-          "import-account-assignments.ts"
-        ),
-        bundling: {
-          externalModules: [
-            "uuid",
-            "@aws-sdk/client-dynamodb",
-            "@aws-sdk/lib-dynamodb",
-            "@aws-sdk/client-s3",
-          ],
-          minify: true,
-        },
-        environment: {
-          linksTableName: deployImportArtefacts.importedLinksTable.tableName,
-          provisionedLinksTableName:
-            deployImportArtefacts.importedProvisionedLinksTable.tableName,
-          artefactsBucketName:
-            deployImportArtefacts.importedSsoArtefactsBucket.bucketName,
-        },
-      }
-    );
-
-    deployImportArtefacts.importedddbTablesKey.grantEncryptDecrypt(
-      importAccountAssignmentHandler
-    );
-
-    deployImportArtefacts.importedLinksTable.grantReadWriteData(
-      importAccountAssignmentHandler
-    );
-    deployImportArtefacts.importedProvisionedLinksTable.grantReadWriteData(
-      importAccountAssignmentHandler
-    );
-
-    deployImportArtefacts.importedSsoArtefactsBucket.grantReadWrite(
-      importAccountAssignmentHandler
-    );
-
-    importAccountAssignmentHandler.addEventSource(
-      new SnsEventSource(deployImportArtefacts.accountAssignmentImportTopic)
+      name(buildConfig, "deploySSOObjectsDiscoveryPart2"),
+      buildConfig
     );
     /** Use case specific additions */
 
@@ -120,45 +72,15 @@ export class SSOImportArtefactsPart2 extends Stack {
         }
       );
 
-    const importPermissionSetHandler = new NodejsFunction(
-      this,
-      name(buildConfig, `importPermissionSetHandler`),
-      {
-        runtime: lambda.Runtime.NODEJS_16_X,
-        functionName: name(buildConfig, `importPermissionSetHandler`),
-        layers: [deployImportArtefacts.nodeJsLayer],
-        entry: join(
-          __dirname,
-          "../../../",
-          "lib",
-          "lambda-functions",
-          "current-config-handlers",
-          "src",
-          "import-permission-sets.ts"
-        ),
-        bundling: {
-          externalModules: [
-            "uuid",
-            "json-diff",
-            "@aws-sdk/client-dynamodb",
-            "@aws-sdk/client-sso-admin",
-            "@aws-sdk/credential-providers",
-            "@aws-sdk/lib-dynamodb",
-            "@aws-sdk/client-s3",
-          ],
-          minify: true,
-        },
-        environment: {
-          permissionSetTableName:
-            deployImportArtefacts.importedPsTable.tableName,
-          permissionSetArnTableName:
-            deployImportArtefacts.importedPsArnTable.tableName,
-          SSOAPIRoleArn:
-            deployImportArtefacts.importedPermissionSetHandlerSSOAPIRoleArn,
-          ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
-          artefactsBucketName:
-            deployImportArtefacts.importedSsoArtefactsBucket.bucketName,
-        },
+      if (updateCustomResourceHandler.role) {
+        updateCustomResourceHandler.addToRolePolicy(
+          new PolicyStatement({
+            resources: [
+              deploySSOObjectsDiscoveryPart2.currentConfigSMDescribeRoleArn,
+            ],
+            actions: ["sts:AssumeRole"],
+          })
+        );
       }
 
       const parentSMInvokePolicy = new PolicyStatement({
@@ -195,35 +117,8 @@ export class SSOImportArtefactsPart2 extends Stack {
         }
       );
 
-    const updateCustomResourceHandler = new NodejsFunction(
-      this,
-      name(buildConfig, `updateCustomResourceHandler`),
-      {
-        runtime: lambda.Runtime.NODEJS_16_X,
-        functionName: name(buildConfig, `updateCustomResourceHandler`),
-        layers: [deployImportArtefacts.nodeJsLayer],
-        entry: join(
-          __dirname,
-          "../../../",
-          "lib",
-          "lambda-functions",
-          "current-config-handlers",
-          "src",
-          "update-custom-resource.ts"
-        ),
-        bundling: {
-          externalModules: [
-            "@aws-sdk/client-sfn",
-            "@aws-sdk/credential-providers",
-          ],
-          minify: true,
-        },
-        environment: {
-          smDescribeRoleArn:
-            deployImportArtefacts.currentConfigSMDescribeRoleArn,
-          ssoAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
-          ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
-        },
+      if (parentSMInvokeFunction.role) {
+        parentSMInvokeFunction.role.addToPrincipalPolicy(parentSMInvokePolicy);
       }
 
       const parentSMInvokeProvider = new Provider(
@@ -237,32 +132,27 @@ export class SSOImportArtefactsPart2 extends Stack {
         }
       );
 
-    const parentSMInvokeFunction = new NodejsFunction(
-      this,
-      name(buildConfig, `parentSMInvokeFunction`),
-      {
-        runtime: lambda.Runtime.NODEJS_16_X,
-        functionName: name(buildConfig, `parentSMInvokeFunction`),
-        layers: [deployImportArtefacts.nodeJsLayer],
-        entry: join(
-          __dirname,
-          "../../../",
-          "lib",
-          "lambda-functions",
-          "current-config-handlers",
-          "src",
-          "trigger-parentSM.ts"
-        ),
-        bundling: {
-          externalModules: [
-            "@aws-sdk/client-sfn",
-            "@aws-sdk/credential-providers",
-            "uuid",
-          ],
-          minify: true,
-        },
-      }
-    );
+      const parentSMResource = new CustomResource(
+        this,
+        name(buildConfig, "parentSMResource"),
+        {
+          serviceToken: parentSMInvokeProvider.serviceToken,
+          properties: {
+            smInvokeRoleArn:
+              deploySSOObjectsDiscoveryPart2.currentConfigSMInvokeRoleArn,
+            importCurrentConfigSMArn: `arn:aws:states:${buildConfig.PipelineSettings.SSOServiceAccountRegion}:${buildConfig.PipelineSettings.SSOServiceAccountId}:stateMachine:${buildConfig.Environment}-importCurrentSSOConfigSM`,
+            importAccountAssignmentSMArn: `arn:aws:states:${buildConfig.PipelineSettings.SSOServiceAccountRegion}:${buildConfig.PipelineSettings.SSOServiceAccountId}:stateMachine:${buildConfig.Environment}-importAccountAssignmentsSM`,
+            importPermissionSetSMArn: `arn:aws:states:${buildConfig.PipelineSettings.SSOServiceAccountRegion}:${buildConfig.PipelineSettings.SSOServiceAccountId}:stateMachine:${buildConfig.Environment}-importPermissionSetsSM`,
+            accountAssignmentImportTopicArn:
+              deploySSOObjectsDiscoveryPart2.accountAssignmentImportTopic
+                .topicArn,
+            permissionSetImportTopicArn:
+              deploySSOObjectsDiscoveryPart2.permissionSetImportTopic.topicArn,
+            temporaryPermissionSetTableName: `${buildConfig.Environment}-temp-PermissionSets`,
+            ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
+          },
+        }
+      );
 
       parentSMResource.node.addDependency(
         deploySSOObjectsDiscoveryPart2.importAccountAssignmentHandler

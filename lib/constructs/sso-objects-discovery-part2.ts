@@ -90,7 +90,7 @@ export class SSOObjectsDiscoveryPart2 extends Construct {
       {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
-        ParamNameKey: "smDescribe-ssoapi-roleArn",
+        ParamNameKey: "smDescribeSsoApi-roleArn",
       }
     ).paramValue;
 
@@ -115,8 +115,8 @@ export class SSOObjectsDiscoveryPart2 extends Construct {
         {
           ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
           ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
-          ParamNameKey: "accountAssignmentImportTopicArn",
-        }
+          ParamNameKey: "importAccountAssignmentTopicArn", 
+        } 
       ).paramValue
     );
 
@@ -130,7 +130,7 @@ export class SSOObjectsDiscoveryPart2 extends Construct {
         {
           ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
           ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
-          ParamNameKey: "permissionSetImportTopicArn",
+          ParamNameKey: "importPermissionSetTopicArn", 
         }
       ).paramValue
     );
@@ -200,10 +200,10 @@ export class SSOObjectsDiscoveryPart2 extends Construct {
      */
     this.importAccountAssignmentHandler = new NodejsFunction(
       this,
-      name(buildConfig, `importAccountAssignmentHandler`),
+      name(buildConfig, `importAccountAssignmentsHandler`),
       {
         runtime: lambda.Runtime.NODEJS_16_X,
-        functionName: name(buildConfig, `importAccountAssignmentHandler`),
+        functionName: name(buildConfig, `importAccountAssignmentsHandler`),
         layers: [this.nodeJsLayer],
         entry: join(
           __dirname,
@@ -270,7 +270,7 @@ export class SSOObjectsDiscoveryPart2 extends Construct {
       name(buildConfig, `importPermissionSetHandler`),
       {
         runtime: lambda.Runtime.NODEJS_16_X,
-        functionName: name(buildConfig, `importPermissionSetHandler`),
+        functionName: name(buildConfig, `importPermissionSetsHandler`),
         layers: [this.nodeJsLayer],
         entry: join(
           __dirname,
