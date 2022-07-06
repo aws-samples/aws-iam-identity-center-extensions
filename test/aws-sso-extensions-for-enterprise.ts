@@ -59,6 +59,19 @@ test("Empty Stack", () => {
     return object[`${propName}`];
   }
 
+  function ensureNumber(
+    /* eslint-disable  @typescript-eslint/no-explicit-any */
+    object: { [name: string]: any },
+    propName: string
+  ): number {
+    if (!object[`${propName}`] || typeof object[`${propName}`] !== "number")
+      throw new Error(
+        propName + " does not exist or is empty or is not a number data type"
+      );
+
+    return object[`${propName}`];
+  }
+
   function getConfig() {
     const env = app.node.tryGetContext("config");
     if (!env)
@@ -142,6 +155,10 @@ test("Empty Stack", () => {
           unparsedEnv["Parameters"],
           "NotificationEmail"
         ),
+        AccountAssignmentVisibilityTimeoutHours: ensureNumber(
+          unparsedEnv["Parameters"],
+          "AccountAssignmentVisibilityTimeoutHours"
+        ),
         IsAdUsed: ensureBoolean(unparsedEnv["Parameters"], "IsAdUsed"),
         DomainName: ensureString(unparsedEnv["Parameters"], "DomainName"),
         ImportCurrentSSOConfiguration: ensureBoolean(
@@ -152,14 +169,9 @@ test("Empty Stack", () => {
           unparsedEnv["Parameters"],
           "UpgradeFromVersionLessThanV303"
         ),
-        EnableNightlyRun: ensureBoolean(
+        SupportNestedOU: ensureBoolean(
           unparsedEnv["Parameters"],
-          "EnableNightlyRun"
-        ),
-        NightlyRunRemediationMode: ensureValidString(
-          unparsedEnv["Parameters"],
-          "NightlyRunRemediationMode",
-          ["NOTIFY", "AUTOREMEDIATE"]
+          "SupportNestedOU"
         ),
       },
     };

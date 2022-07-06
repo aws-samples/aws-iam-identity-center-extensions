@@ -4,7 +4,6 @@
   "type": "object",
   "title": "Link-S3",
   "description": "Schemea for link create/delete through S3 interface.",
-  "default": {},
   "required": ["linkData"],
   "properties": {
     "linkData": {
@@ -12,7 +11,6 @@
       "type": "string",
       "title": "Link ojbect",
       "description": "Link object",
-      "default": {},
       "oneOf": [
         {
           "pattern": "root%all%[\\w+=,.@-]{1,32}%[_\\-\\p{L}\\p{M}\\p{S}\\p{N}+@.]{1,1024}%GROUP%ssofile"

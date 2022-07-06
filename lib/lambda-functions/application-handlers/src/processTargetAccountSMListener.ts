@@ -54,12 +54,7 @@ export const handler = async (event: SNSEvent) => {
           tagKeyLookUp: tagKeyValue,
           sourceRequestId: message.sourceRequestId,
         }),
-        MessageDeduplicationId: `${message.action}-${targetId}-${
-          message.permissionSetArn.toString().split("/")[2]
-        }-${message.principalId}`,
-        MessageGroupId: `${targetId}-${
-          message.permissionSetArn.toString().split("/")[2]
-        }-${message.principalId}`,
+        MessageGroupId: targetId.slice(-1),
       })
     );
     logger({

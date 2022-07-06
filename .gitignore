@@ -21,7 +21,7 @@ cdk.out
 # Eslint config
 !.eslintrc.js
 
-# Prettier JS-doc config
+# Prettier config for JSDOCS
 !.prettierrc
 
 # VS code specific ignores
