@@ -9,39 +9,65 @@
  *   error notifications topics
  */
 
-const { errorNotificationsTopicArn, linkQueueUrl, AWS_REGION } = process.env;
+const {
+  errorNotificationsTopicArn,
+  linkQueueUrl,
+  AWS_REGION,
+  functionLogMode,
+  AWS_LAMBDA_FUNCTION_NAME,
+} = process.env;
 
-// SDK and third party client imports
-import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
-import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
-import { SNSEvent } from "aws-lambda";
 import {
-  ErrorMessage,
-  logModes,
-  requestStatus,
-} from "../../helpers/src/interfaces";
-import { logger } from "../../helpers/src/utilities";
-// SDK and third party client object initialistaion
+  PublishCommand,
+  SNSClient,
+  SNSServiceException,
+} from "@aws-sdk/client-sns";
+import {
+  SendMessageCommand,
+  SQSClient,
+  SQSServiceException,
+} from "@aws-sdk/client-sqs";
+import { SNSEvent } from "aws-lambda";
+import { logModes, requestStatus } from "../../helpers/src/interfaces";
+import {
+  constructExceptionMessage,
+  constructExceptionMessageforLogger,
+  logger,
+} from "../../helpers/src/utilities";
+
 const snsClientObject = new SNSClient({ region: AWS_REGION, maxAttempts: 2 });
 const sqsClientObject = new SQSClient({ region: AWS_REGION, maxAttempts: 2 });
 
-//Error notification
-const errorMessage: ErrorMessage = {
-  Subject: "Error Processing target account listener handler",
-};
-
+const handlerName = AWS_LAMBDA_FUNCTION_NAME + "";
+const messageSubject =
+  "Exception in processing state machine invocations for non-account scope type assignments";
+let requestIdValue = "";
+let targetIdValue = "";
 export const handler = async (event: SNSEvent) => {
+  const message = JSON.parse(event.Records[0].Sns.Message);
+  requestIdValue = message.sourceRequestId;
   try {
-    const message = JSON.parse(event.Records[0].Sns.Message);
     let targetId = "";
     let tagKeyValue = "none";
-
     if (message.entityType === "account_tag") {
       targetId = message.pretargetId.split("/")[2];
       tagKeyValue = `${message.tagKey}^${targetId}`;
     } else {
       targetId = message.pretargetId;
     }
+    targetIdValue = `${message.action}-${targetId}-${message.principalType}-${message.principalId}`;
+    logger(
+      {
+        handler: handlerName,
+        logMode: logModes.Info,
+        requestId: requestIdValue,
+        relatedData: targetIdValue,
+        status: requestStatus.InProgress,
+        statusMessage: `Processing SQS payload post for account assignment operation - ${message.action}`,
+      },
+      functionLogMode
+    );
+
     await sqsClientObject.send(
       new SendMessageCommand({
         QueueUrl: linkQueueUrl,
@@ -62,32 +88,73 @@ export const handler = async (event: SNSEvent) => {
         MessageGroupId: targetId.slice(-1),
       })
     );
-    logger({
-      handler: "processTargetAccountSMListener",
-      logMode: logModes.Info,
-      relatedData: `${targetId}`,
-      requestId: message.sourceRequestId,
-      status: requestStatus.InProgress,
-      statusMessage: `Target account listener posted the link provisioning/de-provisioning operation to link manager topic`,
-    });
-  } catch (err) {
-    await snsClientObject.send(
-      new PublishCommand({
-        TopicArn: errorNotificationsTopicArn,
-        Message: JSON.stringify({
-          ...errorMessage,
-          eventDetail: event,
-          errorDetails: err,
-        }),
-      })
+    logger(
+      {
+        handler: handlerName,
+        logMode: logModes.Info,
+        requestId: requestIdValue,
+        relatedData: targetIdValue,
+        status: requestStatus.InProgress,
+        statusMessage: `Posted account assignment operation - ${message.action} for targetId ${targetId} and permissionSetArn ${message.permissionSetArn} and principalId ${message.principalId} and principalType ${message.principalType}`,
+      },
+      functionLogMode
     );
-    logger({
-      handler: "processTargetAccountSMListener",
-      logMode: logModes.Exception,
-      status: requestStatus.FailedWithException,
-      statusMessage: `Target account listener failed with exception: ${JSON.stringify(
-        err
-      )} for eventDetail: ${JSON.stringify(event)}`,
-    });
+  } catch (err) {
+    if (
+      err instanceof SNSServiceException ||
+      err instanceof SQSServiceException
+    ) {
+      await snsClientObject.send(
+        new PublishCommand({
+          TopicArn: errorNotificationsTopicArn,
+          Subject: messageSubject,
+          Message: constructExceptionMessage(
+            requestIdValue,
+            handlerName,
+            err.name,
+            err.message,
+            targetIdValue
+          ),
+        })
+      );
+      logger({
+        handler: handlerName,
+        requestId: requestIdValue,
+        logMode: logModes.Exception,
+        status: requestStatus.FailedWithException,
+        statusMessage: constructExceptionMessageforLogger(
+          requestIdValue,
+          err.name,
+          err.message,
+          targetIdValue
+        ),
+      });
+    } else {
+      await snsClientObject.send(
+        new PublishCommand({
+          TopicArn: errorNotificationsTopicArn,
+          Subject: messageSubject,
+          Message: constructExceptionMessage(
+            requestIdValue,
+            handlerName,
+            "Unhandled exception",
+            JSON.stringify(err),
+            targetIdValue
+          ),
+        })
+      );
+      logger({
+        handler: handlerName,
+        requestId: requestIdValue,
+        logMode: logModes.Exception,
+        status: requestStatus.FailedWithException,
+        statusMessage: constructExceptionMessageforLogger(
+          requestIdValue,
+          "Unhandled exception",
+          JSON.stringify(err),
+          targetIdValue
+        ),
+      });
+    }
   }
 };

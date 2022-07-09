@@ -25,20 +25,38 @@ const {
   supportNestedOU,
   orgListParentsRoleArn,
   AWS_REGION,
+  functionLogMode,
+  AWS_LAMBDA_FUNCTION_NAME,
 } = process.env;
 
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { IdentitystoreClient } from "@aws-sdk/client-identitystore";
+import {
+  DynamoDBClient,
+  DynamoDBServiceException,
+} from "@aws-sdk/client-dynamodb";
+import {
+  IdentitystoreClient,
+  IdentitystoreServiceException,
+} from "@aws-sdk/client-identitystore";
 import {
   ListParentsCommand,
   OrganizationsClient,
+  OrganizationsServiceException,
 } from "@aws-sdk/client-organizations";
-import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
-import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
+import {
+  PublishCommand,
+  SNSClient,
+  SNSServiceException,
+} from "@aws-sdk/client-sns";
+import {
+  SendMessageCommand,
+  SQSClient,
+  SQSServiceException,
+} from "@aws-sdk/client-sqs";
 import {
   ListInstancesCommand,
   ListInstancesCommandOutput,
   SSOAdminClient,
+  SSOAdminServiceException,
 } from "@aws-sdk/client-sso-admin";
 import { fromTemporaryCredentials } from "@aws-sdk/credential-providers";
 import {
@@ -51,12 +69,16 @@ import {
 import { SNSEvent } from "aws-lambda";
 import { v4 as uuidv4 } from "uuid";
 import {
-  ErrorMessage,
   logModes,
   requestStatus,
   StaticSSOPayload,
 } from "../../helpers/src/interfaces";
-import { logger, resolvePrincipal } from "../../helpers/src/utilities";
+import {
+  constructExceptionMessage,
+  constructExceptionMessageforLogger,
+  logger,
+  resolvePrincipal,
+} from "../../helpers/src/utilities";
 
 const ddbClientObject = new DynamoDBClient({
   region: AWS_REGION,
@@ -93,9 +115,10 @@ const organizationsClientObject = new OrganizationsClient({
   maxAttempts: 2,
 });
 
-const errorMessage: ErrorMessage = {
-  Subject: "Error Processing Org event based link provisioning operation",
-};
+const handlerName = AWS_LAMBDA_FUNCTION_NAME + "";
+const messageSubject = "Exception in org events trigger processing";
+let requestIdValue = "";
+let orgEventDataValue = "";
 
 export const tagBasedDeProvisioning = async (
   instanceArn: string,
@@ -103,7 +126,29 @@ export const tagBasedDeProvisioning = async (
   targetId: string,
   requestId: string
 ) => {
+  logger(
+    {
+      handler: handlerName,
+      logMode: logModes.Info,
+      requestId: requestId,
+      status: requestStatus.InProgress,
+      relatedData: passedTagKey,
+      statusMessage: `Validating if tag based de-provisioining is required for tagKey ${passedTagKey} on accountID ${targetId}`,
+    },
+    functionLogMode
+  );
   const tagKeyLookUpValue = `${passedTagKey}^${targetId}`;
+  logger(
+    {
+      handler: handlerName,
+      logMode: logModes.Debug,
+      requestId: requestId,
+      status: requestStatus.InProgress,
+      relatedData: passedTagKey,
+      statusMessage: `Querying if there are related provisioned links for this tagKeylookupValue ${tagKeyLookUpValue}`,
+    },
+    functionLogMode
+  );
   const relatedProvisionedLinks: QueryCommandOutput =
     await ddbDocClientObject.send(
       new QueryCommand({
@@ -121,6 +166,18 @@ export const tagBasedDeProvisioning = async (
     relatedProvisionedLinks.Items &&
     relatedProvisionedLinks.Items.length !== 0
   ) {
+    logger(
+      {
+        handler: handlerName,
+        logMode: logModes.Info,
+        requestId: requestId,
+        status: requestStatus.InProgress,
+        relatedData: passedTagKey,
+        statusMessage: `Determined there are ${relatedProvisionedLinks.Items.length} no of related provisioned links for tagKeyLookUpValue ${tagKeyLookUpValue}`,
+      },
+      functionLogMode
+    );
+
     await Promise.all(
       relatedProvisionedLinks.Items.map(async (Item) => {
         const parentLinkValue = Item.parentLink.toString();
@@ -148,24 +205,31 @@ export const tagBasedDeProvisioning = async (
             MessageGroupId: targetId.slice(-1),
           })
         );
-        logger({
-          handler: "orgEventsProcessor",
-          logMode: logModes.Info,
-          requestId: requestId,
-          relatedData: `${parentLinkValue}`,
-          status: requestStatus.Completed,
-          statusMessage: `OrgEvents - proactive deprovisioning due to untag resource posted to link manager topic`,
-        });
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Info,
+            requestId: requestId,
+            status: requestStatus.Completed,
+            relatedData: targetId,
+            statusMessage: `Triggering a deleteAccountAssignment operation as the tag key ${passedTagKey} that provisioned this access is removed from account ${targetId}`,
+          },
+          functionLogMode
+        );
       })
     );
   } else {
-    logger({
-      handler: "orgEventsProcessor",
-      logMode: logModes.Info,
-      status: requestStatus.Completed,
-      requestId: requestId,
-      statusMessage: `OrgEvents - ignoring de-provisioning logic check as the tag created/updated/deleted is not part of provisioned links`,
-    });
+    logger(
+      {
+        handler: handlerName,
+        logMode: logModes.Info,
+        requestId: requestId,
+        status: requestStatus.Completed,
+        relatedData: targetId,
+        statusMessage: `Tag ${passedTagKey} created/updated/deleted is not part of the provisioned account assignments, so ignoring this operation`,
+      },
+      functionLogMode
+    );
   }
 };
 
@@ -179,9 +243,31 @@ export const orgEventProvisioning = async (
   requestId: string
 ) => {
   let tagKeyLookupValue = "none";
+  logger(
+    {
+      handler: handlerName,
+      logMode: logModes.Info,
+      requestId: requestId,
+      status: requestStatus.InProgress,
+      relatedData: entityData,
+      statusMessage: `Initiating org events triggered provisioning for entityType ${entityType} , entityData ${entityData} for accountID ${targetId} and action ${actionType}`,
+    },
+    functionLogMode
+  );
 
   if (entityType === "account_tag") {
     tagKeyLookupValue = `${entityData.split("^")[0]}^${targetId}`;
+    logger(
+      {
+        handler: handlerName,
+        logMode: logModes.Debug,
+        requestId: requestId,
+        status: requestStatus.InProgress,
+        relatedData: entityData,
+        statusMessage: `Updated tagKeyLookUpValue to ${tagKeyLookupValue} as entityType is account_tag`,
+      },
+      functionLogMode
+    );
   }
 
   const relatedLinks: QueryCommandOutput = await ddbDocClientObject.send(
@@ -195,6 +281,17 @@ export const orgEventProvisioning = async (
   );
 
   if (relatedLinks.Items && relatedLinks.Items?.length !== 0) {
+    logger(
+      {
+        handler: handlerName,
+        logMode: logModes.Info,
+        requestId: requestId,
+        status: requestStatus.InProgress,
+        relatedData: entityData,
+        statusMessage: `Determined there are ${relatedLinks.Items.length} no of related account assignment operations for entityData ${entityData}`,
+      },
+      functionLogMode
+    );
     await Promise.all(
       relatedLinks.Items.map(async (Item) => {
         const { principalType, principalName } = Item;
@@ -209,8 +306,31 @@ export const orgEventProvisioning = async (
           );
         if (permissionSetFetch.Item) {
           let principalNameToLookUp = principalName;
+          logger(
+            {
+              handler: handlerName,
+              logMode: logModes.Debug,
+              requestId: requestId,
+              status: requestStatus.InProgress,
+              relatedData: entityData,
+              statusMessage: `Computed principalNametoLookup as ${principalNameToLookUp}`,
+            },
+            functionLogMode
+          );
+
           if (adUsed === "true" && domainName !== "") {
             principalNameToLookUp = `${principalName}@${domainName}`;
+            logger(
+              {
+                handler: handlerName,
+                logMode: logModes.Debug,
+                requestId: requestId,
+                status: requestStatus.InProgress,
+                relatedData: entityData,
+                statusMessage: `Deployment uses AD for SSO identity store, using domainName ${domainName}, computed principalNametoLookup as ${principalNameToLookUp}`,
+              },
+              functionLogMode
+            );
           }
           const principalId = await resolvePrincipal(
             identityStoreId,
@@ -220,6 +340,17 @@ export const orgEventProvisioning = async (
           );
 
           if (principalId !== "0") {
+            logger(
+              {
+                handler: handlerName,
+                logMode: logModes.Info,
+                requestId: requestId,
+                status: requestStatus.InProgress,
+                relatedData: entityData,
+                statusMessage: `For principal ${principalNameToLookUp} , resolved principal ID as ${principalId} from AWS SSO Identity store`,
+              },
+              functionLogMode
+            );
             const staticSSOPayload: StaticSSOPayload = {
               InstanceArn: instanceArn + "",
               TargetType: "AWS_ACCOUNT",
@@ -243,45 +374,58 @@ export const orgEventProvisioning = async (
                 MessageGroupId: targetId.slice(-1),
               })
             );
-            logger({
-              handler: "orgEventsProcessor",
-              logMode: logModes.Info,
-              relatedData: `${entityData}`,
-              status: requestStatus.Completed,
-              requestId: requestId,
-              statusMessage: `OrgEvents - link provisioned to link manager topic`,
-            });
+
+            logger(
+              {
+                handler: handlerName,
+                logMode: logModes.Info,
+                requestId: requestId,
+                status: requestStatus.Completed,
+                relatedData: entityData,
+                statusMessage: `Posted ${actionType} operation to account assignments handler for accountID ${targetId} , permissionSetArn ${permissionSetFetch.Item.permissionSetArn}`,
+              },
+              functionLogMode
+            );
           } else {
-            logger({
-              handler: "orgEventsProcessor",
-              logMode: logModes.Info,
-              relatedData: `${entityData}`,
-              status: requestStatus.Aborted,
-              requestId: requestId,
-              statusMessage: `OrgEvents - no related principals found`,
-            });
+            logger(
+              {
+                handler: handlerName,
+                logMode: logModes.Info,
+                requestId: requestId,
+                status: requestStatus.Completed,
+                relatedData: entityData,
+                statusMessage: `Ignoring this org event triggered account assignment operation as related principals are not found`,
+              },
+              functionLogMode
+            );
           }
         } else {
-          logger({
-            handler: "orgEventsProcessor",
-            logMode: logModes.Info,
-            relatedData: `${entityData}`,
-            status: requestStatus.Aborted,
-            requestId: requestId,
-            statusMessage: `OrgEvents - no related permission sets found`,
-          });
+          logger(
+            {
+              handler: handlerName,
+              logMode: logModes.Info,
+              requestId: requestId,
+              status: requestStatus.Completed,
+              relatedData: entityData,
+              statusMessage: `Ignoring this org event triggered account assignment operation as related permission sets are not found`,
+            },
+            functionLogMode
+          );
         }
       })
     );
   } else if (entityType === "account_tag") {
-    logger({
-      handler: "orgEventsProcessor",
-      logMode: logModes.Info,
-      relatedData: `${entityData}`,
-      requestId: requestId,
-      status: requestStatus.Completed,
-      statusMessage: `OrgEvents - conducting de-provsioning check for entityData ${entityData} on targetaccount ID ${targetId} as an account tag is now updated`,
-    });
+    logger(
+      {
+        handler: handlerName,
+        logMode: logModes.Info,
+        requestId: requestId,
+        status: requestStatus.InProgress,
+        relatedData: entityData,
+        statusMessage: `Conducting de-provisioning check for entityData ${entityData} on targetaccountID ${targetId} as an account tag is now updated`,
+      },
+      functionLogMode
+    );
     await tagBasedDeProvisioning(
       instanceArn,
       entityData.split("^")[0],
@@ -295,14 +439,51 @@ export const orgEventProvisioning = async (
 
 export const handler = async (event: SNSEvent) => {
   const requestId = uuidv4().toString();
+  requestIdValue = requestId;
   try {
     const message = JSON.parse(event.Records[0].Sns.Message);
+    logger(
+      {
+        handler: handlerName,
+        logMode: logModes.Info,
+        requestId: requestId,
+        status: requestStatus.InProgress,
+        statusMessage: `Initiating org event triggered account assignment operation`,
+      },
+      functionLogMode
+    );
+
     const resolvedInstances: ListInstancesCommandOutput =
       await ssoAdminClientObject.send(new ListInstancesCommand({}));
     const instanceArn = resolvedInstances.Instances?.[0].InstanceArn + "";
     const identityStoreId =
       resolvedInstances.Instances?.[0].IdentityStoreId + "";
+    logger(
+      {
+        handler: handlerName,
+        logMode: logModes.Debug,
+        requestId: requestId,
+        status: requestStatus.InProgress,
+        relatedData: identityStoreId,
+        statusMessage: `Resolved identityStoreID ${identityStoreId} for instanceArn ${instanceArn}`,
+      },
+      functionLogMode
+    );
+
     if (message.detail.eventName === "CreateAccountResult") {
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Info,
+          requestId: requestId,
+          status: requestStatus.InProgress,
+          relatedData:
+            message.detail.serviceEventDetails.createAccountStatus.accountId,
+          statusMessage: `Triggered createAccountResult based provisioning logic for accountID ${message.detail.serviceEventDetails.createAccountStatus.accountId} and scope type as root`,
+        },
+        functionLogMode
+      );
+      orgEventDataValue = `createAccount for accountID ${message.detail.serviceEventDetails.createAccountStatus.accountId}`;
       await orgEventProvisioning(
         instanceArn,
         message.detail.serviceEventDetails.createAccountStatus.accountId,
@@ -322,27 +503,58 @@ export const handler = async (event: SNSEvent) => {
        * root If nested OU support is not enabled, then the function would
        * simply remove and add any related account assignments for the old and new OU's
        */
-      logger({
-        handler: "orgEventsProcessor",
-        logMode: logModes.Info,
-        relatedData: `${message.detail.requestParameters.accountId}`,
-        status: requestStatus.InProgress,
-        requestId: requestId,
-        statusMessage: `OrgEvents - org move, determining the list of OU ID's`,
-      });
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Info,
+          requestId: requestId,
+          status: requestStatus.InProgress,
+          relatedData: message.detail.requestParameters.accountId,
+          statusMessage: `Triggered MoveAccount based provisioning logic for accountID ${message.detail.requestParameters.accountId}`,
+        },
+        functionLogMode
+      );
+
+      orgEventDataValue = `moveAccount for account moving from old OU_ID ${message.detail.requestParameters.sourceParentId} to new OU_ID ${message.detail.requestParameters.destinationParentId}`;
       let oldParentsList: Array<string> = [];
       let newParentsList: Array<string> = [];
       oldParentsList.push(message.detail.requestParameters.sourceParentId);
       newParentsList.push(message.detail.requestParameters.destinationParentId);
-      if (supportNestedOU === "true") {
-        logger({
-          handler: "orgEventsProcessor",
-          logMode: logModes.Info,
-          relatedData: `${message.detail.requestParameters.accountId}`,
-          status: requestStatus.InProgress,
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Debug,
           requestId: requestId,
-          statusMessage: `OrgEvents - org move, nestedOU support enabled, traversing through the org tree for delta`,
-        });
+          status: requestStatus.InProgress,
+          relatedData: message.detail.requestParameters.accountId,
+          statusMessage: `Compueted old Parents List`,
+        },
+        functionLogMode
+      );
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Debug,
+          requestId: requestId,
+          status: requestStatus.InProgress,
+          relatedData: message.detail.requestParameters.accountId,
+          statusMessage: `Compueted new Parents List`,
+        },
+        functionLogMode
+      );
+
+      if (supportNestedOU === "true") {
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Info,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            relatedData: message.detail.requestParameters.accountId,
+            statusMessage: `Nested OU support enabled, traversing through the org tree for delta`,
+          },
+          functionLogMode
+        );
         /**
          * Orgs API listParents call only returns the parent up to one level up.
          * The below code would traverse the tree until it reaches root
@@ -352,6 +564,17 @@ export const handler = async (event: SNSEvent) => {
             .toString()
             .match(/r-.*/)
         ) {
+          logger(
+            {
+              handler: handlerName,
+              logMode: logModes.Debug,
+              requestId: requestId,
+              status: requestStatus.InProgress,
+              relatedData: message.detail.requestParameters.accountId,
+              statusMessage: `Validated that sourceParent is not a root, so traversing all the result OU's from old parent`,
+            },
+            functionLogMode
+          );
           let loop = true;
           let previousParentId =
             message.detail.requestParameters.sourceParentId;
@@ -382,6 +605,17 @@ export const handler = async (event: SNSEvent) => {
             .toString()
             .match(/r-.*/)
         ) {
+          logger(
+            {
+              handler: handlerName,
+              logMode: logModes.Debug,
+              requestId: requestId,
+              status: requestStatus.InProgress,
+              relatedData: message.detail.requestParameters.accountId,
+              statusMessage: `Validated that destinationParent is not a root, so traversing all the result OU's from new parent`,
+            },
+            functionLogMode
+          );
           let loop = true;
           let previousParentId =
             message.detail.requestParameters.destinationParentId;
@@ -421,28 +655,45 @@ export const handler = async (event: SNSEvent) => {
       const parentsToAdd: Array<string> = newParentsList.filter(
         (parent) => !oldParentsList.includes(parent)
       );
-      logger({
-        handler: "orgEventsProcessor",
-        logMode: logModes.Info,
-        relatedData: `${message.detail.requestParameters.accountId}`,
-        status: requestStatus.InProgress,
-        requestId: requestId,
-        statusMessage: `OrgEvents - account move, list of OU ID's calculated for de-provisioning: ${JSON.stringify(
-          parentsToRemove
-        )}`,
-      });
-      logger({
-        handler: "orgEventsProcessor",
-        logMode: logModes.Info,
-        relatedData: `${message.detail.requestParameters.accountId}`,
-        status: requestStatus.InProgress,
-        requestId: requestId,
-        statusMessage: `OrgEvents - account move, list of OU ID's calculated for provisioning: ${JSON.stringify(
-          parentsToAdd
-        )}`,
-      });
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Info,
+          relatedData: message.detail.requestParameters.accountId,
+          status: requestStatus.InProgress,
+          requestId: requestId,
+          statusMessage: `OrgEvents - account move, list of OU ID's calculated for de-provisioning: ${JSON.stringify(
+            parentsToRemove
+          )}`,
+        },
+        functionLogMode
+      );
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Info,
+          relatedData: message.detail.requestParameters.accountId,
+          status: requestStatus.InProgress,
+          requestId: requestId,
+          statusMessage: `OrgEvents - account move, list of OU ID's calculated for provisioning: ${JSON.stringify(
+            parentsToAdd
+          )}`,
+        },
+        functionLogMode
+      );
       /** Start processing deletion of any related account assignments for old parents list */
       for (const parent of parentsToRemove) {
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Debug,
+            relatedData: message.detail.requestParameters.accountId,
+            status: requestStatus.InProgress,
+            requestId: requestId,
+            statusMessage: `Processing delete for any related accountassignment for ou_id ${parent}`,
+          },
+          functionLogMode
+        );
         await orgEventProvisioning(
           instanceArn,
           message.detail.requestParameters.accountId,
@@ -455,6 +706,17 @@ export const handler = async (event: SNSEvent) => {
       }
       /** Start processing addition of any related account assignments for new parents list */
       for (const parent of parentsToAdd) {
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Debug,
+            relatedData: message.detail.requestParameters.accountId,
+            status: requestStatus.InProgress,
+            requestId: requestId,
+            statusMessage: `Processing add for any related accountassignment for ou_id ${parent}`,
+          },
+          functionLogMode
+        );
         await orgEventProvisioning(
           instanceArn,
           message.detail.requestParameters.accountId,
@@ -487,17 +749,24 @@ export const handler = async (event: SNSEvent) => {
       const { detail, resources } = message;
       const { tags } = detail;
       const changedTagKeys = detail["changed-tag-keys"];
+      orgEventDataValue = `tagChange on resource for changedTagKeys ${JSON.stringify(
+        changedTagKeys
+      )}`;
       await Promise.all(
         changedTagKeys.map(async (changedTagKey: string) => {
           if (!Object.prototype.hasOwnProperty.call(tags, changedTagKey)) {
             // Account tag has been deleted
-            logger({
-              handler: "orgEventsProcessor",
-              logMode: logModes.Info,
-              relatedData: `${changedTagKey}`,
-              status: requestStatus.Completed,
-              statusMessage: `OrgEvents - tag change , delta is a delete operation`,
-            });
+            logger(
+              {
+                handler: handlerName,
+                logMode: logModes.Info,
+                relatedData: changedTagKey,
+                status: requestStatus.InProgress,
+                requestId: requestId,
+                statusMessage: `Determined tag change is a delta operation`,
+              },
+              functionLogMode
+            );
             await tagBasedDeProvisioning(
               instanceArn,
               changedTagKey,
@@ -508,14 +777,17 @@ export const handler = async (event: SNSEvent) => {
             Object.prototype.hasOwnProperty.call(tags, changedTagKey)
           ) {
             // Account tag is either created/updated
-            logger({
-              handler: "orgEventsProcessor",
-              logMode: logModes.Info,
-              relatedData: `${changedTagKey}`,
-              status: requestStatus.Completed,
-              requestId: requestId,
-              statusMessage: `OrgEvents - tag change , delta is a create/update operation`,
-            });
+            logger(
+              {
+                handler: handlerName,
+                logMode: logModes.Info,
+                relatedData: changedTagKey,
+                status: requestStatus.InProgress,
+                requestId: requestId,
+                statusMessage: `Determined tag change is a create/update operation`,
+              },
+              functionLogMode
+            );
             const tagValue = tags[`${changedTagKey}`];
             await orgEventProvisioning(
               instanceArn,
@@ -531,24 +803,65 @@ export const handler = async (event: SNSEvent) => {
       );
     }
   } catch (err) {
-    await snsClientObject.send(
-      new PublishCommand({
-        TopicArn: errorNotificationsTopicArn,
-        Message: JSON.stringify({
-          ...errorMessage,
-          eventDetail: event,
-          errorDetails: err,
-        }),
-      })
-    );
-    logger({
-      handler: "orgEventsProcessor",
-      logMode: logModes.Exception,
-      status: requestStatus.FailedWithException,
-      requestId: requestId,
-      statusMessage: `org events processor failed with exception: ${JSON.stringify(
-        err
-      )} for eventDetail: ${JSON.stringify(event)}`,
-    });
+    if (
+      err instanceof DynamoDBServiceException ||
+      err instanceof IdentitystoreServiceException ||
+      err instanceof OrganizationsServiceException ||
+      err instanceof SNSServiceException ||
+      err instanceof SQSServiceException ||
+      err instanceof SSOAdminServiceException
+    ) {
+      await snsClientObject.send(
+        new PublishCommand({
+          TopicArn: errorNotificationsTopicArn,
+          Subject: messageSubject,
+          Message: constructExceptionMessage(
+            requestIdValue,
+            handlerName,
+            err.name,
+            err.message,
+            orgEventDataValue
+          ),
+        })
+      );
+      logger({
+        handler: handlerName,
+        requestId: requestIdValue,
+        logMode: logModes.Exception,
+        status: requestStatus.FailedWithException,
+        statusMessage: constructExceptionMessageforLogger(
+          requestIdValue,
+          err.name,
+          err.message,
+          orgEventDataValue
+        ),
+      });
+    } else {
+      await snsClientObject.send(
+        new PublishCommand({
+          TopicArn: errorNotificationsTopicArn,
+          Subject: messageSubject,
+          Message: constructExceptionMessage(
+            requestIdValue,
+            handlerName,
+            "Unhandled exception",
+            JSON.stringify(err),
+            orgEventDataValue
+          ),
+        })
+      );
+      logger({
+        handler: handlerName,
+        requestId: requestIdValue,
+        logMode: logModes.Exception,
+        status: requestStatus.FailedWithException,
+        statusMessage: constructExceptionMessageforLogger(
+          requestIdValue,
+          "Unhandled exception",
+          JSON.stringify(err),
+          orgEventDataValue
+        ),
+      });
+    }
   }
 };
