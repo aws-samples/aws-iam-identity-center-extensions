@@ -1,7 +1,7 @@
 ---
 App: "aws-sso-extensions-for-enterprise"
 Environment: "leela"
-Version: "3.1.5"
+Version: "3.1.6"
 
 PipelineSettings:
   BootstrapQualifier: "ssoutility" # For example: 'ssoutility'

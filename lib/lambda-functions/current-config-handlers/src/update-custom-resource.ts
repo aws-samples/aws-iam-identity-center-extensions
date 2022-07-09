@@ -1,12 +1,21 @@
 /** Objective: Update cloudformation with custom resource status */
-const { smDescribeRoleArn, ssoRegion, ssoAccountId } = process.env;
+const { smDescribeRoleArn, ssoRegion, ssoAccountId, AWS_LAMBDA_FUNCTION_NAME } =
+  process.env;
 
 // Lambda types import
 // SDK and third party client imports
-import { DescribeExecutionCommand, SFNClient } from "@aws-sdk/client-sfn";
+import {
+  DescribeExecutionCommand,
+  SFNClient,
+  SFNServiceException,
+} from "@aws-sdk/client-sfn";
 import { fromTemporaryCredentials } from "@aws-sdk/credential-providers";
 import { logModes, requestStatus } from "../../helpers/src/interfaces";
-import { logger, StateMachineError } from "../../helpers/src/utilities";
+import {
+  constructExceptionMessageforLogger,
+  logger,
+  StateMachineError,
+} from "../../helpers/src/utilities";
 
 const sfnClientObject = new SFNClient({
   region: ssoRegion,
@@ -17,7 +26,7 @@ const sfnClientObject = new SFNClient({
   }),
   maxAttempts: 2,
 });
-
+const handlerName = AWS_LAMBDA_FUNCTION_NAME + "";
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 export const handler = async (event: any) => {
   //event is of any type and not CloudFormationCustomResource as it does not allow state to be passed between onEvent and isComplete handlers
@@ -103,25 +112,37 @@ export const handler = async (event: any) => {
         });
       }
     }
-  } catch (e) {
-    if (e instanceof StateMachineError) {
-      throw e;
+  } catch (err) {
+    if (err instanceof StateMachineError) {
+      throw err;
+    } else if (err instanceof SFNServiceException) {
+      logger({
+        handler: handlerName,
+        requestId: requestId,
+        logMode: logModes.Exception,
+        status: requestStatus.FailedWithException,
+        statusMessage: constructExceptionMessageforLogger(
+          requestId,
+          err.name,
+          err.message,
+          ""
+        ),
+      });
+      throw err;
     } else {
       logger({
-        handler: "updateCustomResource",
-        logMode: logModes.Exception,
+        handler: handlerName,
         requestId: requestId,
-        relatedData: `${stateMachineExecutionArn}`,
+        logMode: logModes.Exception,
         status: requestStatus.FailedWithException,
-        statusMessage: `Custom resource update - stateMachine with execution arn: ${stateMachineExecutionArn} failed with exception: ${JSON.stringify(
-          e
-        )}`,
+        statusMessage: constructExceptionMessageforLogger(
+          requestId,
+          "Unhandled exception",
+          JSON.stringify(err),
+          ""
+        ),
       });
-      throw new Error(
-        `Custom resource update - stateMachine with execution arn: ${stateMachineExecutionArn} failed with exception: ${JSON.stringify(
-          e
-        )}`
-      );
+      throw err;
     }
   }
 };

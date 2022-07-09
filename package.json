@@ -1,6 +1,6 @@
 {
   "name": "aws-sso-extensions-for-enterprise",
-  "version": "3.1.5",
+  "version": "3.1.6",
   "bin": {
     "aws-sso-extensions-for-enterprise": "bin/aws-sso-extensions-for-enterprise.js"
   },
@@ -32,7 +32,7 @@
     "@types/uuid": "^8.3.4",
     "@typescript-eslint/eslint-plugin": "^5.30.5",
     "@typescript-eslint/parser": "^5.30.5",
-    "aws-cdk": "^2.30.0",
+    "aws-cdk": "^2.31.1",
     "esbuild": "^0.14.48",
     "eslint": "^8.19.0",
     "eslint-plugin-import": "^2.26.0",
@@ -46,7 +46,7 @@
     "uuid": "^8.3.2"
   },
   "dependencies": {
-    "aws-cdk-lib": "^2.30.0",
+    "aws-cdk-lib": "^2.31.1",
     "constructs": "^10.1.43",
     "js-yaml": "^4.1.0",
     "source-map-support": "^0.5.21"
