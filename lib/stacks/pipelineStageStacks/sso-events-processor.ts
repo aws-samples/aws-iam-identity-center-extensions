@@ -1,6 +1,4 @@
-/*
-Deploys event bridge rules for SSO events in SSO account
-*/
+/** Deploys event bridge rules for SSO events in SSO account */
 import { Rule, RuleTargetInput } from "aws-cdk-lib/aws-events";
 import { SnsTopic } from "aws-cdk-lib/aws-events-targets";
 import {

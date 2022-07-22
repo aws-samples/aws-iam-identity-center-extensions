@@ -1,8 +1,7 @@
-/*
-Deploys part 2 of artefacts required for importing
-current AWS SSO configuration i.e. permission sets and
-account assignments in target account
-*/
+/**
+ * Deploys part 2 of artefacts required for importing current AWS SSO
+ * configuration i.e. permission sets and account assignments in target account
+ */
 import { CustomResource, Duration, Stack, StackProps } from "aws-cdk-lib";
 import { PolicyStatement } from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";
@@ -64,6 +63,7 @@ export class SSOImportArtefactsPart2 extends Stack {
             deployImportArtefacts.importedProvisionedLinksTable.tableName,
           artefactsBucketName:
             deployImportArtefacts.importedSsoArtefactsBucket.bucketName,
+          functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
       }
     );
@@ -125,6 +125,7 @@ export class SSOImportArtefactsPart2 extends Stack {
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
           artefactsBucketName:
             deployImportArtefacts.importedSsoArtefactsBucket.bucketName,
+          functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
       }
     );
@@ -187,6 +188,7 @@ export class SSOImportArtefactsPart2 extends Stack {
             deployImportArtefacts.currentConfigSMDescribeRoleArn,
           ssoAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
+          functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
       }
     );
@@ -228,6 +230,9 @@ export class SSOImportArtefactsPart2 extends Stack {
             "uuid",
           ],
           minify: true,
+          environment: {
+            functionLogMode: buildConfig.Parameters.FunctionLogMode,
+          },
         },
       }
     );
@@ -263,6 +268,7 @@ export class SSOImportArtefactsPart2 extends Stack {
             deployImportArtefacts.permissionSetImportTopic.topicArn,
           temporaryPermissionSetTableName: `${buildConfig.Environment}-temp-PermissionSets`,
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
+          functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
       }
     );

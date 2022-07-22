@@ -1,9 +1,7 @@
-/*
-Utility construct in solution artefacts stack
-that allows shareable resources and has no dependencies
-on other constructs
-*/
-
+/**
+ * Construct that creates resources with no inter-dependencies as part of
+ * preSolutionArtefacts stacks
+ */
 import { Duration } from "aws-cdk-lib";
 import { Key } from "aws-cdk-lib/aws-kms";
 import {
@@ -18,10 +16,7 @@ import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";
 import { SSMParamReader } from "./ssm-param-reader";
-
-function name(buildConfig: BuildConfig, resourcename: string): string {
-  return buildConfig.Environment + "-" + resourcename;
-}
+import { name } from "./helpers";
 
 export class IndependentUtility extends Construct {
   public readonly errorNotificationsTopic: Topic;

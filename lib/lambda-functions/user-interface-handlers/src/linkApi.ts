@@ -1,30 +1,41 @@
-/*
-Objective: Implement lambda proxy for link importer API
-Trigger source: link API
-- Schema validation of the payload
-- Upsert / delete in links DDB table depending on the operation
-*/
+/**
+ * Objective: Implement lambda proxy for link importer API Trigger source: link API
+ *
+ * - Schema validation of the payload
+ * - Upsert / delete in links DDB table depending on the operation
+ */
 
-// Environment configuration read
-const { DdbTable, AWS_REGION, artefactsBucketName, linkProcessingTopicArn } =
-  process.env;
+const {
+  DdbTable,
+  AWS_REGION,
+  artefactsBucketName,
+  linkProcessingTopicArn,
+  functionLogMode,
+  AWS_LAMBDA_FUNCTION_NAME,
+} = process.env;
 
-// Lambda types import
-// SDK and third party client imports
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import {
+  DynamoDBClient,
+  DynamoDBServiceException,
+} from "@aws-sdk/client-dynamodb";
 import {
   DeleteObjectCommand,
   PutObjectCommand,
   S3Client,
+  S3ServiceException,
 } from "@aws-sdk/client-s3";
-import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
+import {
+  PublishCommand,
+  SNSClient,
+  SNSServiceException,
+} from "@aws-sdk/client-sns";
 import {
   DeleteCommand,
   DynamoDBDocumentClient,
   PutCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { v4 as uuidv4 } from "uuid";
-//Import validator function and dependencies
+
 import Ajv from "ajv";
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import { readFileSync } from "fs";
@@ -32,15 +43,18 @@ import { join } from "path";
 import {
   LinkData,
   LinkPayload,
+  logModes,
   requestStatus,
 } from "../../helpers/src/interfaces";
 import {
   imperativeParseJSON,
   JSONParserError,
 } from "../../helpers/src/payload-validator";
-import { logger } from "../../helpers/src/utilities";
+import {
+  constructExceptionMessageforLogger,
+  logger,
+} from "../../helpers/src/utilities";
 
-// SDK and third party client object initialistaion
 const ddbClientObject = new DynamoDBClient({
   region: AWS_REGION,
   maxAttempts: 2,
@@ -48,7 +62,6 @@ const ddbClientObject = new DynamoDBClient({
 const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
 const s3clientObject = new S3Client({ region: AWS_REGION, maxAttempts: 2 });
 const snsClientObject = new SNSClient({ region: AWS_REGION, maxAttempts: 2 });
-// Validator object initialisation
 const ajv = new Ajv({ allErrors: true });
 const schemaDefinition = JSON.parse(
   readFileSync(
@@ -59,16 +72,52 @@ const schemaDefinition = JSON.parse(
 );
 const validate = ajv.compile(schemaDefinition);
 
+const handlerName = AWS_LAMBDA_FUNCTION_NAME + "";
+let linkDataValue = "";
 export const handler = async (
   event: APIGatewayProxyEventV2
 ): Promise<APIGatewayProxyResultV2> => {
   const requestId = uuidv4().toString();
+  logger(
+    {
+      handler: handlerName,
+      logMode: logModes.Info,
+      requestId: requestId,
+      status: requestStatus.InProgress,
+      statusMessage: `Account assignment create/delete operation started`,
+    },
+    functionLogMode
+  );
+
   if (event.body !== null && event.body !== undefined) {
     try {
       const payload: LinkPayload = imperativeParseJSON(event.body, validate);
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Debug,
+          requestId: requestId,
+          status: requestStatus.InProgress,
+          statusMessage: `Account assignment payload successfully parsed`,
+        },
+        functionLogMode
+      );
       const delimeter = "%";
       const { linkData } = payload;
+      linkDataValue = linkData;
       if (payload.action === "create") {
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Debug,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            statusMessage: `Account assignment operation is set as create`,
+            relatedData: linkDataValue,
+          },
+          functionLogMode
+        );
+
         const keyValue = linkData.split(delimeter);
         const linkParams: LinkData = {
           awsEntityId: linkData,
@@ -80,6 +129,20 @@ export const handler = async (
           principalName: keyValue[3],
           principalType: keyValue[4],
         };
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Debug,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            statusMessage: `Parsed individual entity details`,
+            relatedData: linkDataValue,
+            hasRelatedRequests:
+              linkParams.awsEntityType === "account" ? false : true,
+          },
+          functionLogMode
+        );
+
         await s3clientObject.send(
           new PutObjectCommand({
             Bucket: artefactsBucketName,
@@ -87,6 +150,20 @@ export const handler = async (
             ServerSideEncryption: "AES256",
           })
         );
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Debug,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            statusMessage: `Processed upsert into S3`,
+            relatedData: linkDataValue,
+            hasRelatedRequests:
+              linkParams.awsEntityType === "account" ? false : true,
+          },
+          functionLogMode
+        );
+
         await ddbDocClientObject.send(
           new PutCommand({
             TableName: DdbTable,
@@ -95,26 +172,42 @@ export const handler = async (
             },
           })
         );
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Debug,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            statusMessage: `Processed upsert into Dynamo DB`,
+            relatedData: linkDataValue,
+            hasRelatedRequests:
+              linkParams.awsEntityType === "account" ? false : true,
+          },
+          functionLogMode
+        );
         await snsClientObject.send(
           new PublishCommand({
             TopicArn: linkProcessingTopicArn + "",
             Message: JSON.stringify({
-              linkData: linkData,
+              linkData: linkDataValue,
               action: "create",
               requestId: requestId,
             }),
           })
         );
-        logger({
-          handler: "userInterface-linkApi",
-          logMode: "info",
-          relatedData: linkData,
-          requestId: requestId,
-          hasRelatedRequests:
-            linkParams.awsEntityType === "account" ? false : true,
-          status: requestStatus.InProgress,
-          statusMessage: `Account Assignment create operation is being processed`,
-        });
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Info,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            statusMessage: `Account assignment create operation posted to link topic processor`,
+            relatedData: linkDataValue,
+            hasRelatedRequests:
+              linkParams.awsEntityType === "account" ? false : true,
+          },
+          functionLogMode
+        );
         return {
           statusCode: 200,
           body: JSON.stringify({
@@ -123,11 +216,37 @@ export const handler = async (
           }),
         };
       } else if (payload.action === "delete") {
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Info,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            statusMessage: `Account assignment operation is set as delete`,
+            relatedData: linkDataValue,
+            hasRelatedRequests:
+              linkData.split(delimeter)[0] === "account" ? false : true,
+          },
+          functionLogMode
+        );
         await s3clientObject.send(
           new DeleteObjectCommand({
             Bucket: artefactsBucketName,
             Key: `links_data/${linkData}`,
           })
+        );
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Debug,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            statusMessage: `Processed upsert into S3`,
+            relatedData: linkDataValue,
+            hasRelatedRequests:
+              linkData.split(delimeter)[0] === "account" ? false : true,
+          },
+          functionLogMode
         );
         await ddbDocClientObject.send(
           new DeleteCommand({
@@ -136,6 +255,19 @@ export const handler = async (
               awsEntityId: linkData,
             },
           })
+        );
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Debug,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            statusMessage: `Processed upsert into Dynamo DB`,
+            relatedData: linkDataValue,
+            hasRelatedRequests:
+              linkData.split(delimeter)[0] === "account" ? false : true,
+          },
+          functionLogMode
         );
         await snsClientObject.send(
           new PublishCommand({
@@ -147,16 +279,19 @@ export const handler = async (
             }),
           })
         );
-        logger({
-          handler: "userInterface-linkApi",
-          logMode: "info",
-          relatedData: linkData,
-          requestId: requestId,
-          hasRelatedRequests:
-            linkData.split(delimeter)[0] === "account" ? false : true,
-          status: requestStatus.InProgress,
-          statusMessage: `Account Assignment delete operation is being processed`,
-        });
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Debug,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            statusMessage: `Account assignment delete operation posted to link processing topic`,
+            relatedData: linkDataValue,
+            hasRelatedRequests:
+              linkData.split(delimeter)[0] === "account" ? false : true,
+          },
+          functionLogMode
+        );
         return {
           statusCode: 200,
           body: JSON.stringify({
@@ -165,15 +300,19 @@ export const handler = async (
           }),
         };
       } else {
-        //TS flow path completion
-        logger({
-          handler: "userInterface-linkApi",
-          logMode: "error",
-          relatedData: linkData,
-          requestId: requestId,
-          status: requestStatus.FailedWithError,
-          statusMessage: `Account Assignment operation cannot be processed due to invalid action`,
-        });
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Exception,
+            requestId: requestId,
+            status: requestStatus.FailedWithException,
+            statusMessage: `Account assignment operation could not be completed due to invalid action`,
+            relatedData: linkDataValue,
+            hasRelatedRequests:
+              linkData.split(delimeter)[0] === "account" ? false : true,
+          },
+          functionLogMode
+        );
         return {
           statusCode: 400,
           body: JSON.stringify({
@@ -184,48 +323,108 @@ export const handler = async (
     } catch (err) {
       if (err instanceof JSONParserError) {
         logger({
-          handler: "userInterface-linkApi",
-          logMode: "error",
+          handler: handlerName,
           requestId: requestId,
+          logMode: logModes.Exception,
           status: requestStatus.FailedWithException,
-          statusMessage: `Error processing link operation through API interface due to schema errors for: ${JSON.stringify(
-            err.errors
-          )}`,
-        });
-        return {
-          statusCode: 500,
-          body: JSON.stringify({ errors: err.errors }),
-        };
-      } else {
-        logger({
-          handler: "userInterface-linkApi",
-          logMode: "error",
-          requestId: requestId,
-          status: requestStatus.FailedWithException,
-          statusMessage: `Error processing link operation through API interface due to schema errors for: ${JSON.stringify(
-            err
-          )}`,
+          statusMessage: constructExceptionMessageforLogger(
+            requestId,
+            "Schema validation exception",
+            `Provided account does not pass the schema validation`,
+            JSON.stringify(err.errors)
+          ),
         });
         return {
           statusCode: 500,
           body: JSON.stringify({
-            message: `Exception while processing the call ${err}`,
+            message: constructExceptionMessageforLogger(
+              requestId,
+              "Schema validation exception",
+              `Provided account does not pass the schema validation`,
+              JSON.stringify(err.errors)
+            ),
+            requestId: requestId,
+          }),
+        };
+      } else if (
+        err instanceof DynamoDBServiceException ||
+        err instanceof SNSServiceException ||
+        err instanceof S3ServiceException
+      ) {
+        logger({
+          handler: handlerName,
+          requestId: requestId,
+          logMode: logModes.Exception,
+          status: requestStatus.FailedWithException,
+          statusMessage: constructExceptionMessageforLogger(
+            requestId,
+            err.name,
+            err.message,
+            linkDataValue
+          ),
+        });
+        return {
+          statusCode: 500,
+          body: JSON.stringify({
+            message: constructExceptionMessageforLogger(
+              requestId,
+              err.name,
+              err.message,
+              linkDataValue
+            ),
+            requestId: requestId,
+          }),
+        };
+      } else {
+        logger({
+          handler: handlerName,
+          requestId: requestId,
+          logMode: logModes.Exception,
+          status: requestStatus.FailedWithException,
+          statusMessage: constructExceptionMessageforLogger(
+            requestId,
+            "Unhandled exception",
+            JSON.stringify(err),
+            linkDataValue
+          ),
+        });
+        return {
+          statusCode: 500,
+          body: JSON.stringify({
+            message: constructExceptionMessageforLogger(
+              requestId,
+              "Unhandled exception",
+              JSON.stringify(err),
+              linkDataValue
+            ),
+            requestId: requestId,
           }),
         };
       }
     }
   } else {
     logger({
-      handler: "userInterface-linkApi",
-      logMode: "error",
+      handler: handlerName,
       requestId: requestId,
+      logMode: logModes.Exception,
       status: requestStatus.FailedWithException,
-      statusMessage: `Invalid message body provided`,
+      statusMessage: constructExceptionMessageforLogger(
+        requestId,
+        "Invalid message body exception",
+        "Message body provided is invalid",
+        linkDataValue
+      ),
     });
     return {
       statusCode: 400,
       body: JSON.stringify({
-        message: "Invalid message body provided",
+        message: constructExceptionMessageforLogger(
+          requestId,
+          "Invalid message body exception",
+          "Message body provided is invalid",
+          linkDataValue
+        ),
+        requestId: requestId,
       }),
     };
   }

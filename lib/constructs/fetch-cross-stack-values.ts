@@ -1,10 +1,9 @@
-/*
-Construct to read values from preSolutions
-Artefact stack. This is to avoid creating a circular 
-dependency through CFN exports and instead rely on SSM paramter
-store based reads.
-Used by solutionArtefacts stack.
-*/
+/**
+ * This construct allows read the non-deterministic values of resources created
+ * in preSolutions stack. This is to avoid creating circular dependencies
+ * between preSolutions and Solutions stack through the default CFN exports. We
+ * circumvent that by relying on AWS SSM parameter store based reads
+ */
 
 import { ITable, Table } from "aws-cdk-lib/aws-dynamodb";
 import { IKey, Key } from "aws-cdk-lib/aws-kms";
@@ -265,8 +264,11 @@ export class FetchCrossStackValues extends Construct {
       buildConfig,
       {
         ParamAccountId: buildConfig.PipelineSettings.OrgMainAccountId,
-        ParamRegion: "us-east-1", // Organizations discovery can only be done in us-east-1, hence the step functions and related roles are declared in that region
-        ParamNameKey: "orgListParents-orgapi-roleArn",
+        ParamRegion: "us-east-1",
+        /**
+         * Organizations discovery can only be done in us-east-1, hence the step
+         * functions and related roles are declared in that region
+         */ ParamNameKey: "orgListParents-orgapi-roleArn",
       }
     ).paramValue;
 

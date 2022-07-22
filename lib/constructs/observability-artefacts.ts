@@ -1,14 +1,9 @@
-/*
-Construct that sets up all artefacts required for observability
-*/
+/** Construct that sets up all artefacts required for observability */
 
 import { CfnQueryDefinition } from "aws-cdk-lib/aws-logs";
 import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";
-
-function name(buildConfig: BuildConfig, resourcename: string): string {
-  return buildConfig.Environment + "-" + resourcename;
-}
+import { name } from "./helpers";
 
 export class ObservabilityArtefacts extends Construct {
   constructor(scope: Construct, id: string, buildConfig: BuildConfig) {

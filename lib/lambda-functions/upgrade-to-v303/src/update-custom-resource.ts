@@ -1,12 +1,10 @@
-/*
-Objective: Update cloudformation with custom resource status
-*/
+/** Objective: Update cloudformation with custom resource status */
 const { AWS_REGION } = process.env;
 
 // Lambda types import
 // SDK and third party client imports
 import { DescribeExecutionCommand, SFNClient } from "@aws-sdk/client-sfn";
-import { requestStatus } from "../../helpers/src/interfaces";
+import { logModes, requestStatus } from "../../helpers/src/interfaces";
 import { logger, StateMachineError } from "../../helpers/src/utilities";
 
 const sfnClientObject = new SFNClient({
@@ -21,7 +19,7 @@ export const handler = async (event: any) => {
   try {
     logger({
       handler: "updateCustomResource",
-      logMode: "info",
+      logMode: logModes.Info,
       relatedData: `${stateMachineExecutionArn}`,
       requestId: requestId,
       status: requestStatus.InProgress,
@@ -37,7 +35,7 @@ export const handler = async (event: any) => {
       case "RUNNING": {
         logger({
           handler: "updateCustomResource",
-          logMode: "info",
+          logMode: logModes.Info,
           requestId: requestId,
           relatedData: `${stateMachineExecutionArn}`,
           status: requestStatus.InProgress,
@@ -50,7 +48,7 @@ export const handler = async (event: any) => {
       case "SUCCEEDED": {
         logger({
           handler: "updateCustomResource",
-          logMode: "info",
+          logMode: logModes.Info,
           requestId: requestId,
           relatedData: `${stateMachineExecutionArn}`,
           status: requestStatus.Completed,
@@ -63,7 +61,7 @@ export const handler = async (event: any) => {
       case "FAILED": {
         logger({
           handler: "updateCustomResource",
-          logMode: "error",
+          logMode: logModes.Exception,
           requestId: requestId,
           relatedData: `${stateMachineExecutionArn}`,
           status: requestStatus.FailedWithError,
@@ -76,7 +74,7 @@ export const handler = async (event: any) => {
       case "TIMED_OUT": {
         logger({
           handler: "updateCustomResource",
-          logMode: "error",
+          logMode: logModes.Exception,
           requestId: requestId,
           relatedData: `${stateMachineExecutionArn}`,
           status: requestStatus.FailedWithError,
@@ -89,7 +87,7 @@ export const handler = async (event: any) => {
       default: {
         logger({
           handler: "updateCustomResource",
-          logMode: "error",
+          logMode: logModes.Exception,
           relatedData: `${stateMachineExecutionArn}`,
           status: requestStatus.FailedWithError,
           statusMessage: `Custom resource update - stateMachine with execution arn: ${stateMachineExecutionArn} reached an unknown status.`,
@@ -105,7 +103,7 @@ export const handler = async (event: any) => {
     } else {
       logger({
         handler: "updateCustomResource",
-        logMode: "error",
+        logMode: logModes.Exception,
         requestId: requestId,
         relatedData: `${stateMachineExecutionArn}`,
         status: requestStatus.FailedWithException,

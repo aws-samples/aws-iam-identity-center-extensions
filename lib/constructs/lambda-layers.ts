@@ -1,16 +1,11 @@
-/*
-Lambda layers construct
-*/
+/** Lambda layers construct */
 
 import { Code, LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
-
-function name(buildConfig: BuildConfig, resourcename: string): string {
-  return buildConfig.Environment + "-" + resourcename;
-}
+import { name } from "./helpers";
 
 export class LambdaLayers extends Construct {
   public readonly nodeJsLayer: LayerVersion;

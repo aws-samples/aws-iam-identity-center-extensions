@@ -1,11 +1,11 @@
-/*
-composite construct that sets up all resources
-for account assignments creation/deletion
-*/
+/**
+ * Composite construct that sets up all resources for account assignments
+ * creation/deletion
+ */
 
 import { Duration } from "aws-cdk-lib";
-import { ITable } from "aws-cdk-lib/aws-dynamodb"; // Importing external resources in CDK would use interfaces and not base objects
-import { ILayerVersion, Runtime } from "aws-cdk-lib/aws-lambda"; // Importing external resources in CDK would use interfaces and not base objects
+import { ITable } from "aws-cdk-lib/aws-dynamodb";
+import { ILayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import {
   SnsEventSource,
   SqsEventSource,
@@ -16,10 +16,7 @@ import { IQueue } from "aws-cdk-lib/aws-sqs";
 import { Construct } from "constructs";
 import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
-
-function name(buildConfig: BuildConfig, resourcename: string): string {
-  return buildConfig.Environment + "-" + resourcename;
-}
+import { name } from "./helpers";
 
 export interface LinkProcessProps {
   readonly linksTable: ITable;
@@ -87,6 +84,7 @@ export class LinkProcessor extends Construct {
           waiterHandlerSSOAPIRoleArn:
             linkprocessProps.waiterHandlerSSOAPIRoleArn,
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
+          functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
         timeout: Duration.minutes(5), //aggressive timeout to accommodate SSO Admin API's workflow based logic,
       }
@@ -130,6 +128,7 @@ export class LinkProcessor extends Construct {
           linkQueueUrl: linkprocessProps.linkManagerQueue.queueUrl,
           errorNotificationsTopicArn:
             linkprocessProps.errorNotificationsTopic.topicArn,
+          functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
       }
     );
@@ -181,6 +180,7 @@ export class LinkProcessor extends Construct {
           processTargetAccountSMArn: `arn:aws:states:us-east-1:${buildConfig.PipelineSettings.OrgMainAccountId}:stateMachine:${buildConfig.Environment}-processTargetAccountSM`,
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
           supportNestedOU: String(buildConfig.Parameters.SupportNestedOU),
+          functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
       }
     );

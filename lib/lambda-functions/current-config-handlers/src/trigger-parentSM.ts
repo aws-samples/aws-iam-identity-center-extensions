@@ -1,22 +1,33 @@
-/*
-Objective: Implement custom resource
-           that invokes importCurrentConfigSM state machine
-           in SSO account
-Trigger source: Cloudformation custom resource provider
-                framework
-- Invoke the state machine witht the payload
-- If the request type is delete, we don't do anything
-  as this is a invoke type custom resource
-*/
+/**
+ * -
+ *
+ * Objective: Implement custom resource that invokes importCurrentConfigSM state
+ * machine in SSO account Trigger source: Cloudformation custom resource
+ * provider framework
+ *
+ * - Invoke the state machine witht the payload
+ * - If the request type is delete, we don't do anything as this is a invoke type
+ *   custom resource
+ */
 
 // Lambda types import
 // SDK and third party client imports
-import { SFNClient, StartExecutionCommand } from "@aws-sdk/client-sfn";
+const { AWS_LAMBDA_FUNCTION_NAME } = process.env;
+import {
+  SFNClient,
+  StartExecutionCommand,
+  SFNServiceException,
+} from "@aws-sdk/client-sfn";
 import { fromTemporaryCredentials } from "@aws-sdk/credential-providers";
 import { CloudFormationCustomResourceEvent } from "aws-lambda";
-import { requestStatus } from "../../helpers/src/interfaces";
-import { logger } from "../../helpers/src/utilities";
+import { logModes, requestStatus } from "../../helpers/src/interfaces";
+import {
+  constructExceptionMessageforLogger,
+  logger,
+} from "../../helpers/src/utilities";
 import { v4 as uuidv4 } from "uuid";
+const handlerName = AWS_LAMBDA_FUNCTION_NAME + "";
+
 export const handler = async (event: CloudFormationCustomResourceEvent) => {
   const { importCurrentConfigSMArn } = event.ResourceProperties;
   const requestId = uuidv4().toString();
@@ -59,7 +70,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
     );
     logger({
       handler: "parentInvokeSM",
-      logMode: "info",
+      logMode: logModes.Info,
       relatedData: `${stateMachineExecution.executionArn}`,
       requestId: requestId,
       status: requestStatus.InProgress,
@@ -71,21 +82,53 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
       stateMachineExecutionArn: stateMachineExecution.executionArn,
       requestId: requestId,
     };
-  } catch (e) {
-    logger({
-      handler: "parentInvokeSM",
-      logMode: "error",
-      requestId: requestId,
-      relatedData: `${importCurrentConfigSMArn}`,
-      status: requestStatus.FailedWithException,
-      statusMessage: `Custom resource creation failed with exception: ${JSON.stringify(
-        e
-      )}`,
-    });
-    return {
-      Status: "FAILED",
-      PhysicalResourceId: importCurrentConfigSMArn,
-      Reason: `main handler exception in invokeParentSM: ${e}`,
-    };
+  } catch (err) {
+    if (err instanceof SFNServiceException) {
+      logger({
+        handler: handlerName,
+        requestId: requestId,
+        logMode: logModes.Exception,
+        status: requestStatus.FailedWithException,
+        statusMessage: constructExceptionMessageforLogger(
+          requestId,
+          err.name,
+          err.message,
+          ""
+        ),
+      });
+      return {
+        Status: "FAILED",
+        PhysicalResourceId: importCurrentConfigSMArn,
+        Reason: constructExceptionMessageforLogger(
+          requestId,
+          err.name,
+          err.message,
+          ""
+        ),
+      };
+    } else {
+      logger({
+        handler: handlerName,
+        requestId: requestId,
+        logMode: logModes.Exception,
+        status: requestStatus.FailedWithException,
+        statusMessage: constructExceptionMessageforLogger(
+          requestId,
+          "Unhandled exception",
+          JSON.stringify(err),
+          ""
+        ),
+      });
+      return {
+        Status: "FAILED",
+        PhysicalResourceId: importCurrentConfigSMArn,
+        Reason: constructExceptionMessageforLogger(
+          requestId,
+          "Unhandled exception",
+          JSON.stringify(err),
+          ""
+        ),
+      };
+    }
   }
 };

@@ -1,31 +1,32 @@
-/*
-Objective: Implement link changes for link processing functionality
-Trigger source: links topic notifications
-- assumes role in SSO account for calling SSO admin API - listInstances
-- For each record in the stream,
-    - look up in permissionSetArn ddb table if the permission set referenced in the record exists
-      - if the permission set arn exists, then
-        - look up in AWS SSO Identity store if the user/group exists
-            - if the user/group exists
-                - determine if the operation is create/delete
-                - determine if link type is account /ou_id/root/account_tag
-                - if link type is account ,
-                    post the link provisioning/deprovisioning operation
-                    to the link manager queue
-                - if link type is ou_id, root,account_tag
-                    invoke org entities state machine
-            - if the user/group does not exist
-                - stop processing as we won't be able to proceed
-                  without the principal Arn
-      - if the permission set does not exist,
-        do nothing as we cannot do link
-        provisioning if the permission set
-        is not yet provisioned
-- Catch all failures in a generic exception block
-  and post the error details to error notifications topics
-*/
+/**
+ * Objective: Implement link changes for link processing functionality Trigger
+ * source: links topic notifications
+ *
+ * - Assumes role in SSO account for calling SSO admin API - listInstances
+ * - For each record in the stream,
+ *
+ *   - Look up in permissionSetArn ddb table if the permission set referenced in the
+ *       record exists
+ *
+ *       - If the permission set arn exists, then
+ *
+ *                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       - Look up in AWS SSO Identity store if the user/group exists
+ *
+ *                               - If the user/group exists
+ *
+ *                                                               - Determine if the operation is create/delete
+ *                                                               - Determine if link type is account /ou_id/root/account_tag
+ *                                                               - If link type is account , post the link provisioning/deprovisioning operation to the link manager queue
+ *                                                               - If link type is ou_id, root,account_tag invoke org entities state machine
+ *                               - If the user/group does not exist
+ *
+ *                                                               - Stop processing as we won't be able to proceed without the principal Arn
+ *       - If the permission set does not exist, do nothing as we cannot do link
+ *               provisioning if the permission set is not yet provisioned
+ * - Catch all failures in a generic exception block and post the error details to
+ *   error notifications topics
+ */
 
-// Environment configuration read
 const {
   SSOAPIRoleArn,
   ISAPIRoleArn,
@@ -40,18 +41,34 @@ const {
   ssoRegion,
   supportNestedOU,
   AWS_REGION,
+  functionLogMode,
+  AWS_LAMBDA_FUNCTION_NAME,
 } = process.env;
 
-// SDK and third party client imports
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { IdentitystoreClient } from "@aws-sdk/client-identitystore";
-import { SFNClient } from "@aws-sdk/client-sfn";
-import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
-import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
+import {
+  DynamoDBClient,
+  DynamoDBServiceException,
+} from "@aws-sdk/client-dynamodb";
+import {
+  IdentitystoreClient,
+  IdentitystoreServiceException,
+} from "@aws-sdk/client-identitystore";
+import { SFNClient, SFNServiceException } from "@aws-sdk/client-sfn";
+import {
+  PublishCommand,
+  SNSClient,
+  SNSServiceException,
+} from "@aws-sdk/client-sns";
+import {
+  SendMessageCommand,
+  SQSClient,
+  SQSServiceException,
+} from "@aws-sdk/client-sqs";
 import {
   ListInstancesCommand,
   ListInstancesCommandOutput,
   SSOAdminClient,
+  SSOAdminServiceException,
 } from "@aws-sdk/client-sso-admin";
 import { fromTemporaryCredentials } from "@aws-sdk/credential-providers";
 import {
@@ -61,18 +78,19 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 import { SNSEvent } from "aws-lambda";
 import {
-  ErrorMessage,
+  logModes,
   requestStatus,
   StateMachinePayload,
   StaticSSOPayload,
 } from "../../helpers/src/interfaces";
 import {
+  constructExceptionMessage,
+  constructExceptionMessageforLogger,
   invokeStepFunction,
   logger,
   resolvePrincipal,
 } from "../../helpers/src/utilities";
 
-// SDK and third party client object initialistaion
 const ddbClientObject = new DynamoDBClient({
   region: AWS_REGION,
   maxAttempts: 2,
@@ -108,41 +126,63 @@ const identityStoreClientObject = new IdentitystoreClient({
   maxAttempts: 2,
 });
 
-//Error notification
-const errorMessage: ErrorMessage = {
-  Subject: "Error Processing link topic processor",
-};
+const handlerName = AWS_LAMBDA_FUNCTION_NAME + "";
+const messageSubject = "Exception in account assignment topic processor";
+let requestIdValue = "";
+let linkDataValue = "";
 
 export const handler = async (event: SNSEvent) => {
   try {
+    const message = JSON.parse(event.Records[0].Sns.Message);
+    const { action, linkData, requestId } = message;
+    requestIdValue = requestId;
+    linkDataValue = linkData;
+    logger(
+      {
+        handler: handlerName,
+        logMode: logModes.Info,
+        requestId: requestId,
+        status: requestStatus.InProgress,
+        relatedData: linkData,
+        statusMessage: `Started account assignment topic processor for action ${action}`,
+      },
+      functionLogMode
+    );
     const resolvedInstances: ListInstancesCommandOutput =
       await ssoAdminClientObject.send(new ListInstancesCommand({}));
-
-    // Instance Arn needed for SSO admin API's
     const instanceArn = resolvedInstances.Instances?.[0].InstanceArn;
-    // Identity store ID needed for SSO Identity Store API's
+    logger(
+      {
+        handler: handlerName,
+        logMode: logModes.Debug,
+        requestId: requestId,
+        status: requestStatus.InProgress,
+        relatedData: linkData,
+        statusMessage: `Resolved SSO instance arn ${instanceArn}`,
+      },
+      functionLogMode
+    );
+
     const identityStoreId =
       resolvedInstances.Instances?.[0].IdentityStoreId + "";
 
-    // Because it's a stream handler, there
-    // could be more than one link updates coming through, hence the proimse all
-    const message = JSON.parse(event.Records[0].Sns.Message);
-    const { action, linkData, requestId } = message;
-    logger({
-      handler: "linkTopicProcessor",
-      logMode: "info",
-      requestId: requestId,
-      relatedData: `${linkData}`,
-      status: requestStatus.InProgress,
-      statusMessage: `Link topic processor ${action} operation in progress`,
-    });
-    // Deconstruct and get the values for the SSO Admin API operations
+    logger(
+      {
+        handler: handlerName,
+        logMode: logModes.Debug,
+        requestId: requestId,
+        status: requestStatus.InProgress,
+        relatedData: linkData,
+        statusMessage: `Resolved identityStoreID ${identityStoreId}`,
+      },
+      functionLogMode
+    );
     const delimeter = "%";
     const linkKeyArray = linkData.split(delimeter);
     const entityType = linkKeyArray?.[0];
     const entityValue = linkKeyArray?.[1];
     const permissionsetName = linkKeyArray?.[2];
-    //const principalName = linkKeyArray?.slice(3, -2).join(delimeter);
+
     const principalName = linkKeyArray?.[3];
     const principalType = linkKeyArray?.[4];
 
@@ -163,11 +203,33 @@ export const handler = async (event: SNSEvent) => {
 
     if (permissionSetRecord.Item) {
       const { permissionSetArn } = permissionSetRecord.Item;
-      // Compute user/group name based on whether Active Directory is the user store
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Info,
+          requestId: requestId,
+          status: requestStatus.InProgress,
+          relatedData: linkData,
+          statusMessage: `Determined permission set exists for this account assignment with arn value ${permissionSetArn}`,
+        },
+        functionLogMode
+      );
+
       let principalNameToLookUp = principalName;
       if (adUsed === "true" && domainName !== "") {
         principalNameToLookUp = `${principalName}@${domainName}`;
       }
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Debug,
+          requestId: requestId,
+          status: requestStatus.InProgress,
+          relatedData: linkData,
+          statusMessage: `Lookup principal name computed ${principalNameToLookUp}`,
+        },
+        functionLogMode
+      );
       const principalId = await resolvePrincipal(
         identityStoreId,
         identityStoreClientObject,
@@ -176,7 +238,29 @@ export const handler = async (event: SNSEvent) => {
       );
 
       if (principalId !== "0") {
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Debug,
+            requestId: requestId,
+            status: requestStatus.InProgress,
+            relatedData: linkData,
+            statusMessage: `Resolved principal ID ${principalId} for principalName ${principalNameToLookUp} from identity store`,
+          },
+          functionLogMode
+        );
         if (entityType === "account") {
+          logger(
+            {
+              handler: handlerName,
+              logMode: logModes.Debug,
+              requestId: requestId,
+              status: requestStatus.InProgress,
+              relatedData: linkData,
+              statusMessage: `Determined entitytype is account`,
+            },
+            functionLogMode
+          );
           await sqsClientObject.send(
             new SendMessageCommand({
               QueueUrl: linkQueueUrl,
@@ -195,14 +279,17 @@ export const handler = async (event: SNSEvent) => {
               MessageGroupId: entityValue.slice(-1),
             })
           );
-          logger({
-            handler: "linkTopicProcessor",
-            logMode: "info",
-            relatedData: `${linkData}`,
-            requestId: requestId,
-            status: requestStatus.Completed,
-            statusMessage: `Link topic processor ${action} operation completed by posting to link manager topic`,
-          });
+          logger(
+            {
+              handler: handlerName,
+              logMode: logModes.Info,
+              requestId: requestId,
+              status: requestStatus.Completed,
+              relatedData: linkData,
+              statusMessage: `Account assignment ${action} operation is posted to account assignment queue`,
+            },
+            functionLogMode
+          );
         } else if (
           entityType === "ou_id" ||
           entityType === "root" ||
@@ -228,55 +315,104 @@ export const handler = async (event: SNSEvent) => {
             processTargetAccountSMArn + "",
             sfnClientObject
           );
-          logger({
-            handler: "linkTopicProcessor",
-            logMode: "info",
-            requestId: requestId,
-            relatedData: `${linkData}`,
-            status: requestStatus.Completed,
-            statusMessage: `Link topic processor ${action} operation completed by posting to step functions state machine`,
-          });
+          logger(
+            {
+              handler: handlerName,
+              logMode: logModes.Info,
+              requestId: requestId,
+              status: requestStatus.Completed,
+              relatedData: linkData,
+              statusMessage: `Account assignment ${action} operation payload triggered process target account state machine for entityType ${entityType}`,
+            },
+            functionLogMode
+          );
         }
       } else {
-        // No related principals found for this link
-        logger({
-          handler: "linkTopicProcessor",
-          logMode: "info",
-          relatedData: `${linkData}`,
-          requestId: requestId,
-          status: requestStatus.Completed,
-          statusMessage: `Link topic processor ${action} operation completed as no related principals found for this link`,
-        });
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Info,
+            requestId: requestId,
+            status: requestStatus.Aborted,
+            relatedData: linkData,
+            statusMessage: `Account assignment ${action} operation aborted as the principal ${principalNameToLookUp} referenced is not found in identity store`,
+          },
+          functionLogMode
+        );
       }
     } else {
-      // Permission set does not exist
-      logger({
-        handler: "linkTopicProcessor",
-        logMode: "info",
-        relatedData: `${linkData}`,
-        requestId: requestId,
-        status: requestStatus.Aborted,
-        statusMessage: `Link topic processor ${action} operation aborted as permissionSet does not yet exist`,
-      });
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Info,
+          requestId: requestId,
+          status: requestStatus.Aborted,
+          relatedData: linkData,
+          statusMessage: `Account assignment ${action} operation aborted as the permission set ${permissionsetName} referenced is not yet provisioned`,
+        },
+        functionLogMode
+      );
     }
   } catch (err) {
-    await snsClientObject.send(
-      new PublishCommand({
-        TopicArn: errorNotificationsTopicArn,
-        Message: JSON.stringify({
-          ...errorMessage,
-          eventDetail: event,
-          errorDetails: err,
-        }),
-      })
-    );
-    logger({
-      handler: "linkTopicProcessor",
-      logMode: "error",
-      status: requestStatus.FailedWithException,
-      statusMessage: `Link topic processor failed with exception: ${JSON.stringify(
-        err
-      )} for eventDetail: ${JSON.stringify(event)}`,
-    });
+    if (
+      err instanceof DynamoDBServiceException ||
+      err instanceof IdentitystoreServiceException ||
+      err instanceof SFNServiceException ||
+      err instanceof SQSServiceException ||
+      err instanceof SSOAdminServiceException ||
+      err instanceof SNSServiceException
+    ) {
+      await snsClientObject.send(
+        new PublishCommand({
+          TopicArn: errorNotificationsTopicArn,
+          Subject: messageSubject,
+          Message: constructExceptionMessage(
+            requestIdValue,
+            handlerName,
+            err.name,
+            err.message,
+            linkDataValue
+          ),
+        })
+      );
+      logger({
+        handler: handlerName,
+        requestId: requestIdValue,
+        logMode: logModes.Exception,
+        status: requestStatus.FailedWithException,
+        statusMessage: constructExceptionMessageforLogger(
+          requestIdValue,
+          err.name,
+          err.message,
+          linkDataValue
+        ),
+      });
+    } else {
+      await snsClientObject.send(
+        new PublishCommand({
+          TopicArn: errorNotificationsTopicArn,
+          Subject: messageSubject,
+          Message: constructExceptionMessage(
+            requestIdValue,
+            handlerName,
+            "Unhandled exception",
+            JSON.stringify(err),
+            linkDataValue
+          ),
+        })
+      );
+      logger({
+        handler: handlerName,
+        requestId: requestIdValue,
+        logMode: logModes.Exception,
+        status: requestStatus.FailedWithException,
+        statusMessage: constructExceptionMessageforLogger(
+          requestIdValue,
+          "Unhandled exception",
+          JSON.stringify(err),
+          linkDataValue
+        ),
+      });
+    }
   }
 };

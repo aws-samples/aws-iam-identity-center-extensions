@@ -13,7 +13,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { SNSEvent } from "aws-lambda";
 import { v4 as uuidv4 } from "uuid";
-import { requestStatus } from "../../helpers/src/interfaces";
+import { logModes, requestStatus } from "../../helpers/src/interfaces";
 import { getMinutesFromISODurationString } from "../../helpers/src/isoDurationUtility";
 import { logger } from "../../helpers/src/utilities";
 
@@ -36,7 +36,7 @@ export const handler = async (event: SNSEvent) => {
     const permissionSetName = message.describePermissionSet.PermissionSet.Name;
     logger({
       handler: "rs-permissionSetImporter",
-      logMode: "info",
+      logMode: logModes.Info,
       requestId: requestId,
       relatedData: permissionSetName,
       status: requestStatus.InProgress,
@@ -115,7 +115,7 @@ export const handler = async (event: SNSEvent) => {
 
     logger({
       handler: "rs-permissionSetImporter",
-      logMode: "info",
+      logMode: logModes.Info,
       requestId: requestId,
       relatedData: permissionSetName,
       status: requestStatus.Completed,
@@ -125,7 +125,7 @@ export const handler = async (event: SNSEvent) => {
   } catch (err) {
     logger({
       handler: "permissionSetImporter",
-      logMode: "error",
+      logMode: logModes.Exception,
       status: requestStatus.FailedWithException,
       statusMessage: `Permission set import operation failed with exception: ${JSON.stringify(
         err

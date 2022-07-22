@@ -1,16 +1,11 @@
-/*
-Utility construct in solution artefacts stack
-that allows shareable resources
-*/
+/** Utility construct in solution artefacts stack that allows shareable resources */
+
 import { ITopic, Topic } from "aws-cdk-lib/aws-sns";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";
 import { SSMParamReader } from "./ssm-param-reader";
-
-function name(buildConfig: BuildConfig, resourcename: string): string {
-  return buildConfig.Environment + "-" + resourcename;
-}
+import { name } from "./helpers";
 
 export class Utility extends Construct {
   public readonly orgEventsNotificationsTopic: ITopic;

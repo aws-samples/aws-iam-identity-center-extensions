@@ -1,6 +1,4 @@
-/*
-Objective: Custom waiter for permission set provisioning status
-*/
+/** Objective: Custom waiter for permission set provisioning status */
 import {
   DescribePermissionSetProvisioningStatusCommand,
   DescribePermissionSetProvisioningStatusCommandInput,
@@ -15,7 +13,7 @@ import {
   WaiterResult,
   WaiterState,
 } from "@aws-sdk/util-waiter";
-import { requestStatus } from "../../helpers/src/interfaces";
+import { logModes, requestStatus } from "../../helpers/src/interfaces";
 import { logger } from "../../helpers/src/utilities";
 
 const checkState = async (
@@ -49,13 +47,13 @@ export const waitUntilPermissionSetProvisioned = async (
 ): Promise<WaiterResult> => {
   logger({
     handler: "permissionSetProvisioningWaiter",
-    logMode: "info",
+    logMode: logModes.Info,
     relatedData: `${input.ProvisionPermissionSetRequestId}`,
     requestId: requestId,
     status: requestStatus.InProgress,
     statusMessage: `Waiter invoked for permissionSetProvisioned Operation`,
   });
-  const serviceDefaults = { minDelay: 1, maxDelay: 5 };
+  const serviceDefaults = { minDelay: 60, maxDelay: 120 };
   const result = await createWaiter(
     { ...serviceDefaults, ...params },
     input,
@@ -63,7 +61,7 @@ export const waitUntilPermissionSetProvisioned = async (
   );
   logger({
     handler: "permissionSetProvisioningWaiter",
-    logMode: "info",
+    logMode: logModes.Info,
     relatedData: `${input.ProvisionPermissionSetRequestId}`,
     requestId: requestId,
     status: requestStatus.Completed,

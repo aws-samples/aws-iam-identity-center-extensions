@@ -1,6 +1,7 @@
-/*
-Deploys roles in SSO account that allow SSO admin API, Identity Store api access from target account
-*/
+/**
+ * Deploys roles in SSO account that allow SSO admin API, Identity Store api
+ * access from target account
+ */
 import { PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";

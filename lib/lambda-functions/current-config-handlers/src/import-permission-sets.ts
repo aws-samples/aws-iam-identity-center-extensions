@@ -1,6 +1,4 @@
-/*
-Objective: Import existing permission sets into the solution
-*/
+/** Objective: Import existing permission sets into the solution */
 
 // Environment configuration read
 const {
@@ -10,16 +8,26 @@ const {
   permissionSetArnTableName,
   artefactsBucketName,
   AWS_REGION,
+  functionLogMode,
+  AWS_LAMBDA_FUNCTION_NAME,
 } = process.env;
 
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DynamoDBClient,
+  DynamoDBServiceException,
+} from "@aws-sdk/client-dynamodb";
+import {
+  PutObjectCommand,
+  S3Client,
+  S3ServiceException,
+} from "@aws-sdk/client-s3";
 import {
   ListAccountsForProvisionedPermissionSetCommand,
   ListInstancesCommand,
   ListInstancesCommandOutput,
   ProvisionPermissionSetCommand,
   SSOAdminClient,
+  SSOAdminServiceException,
 } from "@aws-sdk/client-sso-admin";
 import { fromTemporaryCredentials } from "@aws-sdk/credential-providers";
 import {
@@ -33,9 +41,12 @@ import {
 import { SNSEvent } from "aws-lambda";
 import { diff } from "json-diff";
 import { v4 as uuidv4 } from "uuid";
-import { requestStatus } from "../../helpers/src/interfaces";
+import { logModes, requestStatus } from "../../helpers/src/interfaces";
 import { getMinutesFromISODurationString } from "../../helpers/src/isoDurationUtility";
-import { logger } from "../../helpers/src/utilities";
+import {
+  constructExceptionMessageforLogger,
+  logger,
+} from "../../helpers/src/utilities";
 
 // SDK and third party client object initialistaion
 const ddbClientObject = new DynamoDBClient({
@@ -53,6 +64,9 @@ const ssoAdminClientObject = new SSOAdminClient({
   maxAttempts: 2,
 });
 const s3clientObject = new S3Client({ region: AWS_REGION, maxAttempts: 2 });
+const handlerName = AWS_LAMBDA_FUNCTION_NAME + "";
+let sourceRequestIdValue = "";
+let permissionSetNameValue = "";
 
 export const handler = async (event: SNSEvent) => {
   const requestId = uuidv4().toString();
@@ -61,16 +75,20 @@ export const handler = async (event: SNSEvent) => {
     const permissionSetName = message.describePermissionSet.PermissionSet.Name;
     const permissionSetArn =
       message.describePermissionSet.PermissionSet.PermissionSetArn;
-    logger({
-      handler: "permissionSetImporter",
-      logMode: "info",
-      requestId: requestId,
-      relatedData: permissionSetName,
-      status: requestStatus.InProgress,
-      sourceRequestId: message.requestId,
-      statusMessage: `Permission set import operation in progress`,
-    });
-
+    sourceRequestIdValue = message.requestId;
+    permissionSetNameValue = permissionSetName;
+    logger(
+      {
+        handler: handlerName,
+        logMode: logModes.Info,
+        requestId: requestId,
+        sourceRequestId: sourceRequestIdValue,
+        relatedData: permissionSetNameValue,
+        status: requestStatus.InProgress,
+        statusMessage: `Permission set import operation in progress`,
+      },
+      functionLogMode
+    );
     // Construct permission set object from the SNS message payload
     const permissionSetObject = {};
     let computedRelayState = "";
@@ -87,6 +105,18 @@ export const handler = async (event: SNSEvent) => {
     ) {
       computedRelayState =
         message.describePermissionSet.PermissionSet.RelayState;
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Debug,
+          requestId: requestId,
+          sourceRequestId: sourceRequestIdValue,
+          relatedData: permissionSetNameValue,
+          status: requestStatus.InProgress,
+          statusMessage: `Determined that the imported permission set has relayState set as ${computedRelayState}`,
+        },
+        functionLogMode
+      );
     }
     // Session Duration is an optional attribute
     if (
@@ -98,12 +128,36 @@ export const handler = async (event: SNSEvent) => {
       computedSessionDurationInMinutes = getMinutesFromISODurationString(
         message.describePermissionSet.PermissionSet.SessionDuration
       );
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Debug,
+          requestId: requestId,
+          sourceRequestId: sourceRequestIdValue,
+          relatedData: permissionSetNameValue,
+          status: requestStatus.InProgress,
+          statusMessage: `Determined that the imported permission set has sessionDuration set as ${computedSessionDurationInMinutes} minutes`,
+        },
+        functionLogMode
+      );
     }
     // Managed policies is an optional attribute
     if (
       message.listManagedPoliciesInPermissionSet.AttachedManagedPolicies
         .length > 0
     ) {
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Debug,
+          requestId: requestId,
+          sourceRequestId: sourceRequestIdValue,
+          relatedData: permissionSetNameValue,
+          status: requestStatus.InProgress,
+          statusMessage: `Determined that the imported permission set has managed policies set`,
+        },
+        functionLogMode
+      );
       await Promise.all(
         message.listManagedPoliciesInPermissionSet.AttachedManagedPolicies.map(
           async (managedPolicy: Record<string, string>) => {
@@ -117,6 +171,18 @@ export const handler = async (event: SNSEvent) => {
       computedInlinePolicy = JSON.parse(
         message.getInlinePolicyForPermissionSet.InlinePolicy
       );
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Debug,
+          requestId: requestId,
+          sourceRequestId: sourceRequestIdValue,
+          relatedData: permissionSetNameValue,
+          status: requestStatus.InProgress,
+          statusMessage: `Determined that the imported permission set has inline policy set`,
+        },
+        functionLogMode
+      );
     }
 
     Object.assign(permissionSetObject, {
@@ -129,6 +195,18 @@ export const handler = async (event: SNSEvent) => {
     });
 
     if (message.triggerSource === "CloudFormation") {
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Info,
+          requestId: requestId,
+          sourceRequestId: sourceRequestIdValue,
+          relatedData: permissionSetNameValue,
+          status: requestStatus.InProgress,
+          statusMessage: `Determined that the operation type is current config import`,
+        },
+        functionLogMode
+      );
       const fetchPermissionSet: GetCommandOutput =
         await ddbDocClientObject.send(
           new GetCommand({
@@ -147,15 +225,18 @@ export const handler = async (event: SNSEvent) => {
         })
       );
       if (fetchPermissionSet.Item && fetchArn.Item) {
-        logger({
-          handler: "permissionSetImporter",
-          logMode: "info",
-          requestId: requestId,
-          relatedData: permissionSetName,
-          status: requestStatus.InProgress,
-          sourceRequestId: message.requestId,
-          statusMessage: `CloudFormation mode - permission set object already present. Now checking if there's a delta`,
-        });
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Info,
+            requestId: requestId,
+            sourceRequestId: sourceRequestIdValue,
+            relatedData: permissionSetNameValue,
+            status: requestStatus.InProgress,
+            statusMessage: `Validated that permission set already exists, now determining delta`,
+          },
+          functionLogMode
+        );
 
         const sortedFetchItemManagedPolicies =
           fetchPermissionSet.Item.managedPoliciesArnList.sort();
@@ -167,15 +248,18 @@ export const handler = async (event: SNSEvent) => {
           permissionSetObject
         );
         if (diffCalculated === undefined) {
-          logger({
-            handler: "permissionSetImporter",
-            logMode: "info",
-            requestId: requestId,
-            relatedData: permissionSetName,
-            status: requestStatus.Completed,
-            sourceRequestId: message.requestId,
-            statusMessage: `CloudFormation mode - no delta found, completing import operation`,
-          });
+          logger(
+            {
+              handler: handlerName,
+              logMode: logModes.Info,
+              requestId: requestId,
+              sourceRequestId: sourceRequestIdValue,
+              relatedData: permissionSetNameValue,
+              status: requestStatus.Completed,
+              statusMessage: `No delta found, completing import operation`,
+            },
+            functionLogMode
+          );
         } else {
           const resolvedInstances: ListInstancesCommandOutput =
             await ssoAdminClientObject.send(new ListInstancesCommand({}));
@@ -196,15 +280,18 @@ export const handler = async (event: SNSEvent) => {
               ServerSideEncryption: "AES256",
             })
           );
-          logger({
-            handler: "permissionSetImporter",
-            logMode: "info",
-            requestId: requestId,
-            relatedData: permissionSetName,
-            status: requestStatus.InProgress,
-            sourceRequestId: message.requestId,
-            statusMessage: `CloudFormation mode - delta found, updated solution persistence with new permission set object value`,
-          });
+          logger(
+            {
+              handler: handlerName,
+              logMode: logModes.Info,
+              requestId: requestId,
+              sourceRequestId: sourceRequestIdValue,
+              relatedData: permissionSetNameValue,
+              status: requestStatus.InProgress,
+              statusMessage: `Delta found, updated solution persistence with new permission set object value`,
+            },
+            functionLogMode
+          );
           const fetchAccountsList = await ssoAdminClientObject.send(
             new ListAccountsForProvisionedPermissionSetCommand({
               InstanceArn: instanceArn,
@@ -212,6 +299,18 @@ export const handler = async (event: SNSEvent) => {
             })
           );
           if (fetchAccountsList.AccountIds?.length !== 0) {
+            logger(
+              {
+                handler: handlerName,
+                logMode: logModes.Info,
+                requestId: requestId,
+                sourceRequestId: sourceRequestIdValue,
+                relatedData: permissionSetNameValue,
+                status: requestStatus.InProgress,
+                statusMessage: `Determined that accounts are already assigned the permission set, triggering a resync`,
+              },
+              functionLogMode
+            );
             await ssoAdminClientObject.send(
               new ProvisionPermissionSetCommand({
                 InstanceArn: instanceArn,
@@ -219,25 +318,19 @@ export const handler = async (event: SNSEvent) => {
                 TargetType: "ALL_PROVISIONED_ACCOUNTS",
               })
             );
-            logger({
-              handler: "permissionSetImporter",
-              logMode: "info",
-              requestId: requestId,
-              relatedData: permissionSetName,
-              status: requestStatus.InProgress,
-              sourceRequestId: message.requestId,
-              statusMessage: `CloudFormation mode - delta found, triggered re-provisioning operation on all provisioned accounts`,
-            });
           }
-          logger({
-            handler: "permissionSetImporter",
-            logMode: "info",
-            requestId: requestId,
-            relatedData: permissionSetName,
-            status: requestStatus.Completed,
-            sourceRequestId: message.requestId,
-            statusMessage: `CloudFormation mode - delta found, import operation completed`,
-          });
+          logger(
+            {
+              handler: handlerName,
+              logMode: logModes.Info,
+              requestId: requestId,
+              sourceRequestId: sourceRequestIdValue,
+              relatedData: permissionSetNameValue,
+              status: requestStatus.Completed,
+              statusMessage: `Delta handling complete, import permission set operation complete`,
+            },
+            functionLogMode
+          );
         }
       } else {
         await s3clientObject.send(
@@ -268,35 +361,64 @@ export const handler = async (event: SNSEvent) => {
             },
           })
         );
-        logger({
-          handler: "permissionSetImporter",
-          logMode: "info",
-          requestId: requestId,
-          relatedData: permissionSetName,
-          status: requestStatus.InProgress,
-          sourceRequestId: message.requestId,
-          statusMessage: `CloudFormation mode - permission set object not present, import completed`,
-        });
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Info,
+            requestId: requestId,
+            sourceRequestId: sourceRequestIdValue,
+            relatedData: permissionSetNameValue,
+            status: requestStatus.Completed,
+            statusMessage: `Updated solution persistence, import permission set operation complete`,
+          },
+          functionLogMode
+        );
       }
     } else {
-      logger({
-        handler: "permissionSetImporter",
-        logMode: "info",
-        requestId: requestId,
-        relatedData: permissionSetName,
-        status: requestStatus.Completed,
-        sourceRequestId: message.requestId,
-        statusMessage: `Permission set import operation completed as the source trigger does not match`,
-      });
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Info,
+          requestId: requestId,
+          sourceRequestId: sourceRequestIdValue,
+          relatedData: permissionSetNameValue,
+          status: requestStatus.Aborted,
+          statusMessage: `Unknown operation type, aborting import permission set operation`,
+        },
+        functionLogMode
+      );
     }
   } catch (err) {
-    logger({
-      handler: "permissionSetImporter",
-      logMode: "error",
-      status: requestStatus.FailedWithException,
-      statusMessage: `Permission set import operation failed with exception: ${JSON.stringify(
-        err
-      )} for eventDetail: ${JSON.stringify(event)}`,
-    });
+    if (
+      err instanceof DynamoDBServiceException ||
+      err instanceof S3ServiceException ||
+      err instanceof SSOAdminServiceException
+    ) {
+      logger({
+        handler: handlerName,
+        requestId: requestId,
+        logMode: logModes.Exception,
+        status: requestStatus.FailedWithException,
+        statusMessage: constructExceptionMessageforLogger(
+          requestId,
+          err.name,
+          err.message,
+          permissionSetNameValue
+        ),
+      });
+    } else {
+      logger({
+        handler: handlerName,
+        requestId: requestId,
+        logMode: logModes.Exception,
+        status: requestStatus.FailedWithException,
+        statusMessage: constructExceptionMessageforLogger(
+          requestId,
+          "Unhandled exception",
+          JSON.stringify(err),
+          permissionSetNameValue
+        ),
+      });
+    }
   }
 };

@@ -7,7 +7,7 @@ import {
 } from "@aws-sdk/client-identitystore";
 import { SFNClient, StartExecutionCommand } from "@aws-sdk/client-sfn";
 import { Readable } from "stream";
-import { LogMessage, StateMachinePayload } from "./interfaces";
+import { LogMessage, logModes, StateMachinePayload } from "./interfaces";
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 export const removeEmpty = (obj: { [x: string]: any }) => {
   Object.keys(obj).forEach(
@@ -60,26 +60,101 @@ export const invokeStepFunction = async (
   );
 };
 
-export function logger(logMessage: LogMessage) {
-  switch (logMessage.logMode) {
-    case "info": {
+/**
+ * Custom logger utility that serves as factory pattern for writing your own custom logs.
+ *
+ * - This utility considers log level of the log message as well as the log level
+ *   of the function.
+ * - If the function log level is debug, then all debug, info, warn and exception
+ *   logs are processed.
+ * - If the function log level is info, then all info, warn and exception logs are
+ *   processed.
+ * - If the function log level is warn, then all warn and exception logs are processed.
+ * - If the function log level is exception then all exception logs are processed.
+ * - If no function log level is passed, then all logs are processed
+ *
+ * @param logMessage Raw log message
+ * @param functionLogMode Function logging configuraiton as read from buildConfig
+ */
+export function logger(logMessage: LogMessage, functionLogMode?: string) {
+  switch (functionLogMode) {
+    case logModes.Debug.valueOf(): {
+      /** Since the function is set at debug log level, all logs are processed */
       console.log(JSON.stringify(logMessage));
       break;
     }
-    case "warn": {
-      console.warn(JSON.stringify(logMessage));
+    case logModes.Info.valueOf(): {
+      /**
+       * Since the function is set at info level, only info, warn and exception
+       * logs are processed
+       */
+      if (
+        logMessage.logMode.valueOf() === logModes.Info.valueOf() ||
+        logMessage.logMode.valueOf() === logModes.Warn.valueOf() ||
+        logMessage.logMode.valueOf() === logModes.Exception.valueOf()
+      )
+        console.log(JSON.stringify(logMessage));
       break;
     }
-    case "error": {
-      console.error(JSON.stringify(logMessage));
+    case logModes.Warn.valueOf(): {
+      /**
+       * Since the function is set at warn level, only warn and exception logs
+       * are processed
+       */
+      if (
+        logMessage.logMode.valueOf() === logModes.Warn.valueOf() ||
+        logMessage.logMode.valueOf() === logModes.Exception.valueOf()
+      )
+        console.log(JSON.stringify(logMessage));
+      break;
+    }
+    case logModes.Exception.valueOf(): {
+      /** Since the function is set at exception level, only exception logs are processed */
+      if (logMessage.logMode.valueOf() === logModes.Exception.valueOf())
+        console.log(JSON.stringify(logMessage));
       break;
     }
     default: {
-      console.error(JSON.stringify(logMessage));
+      console.log(JSON.stringify(logMessage));
       break;
     }
   }
 }
+
+export const constructExceptionMessage = (
+  handler: string,
+  name: string,
+  message: string,
+  relatedData: string,
+  requestId: string
+) => {
+  return JSON.stringify(
+    JSON.parse(
+      JSON.stringify(
+        {
+          requestId: requestId,
+          handler: handler,
+          exceptionName: name,
+          exceptionMessage: message,
+          relatedData: relatedData,
+        },
+        null,
+        2
+      )
+    ),
+    null,
+    2
+  );
+};
+
+export const constructExceptionMessageforLogger = (
+  requestId: string,
+  name: string,
+  message: string,
+  relatedData: string
+) => {
+  return `For requestID: ${requestId} , exception with exception name -> ${name} occurred. Exception message is -> ${message} . Related data for the exception -> ${relatedData}`;
+};
 
 export class StateMachineError extends Error {
   constructor(public errorMessage: { message: string }) {

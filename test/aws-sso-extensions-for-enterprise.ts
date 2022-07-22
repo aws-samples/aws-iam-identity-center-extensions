@@ -173,6 +173,11 @@ test("Empty Stack", () => {
           unparsedEnv["Parameters"],
           "SupportNestedOU"
         ),
+        FunctionLogMode: ensureValidString(
+          unparsedEnv["Parameters"],
+          "FunctionLogMode",
+          ["INFO", "WARN", "DEBUG", "EXCEPTION"]
+        ),
       },
     };
   }

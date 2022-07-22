@@ -1,15 +1,15 @@
-/*
-Objective: Implement SSO user events handler for processing groups
-Trigger source: SSO user changes notification topic which in turn
-                receives event bridge notifications from SSO account
-                for group changes
-- assumes role in SSO account for calling SSO admin API - listInstances
-- determine if the event type is create or delete
-- determine the user name
-- Process the appropriate links
-- Catch all failures in a generic exception block
-  and post the error details to error notifications topics
-*/
+/**
+ * Objective: Implement SSO user events handler for processing groups Trigger
+ * source: SSO user changes notification topic which in turn receives event
+ * bridge notifications from SSO account for group changes
+ *
+ * - Assumes role in SSO account for calling SSO admin API - listInstances
+ * - Determine if the event type is create or delete
+ * - Determine the user name
+ * - Process the appropriate links
+ * - Catch all failures in a generic exception block and post the error details to
+ *   error notifications topics
+ */
 
 // Environment configuration read
 const {
@@ -25,22 +25,36 @@ const {
   ssoRegion,
   supportNestedOU,
   AWS_REGION,
+  functionLogMode,
+  AWS_LAMBDA_FUNCTION_NAME,
 } = process.env;
 
-// SDK and third party client imports
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import {
+  DynamoDBClient,
+  DynamoDBServiceException,
+} from "@aws-sdk/client-dynamodb";
 import {
   DescribeUserCommand,
   DescribeUserCommandOutput,
   IdentitystoreClient,
+  IdentitystoreServiceException,
 } from "@aws-sdk/client-identitystore";
-import { SFNClient } from "@aws-sdk/client-sfn";
-import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
-import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
+import { SFNClient, SFNServiceException } from "@aws-sdk/client-sfn";
+import {
+  PublishCommand,
+  SNSClient,
+  SNSServiceException,
+} from "@aws-sdk/client-sns";
+import {
+  SendMessageCommand,
+  SQSClient,
+  SQSServiceException,
+} from "@aws-sdk/client-sqs";
 import {
   ListInstancesCommand,
   ListInstancesCommandOutput,
   SSOAdminClient,
+  SSOAdminServiceException,
 } from "@aws-sdk/client-sso-admin";
 import { fromTemporaryCredentials } from "@aws-sdk/credential-providers";
 import {
@@ -53,13 +67,18 @@ import {
 import { SNSEvent } from "aws-lambda";
 import { v4 as uuidv4 } from "uuid";
 import {
-  ErrorMessage,
+  logModes,
   requestStatus,
   StateMachinePayload,
   StaticSSOPayload,
 } from "../../helpers/src/interfaces";
-import { invokeStepFunction, logger } from "../../helpers/src/utilities";
-// SDK and third party client object initialistaion
+import {
+  constructExceptionMessage,
+  constructExceptionMessageforLogger,
+  invokeStepFunction,
+  logger,
+} from "../../helpers/src/utilities";
+
 const ddbClientObject = new DynamoDBClient({
   region: AWS_REGION,
   maxAttempts: 2,
@@ -95,20 +114,43 @@ const sfnClientObject = new SFNClient({
   maxAttempts: 2,
 });
 
-//Error notification
-const errorMessage: ErrorMessage = {
-  Subject:
-    "Error Processing user create/delete trigger based link provisioning operation",
-};
+const handlerName = AWS_LAMBDA_FUNCTION_NAME + "";
+const messageSubject = "Exception in processing user CRUD triggered processing";
+let eventDetailValue = "";
 
 export const handler = async (event: SNSEvent) => {
   const requestId = uuidv4().toString();
+  const message = JSON.parse(event.Records[0].Sns.Message);
+  eventDetailValue = `${message.detail.eventName}`;
   try {
-    const message = JSON.parse(event.Records[0].Sns.Message);
+    logger(
+      {
+        handler: handlerName,
+        logMode: logModes.Info,
+        requestId: requestId,
+        relatedData: eventDetailValue,
+        status: requestStatus.InProgress,
+        statusMessage: `Processing user CRUD triggered operaiton ${eventDetailValue}`,
+      },
+      functionLogMode
+    );
+
     const resolvedInstances: ListInstancesCommandOutput =
       await ssoAdminClientObject.send(new ListInstancesCommand({}));
     const instanceArn = resolvedInstances.Instances?.[0].InstanceArn;
     const identityStoreId = resolvedInstances.Instances?.[0].IdentityStoreId;
+    logger(
+      {
+        handler: handlerName,
+        logMode: logModes.Debug,
+        requestId: requestId,
+        relatedData: eventDetailValue,
+        status: requestStatus.InProgress,
+        statusMessage: `Resolved instanceArn as ${instanceArn} and identityStoreId as ${identityStoreId}`,
+      },
+      functionLogMode
+    );
+
     const staticSSOPayload: StaticSSOPayload = {
       InstanceArn: instanceArn + "",
       TargetType: "AWS_ACCOUNT",
@@ -123,6 +165,19 @@ export const handler = async (event: SNSEvent) => {
     } else if (message.detail.eventName === "DeleteUser") {
       userId = message.detail.requestParameters.userId;
     }
+    eventDetailValue = `${message.detail.eventName}-${userId}`;
+    logger(
+      {
+        handler: handlerName,
+        logMode: logModes.Info,
+        requestId: requestId,
+        relatedData: eventDetailValue,
+        status: requestStatus.InProgress,
+        statusMessage: `Determined ${message.detail.eventName} operation is triggered for user ${userId}`,
+      },
+      functionLogMode
+    );
+
     const describeUserResult: DescribeUserCommandOutput =
       await identityStoreClientObject.send(
         new DescribeUserCommand({
@@ -132,17 +187,32 @@ export const handler = async (event: SNSEvent) => {
       );
     if (describeUserResult) {
       userName = describeUserResult.UserName + "";
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Debug,
+          requestId: requestId,
+          relatedData: eventDetailValue,
+          status: requestStatus.InProgress,
+          statusMessage: `Determined ${message.detail.eventName} operation is triggered for user ${userId} with userName ${userName}`,
+        },
+        functionLogMode
+      );
     }
 
+    eventDetailValue = `${message.detail.eventName}-${userId}-${userName}`;
     if (message.detail.eventName === "CreateUser") {
-      logger({
-        handler: "userHandler",
-        logMode: "info",
-        requestId: requestId,
-        relatedData: `${userName}`,
-        status: requestStatus.InProgress,
-        statusMessage: `CreateUser operation - resolved userName`,
-      });
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Info,
+          requestId: requestId,
+          relatedData: eventDetailValue,
+          status: requestStatus.InProgress,
+          statusMessage: `Triggering logic for ${message.detail.eventName} operation with user ${userId} and user name ${userName}`,
+        },
+        functionLogMode
+      );
 
       const relatedLinks: QueryCommandOutput = await ddbDocClientObject.send(
         // QueryCommand is a pagniated call, however the logic requires
@@ -157,6 +227,17 @@ export const handler = async (event: SNSEvent) => {
       );
 
       if (relatedLinks.Items && relatedLinks.Items?.length !== 0) {
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Info,
+            requestId: requestId,
+            relatedData: eventDetailValue,
+            status: requestStatus.InProgress,
+            statusMessage: `Determined there are ${relatedLinks.Items.length} no of related links that are associated with this eventDetailValue`,
+          },
+          functionLogMode
+        );
         await Promise.all(
           relatedLinks.Items?.map(async (Item) => {
             const { awsEntityType, awsEntityData, permissionSetName } = Item;
@@ -190,14 +271,17 @@ export const handler = async (event: SNSEvent) => {
                     MessageGroupId: awsEntityData.slice(-1),
                   })
                 );
-                logger({
-                  handler: "userHandler",
-                  logMode: "info",
-                  relatedData: `${userName}`,
-                  requestId: requestId,
-                  status: requestStatus.Completed,
-                  statusMessage: `CreateUser operation - triggered account assignment provisioning operation`,
-                });
+                logger(
+                  {
+                    handler: handlerName,
+                    logMode: logModes.Info,
+                    requestId: requestId,
+                    relatedData: eventDetailValue,
+                    status: requestStatus.Completed,
+                    statusMessage: `Sent create type payload to account assignment processing queue`,
+                  },
+                  functionLogMode
+                );
               } else if (
                 awsEntityType === "ou_id" ||
                 awsEntityType === "root" ||
@@ -223,68 +307,121 @@ export const handler = async (event: SNSEvent) => {
                   processTargetAccountSMArn + "",
                   sfnClientObject
                 );
-                logger({
-                  handler: "userHandler",
-                  logMode: "info",
-                  relatedData: `${userName}`,
-                  requestId: requestId,
-                  status: requestStatus.Completed,
-                  statusMessage: `CreateUser operation - triggered step function for org based resolution`,
-                });
+                logger(
+                  {
+                    handler: handlerName,
+                    logMode: logModes.Info,
+                    requestId: requestId,
+                    relatedData: eventDetailValue,
+                    status: requestStatus.Completed,
+                    statusMessage: `Sent create type payload to targetAccount state machine for resolving target account assignments`,
+                  },
+                  functionLogMode
+                );
               }
             } else {
               // Permission set for the user-link does not exist
-              logger({
-                handler: "userHandler",
-                logMode: "info",
-                relatedData: `${userName}`,
-                requestId: requestId,
-                status: requestStatus.Completed,
-                statusMessage: `CreateUser operation - permission set referenced in related account assignments not found`,
-              });
+              logger(
+                {
+                  handler: handlerName,
+                  logMode: logModes.Info,
+                  requestId: requestId,
+                  relatedData: eventDetailValue,
+                  status: requestStatus.Completed,
+                  statusMessage: `Permission set ${permissionSetName} referenced in the assoicated link does not exist, so completing the operation`,
+                },
+                functionLogMode
+              );
             }
           })
         );
       } else {
         // No related links for the user being processed
-        logger({
-          handler: "userHandler",
-          logMode: "info",
-          relatedData: `${userName}`,
-          requestId: requestId,
-          status: requestStatus.Completed,
-          statusMessage: `CreateUser operation - no related account assignments found for the user`,
-        });
+        logger(
+          {
+            handler: handlerName,
+            logMode: logModes.Info,
+            requestId: requestId,
+            relatedData: eventDetailValue,
+            status: requestStatus.Completed,
+            statusMessage: `No related links found, so completing the operation`,
+          },
+          functionLogMode
+        );
       }
     } else if (message.detail.eventName === "DeleteUser") {
-      logger({
-        handler: "userHandler",
-        logMode: "info",
-        relatedData: `${userName}`,
-        requestId: requestId,
-        status: requestStatus.Completed,
-        statusMessage: `DeleteUser operation - no actions being done as the user is deleted directly`,
-      });
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Info,
+          requestId: requestId,
+          relatedData: eventDetailValue,
+          status: requestStatus.Completed,
+          statusMessage: `DeleteUser operation - no actions being done as the user is deleted directly`,
+        },
+        functionLogMode
+      );
     }
   } catch (err) {
-    await snsClientObject.send(
-      new PublishCommand({
-        TopicArn: errorNotificationsTopicArn,
-        Message: JSON.stringify({
-          ...errorMessage,
-          eventDetail: event,
-          errorDetails: err,
-        }),
-      })
-    );
-    logger({
-      handler: "userHandler",
-      logMode: "error",
-      requestId: requestId,
-      status: requestStatus.FailedWithException,
-      statusMessage: `User operation - failed with exception: ${JSON.stringify(
-        err
-      )} for eventDetail: ${event}`,
-    });
+    if (
+      err instanceof DynamoDBServiceException ||
+      err instanceof IdentitystoreServiceException ||
+      err instanceof SFNServiceException ||
+      err instanceof SNSServiceException ||
+      err instanceof SQSServiceException ||
+      err instanceof SSOAdminServiceException
+    ) {
+      await snsClientObject.send(
+        new PublishCommand({
+          TopicArn: errorNotificationsTopicArn,
+          Subject: messageSubject,
+          Message: constructExceptionMessage(
+            requestId,
+            handlerName,
+            err.name,
+            err.message,
+            eventDetailValue
+          ),
+        })
+      );
+      logger({
+        handler: handlerName,
+        requestId: requestId,
+        logMode: logModes.Exception,
+        status: requestStatus.FailedWithException,
+        statusMessage: constructExceptionMessageforLogger(
+          requestId,
+          err.name,
+          err.message,
+          eventDetailValue
+        ),
+      });
+    } else {
+      await snsClientObject.send(
+        new PublishCommand({
+          TopicArn: errorNotificationsTopicArn,
+          Subject: messageSubject,
+          Message: constructExceptionMessage(
+            requestId,
+            handlerName,
+            "Unhandled exception",
+            JSON.stringify(err),
+            eventDetailValue
+          ),
+        })
+      );
+      logger({
+        handler: handlerName,
+        requestId: requestId,
+        logMode: logModes.Exception,
+        status: requestStatus.FailedWithException,
+        statusMessage: constructExceptionMessageforLogger(
+          requestId,
+          "Unhandled exception",
+          JSON.stringify(err),
+          eventDetailValue
+        ),
+      });
+    }
   }
 };

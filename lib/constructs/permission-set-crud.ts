@@ -1,8 +1,7 @@
-/*
-composite construct that sets up all resources
-for permission set CRUD operations and handles both API
-and S3 interfaces
-*/
+/**
+ * Composite construct that sets up all resources for permission set CRUD
+ * operations and handles both API and S3 interfaces
+ */
 
 import { CfnOutput, RemovalPolicy } from "aws-cdk-lib";
 import { LambdaRestApi } from "aws-cdk-lib/aws-apigateway";
@@ -24,11 +23,7 @@ import { Construct } from "constructs";
 import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
 import { LambdaProxyAPI } from "./lambda-proxy-api";
-
-function name(buildConfig: BuildConfig, resourcename: string): string {
-  return buildConfig.Environment + "-" + resourcename;
-}
-
+import { name } from "./helpers";
 export interface PermissionSetCRUDProps {
   readonly nodeJsLayer: LayerVersion;
   readonly linksTableName: string;
@@ -139,6 +134,7 @@ export class PermissionSetCRUD extends Construct {
               PermissionSetCRUDProps.ssoArtefactsBucket.bucketName,
             permissionSetProcessingTopicArn:
               this.permissionSetProcessingTopic.topicArn,
+            functionLogMode: buildConfig.Parameters.FunctionLogMode,
           },
         }
       );
@@ -193,6 +189,7 @@ export class PermissionSetCRUD extends Construct {
               PermissionSetCRUDProps.errorNotificationsTopicArn,
             permissionSetProcessingTopicArn:
               this.permissionSetProcessingTopic.topicArn,
+            functionLogMode: buildConfig.Parameters.FunctionLogMode,
           },
         }
       );
@@ -252,6 +249,7 @@ export class PermissionSetCRUD extends Construct {
             linksTable: PermissionSetCRUDProps.linksTableName,
             permissionSetProcessingTopicArn:
               this.permissionSetProcessingTopic.topicArn,
+            functionLogMode: buildConfig.Parameters.FunctionLogMode,
           },
         }
       );

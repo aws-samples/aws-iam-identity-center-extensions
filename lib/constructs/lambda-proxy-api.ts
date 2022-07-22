@@ -1,9 +1,8 @@
-/*
-Proxy API construct that sets up
-the required access for the API and lambda handler as well
-as implementation of CORS override so that a lambda error is
-gracefully handled by the proxy API
-*/
+/**
+ * Proxy API construct that sets up the required access for the API and lambda
+ * handler as well as implementation of CORS override so that a lambda error is
+ * gracefully handled by the proxy API
+ */
 
 import {
   AccessLogFormat,
@@ -18,10 +17,7 @@ import { LogGroup, RetentionDays } from "aws-cdk-lib/aws-logs";
 import { CfnOutput } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { BuildConfig } from "../build/buildConfig";
-
-function name(buildConfig: BuildConfig, resourcename: string): string {
-  return buildConfig.Environment + "-" + resourcename;
-}
+import { name } from "./helpers";
 
 export interface LambdaProxyAPIProps {
   apiNameKey: string;

@@ -1,8 +1,11 @@
-/*
-All access granting within the solution artefacts stack is consolidated
-here to facilitate easier management and visibility
-*/
-
+/**
+ * This construct manages access entitlements between different resources
+ * created by the solution as part of "Solution-Artefacts" stack in "target"
+ * account Where feasible, access management is centralised in this construct.
+ * Exceptions are when the underlying resources cannot be referenced in the
+ * "Solution-Artefacts" stack, or when managing access entitlements this way
+ * creates circular dependencies
+ */
 import { PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { Construct } from "constructs";
 import { FetchCrossStackValues } from "./fetch-cross-stack-values";
@@ -27,7 +30,10 @@ export class AccessManager extends Construct {
   ) {
     super(scope, id);
 
-    // Link Manager Handler access
+    /**
+     * All required access for account assignment provisioning handler
+     * lib/lambda-functions/application-handlers/linkManager.ts
+     */
     accessManagerProps.FetchCrossStackValues.queuesKey.grantEncryptDecrypt(
       accessManagerProps.LinkProcessor.linkManagerHandler
     );
@@ -64,7 +70,10 @@ export class AccessManager extends Construct {
       })
     );
 
-    // Permission Set Topic Handler access
+    /**
+     * All required access for permission set provisioning handler
+     * lib/lambda-functions/application-handlers/permissionSetTopicProcessor.ts
+     */
     accessManagerProps.FetchCrossStackValues.snsTopicsKey.grantEncryptDecrypt(
       accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor
     );
@@ -101,7 +110,10 @@ export class AccessManager extends Construct {
       })
     );
 
-    // SSO Group Handler access
+    /**
+     * All required access for self-sustaining flow on AWS SSO group
+     * creation/deletion lib/lambda-functions/application-handlers/groupsCud.ts
+     */
     accessManagerProps.FetchCrossStackValues.queuesKey.grantEncryptDecrypt(
       accessManagerProps.SSOGroupProcessor.ssoGroupHandler
     );
@@ -133,7 +145,10 @@ export class AccessManager extends Construct {
       })
     );
 
-    // SSO User Handler access
+    /**
+     * All required access for self-sustaining flow on AWS SSO user
+     * creation/deletion lib/lambda-functions/application-handlers/usersCud.ts
+     */
     accessManagerProps.FetchCrossStackValues.queuesKey.grantEncryptDecrypt(
       accessManagerProps.SSOGroupProcessor.ssoUserHandler
     );
@@ -167,7 +182,10 @@ export class AccessManager extends Construct {
       })
     );
 
-    // Link topic processor access
+    /**
+     * All required access for account assignment dispatch handler
+     * lib/lambda-functions/application-handlers/linkTopicProcessor.ts
+     */
     accessManagerProps.FetchCrossStackValues.queuesKey.grantEncryptDecrypt(
       accessManagerProps.LinkProcessor.linkTopicProcessor
     );
@@ -201,7 +219,11 @@ export class AccessManager extends Construct {
       })
     );
 
-    // Org Events Handler Access
+    /**
+     * All required access for self-sustaining flow on org events -
+     * CreateAccount, MoveAccount, account tag operations
+     * lib/lambda-functions/application-handlers/orgEvents.ts
+     */
     accessManagerProps.FetchCrossStackValues.queuesKey.grantEncryptDecrypt(
       accessManagerProps.OrgEvents.orgEventsHandler
     );
@@ -239,7 +261,10 @@ export class AccessManager extends Construct {
       })
     );
 
-    // Permission Set Sync Handler access
+    /**
+     * All required access for self-sustaining flow on permission set changes
+     * lib/lambda-functions/application-handlers/permissionSetSync.ts
+     */
     accessManagerProps.FetchCrossStackValues.queuesKey.grantEncryptDecrypt(
       accessManagerProps.PermissionSetProcessor.permissionSetSyncHandler
     );
@@ -271,7 +296,11 @@ export class AccessManager extends Construct {
       })
     );
 
-    //Process Target account SM Listener access
+    /**
+     * All required access for account assignment dispatcher on target account
+     * list discovery
+     * lib/lambda-functions/application-handlers/processTargetAccountSMListener.ts
+     */
     accessManagerProps.FetchCrossStackValues.queuesKey.grantEncryptDecrypt(
       accessManagerProps.LinkProcessor.processTargetAccountSMListenerHandler
     );

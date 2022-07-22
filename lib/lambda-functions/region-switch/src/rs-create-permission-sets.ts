@@ -22,7 +22,7 @@ import {
 } from "@aws-sdk/client-sso-admin";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { v4 as uuidv4 } from "uuid";
-import { requestStatus } from "../../helpers/src/interfaces";
+import { logModes, requestStatus } from "../../helpers/src/interfaces";
 import { serializeDurationToISOFormat } from "../../helpers/src/isoDurationUtility";
 import { logger } from "../../helpers/src/utilities";
 
@@ -52,7 +52,7 @@ export const handler = async (event: any) => {
     logger({
       requestId: requestId,
       handler: "rs-create-permission-set-handler",
-      logMode: "info",
+      logMode: logModes.Info,
       status: requestStatus.InProgress,
       relatedData: event.PermissionSetObject.permissionSetName.S,
     });
@@ -143,7 +143,7 @@ export const handler = async (event: any) => {
     logger({
       requestId: requestId,
       handler: "rs-create-permission-set-handler",
-      logMode: "error",
+      logMode: logModes.Exception,
       status: requestStatus.FailedWithException,
       statusMessage: `Permission set create operation failed with exception: ${JSON.stringify(
         err

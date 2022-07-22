@@ -1,6 +1,4 @@
-/*
-Deploys even bridge rules for org events in Org Main account
-*/
+/** Deploys even bridge rules for org events in Org Main account */
 import { Rule, RuleTargetInput } from "aws-cdk-lib/aws-events";
 import { SnsTopic } from "aws-cdk-lib/aws-events-targets";
 import {

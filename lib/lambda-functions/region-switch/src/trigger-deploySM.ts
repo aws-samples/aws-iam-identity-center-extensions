@@ -12,7 +12,7 @@ const { AWS_REGION } = process.env;
 import { SFNClient, StartExecutionCommand } from "@aws-sdk/client-sfn";
 import { CloudFormationCustomResourceEvent } from "aws-lambda";
 import { v4 as uuidv4 } from "uuid";
-import { requestStatus } from "../../helpers/src/interfaces";
+import { logModes, requestStatus } from "../../helpers/src/interfaces";
 import { logger } from "../../helpers/src/utilities";
 /**
  * SDK and third party client instantiations done as part of init context for
@@ -56,7 +56,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
     );
     logger({
       handler: "deploySM",
-      logMode: "info",
+      logMode: logModes.Info,
       relatedData: `${stateMachineExecution.executionArn}`,
       requestId: requestId,
       status: requestStatus.InProgress,
@@ -74,7 +74,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
   } catch (e) {
     logger({
       handler: "deploySM",
-      logMode: "error",
+      logMode: logModes.Exception,
       requestId: requestId,
       relatedData: `${deploySMArn}`,
       status: requestStatus.FailedWithException,

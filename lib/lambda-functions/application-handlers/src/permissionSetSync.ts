@@ -1,17 +1,16 @@
-/*
-Objective: Implement permission set sync
-Trigger source: Permission set sync notification
-                which in turn is triggered by permission
-                set topic handler when it determines that
-                there is a permission set being created/updated
-                that has not yet been provisioned
-- assumes role in SSO account for calling SSO admin API
-- fetches if there are links provisioned already
-  for the permission set in the links table
-- Process the appropriate links
-- Catch all failures in a generic exception block
-  and post the error details to error notifications topics
-*/
+/**
+ * Objective: Implement permission set sync Trigger source: Permission set sync
+ * notification which in turn is triggered by permission set topic handler when
+ * it determines that there is a permission set being created/updated that has
+ * not yet been provisioned
+ *
+ * - Assumes role in SSO account for calling SSO admin API
+ * - Fetches if there are links provisioned already for the permission set in the
+ *   links table
+ * - Process the appropriate links
+ * - Catch all failures in a generic exception block and post the error details to
+ *   error notifications topics
+ */
 
 const {
   linksTableName,
@@ -27,18 +26,34 @@ const {
   ssoRegion,
   supportNestedOU,
   AWS_REGION,
+  functionLogMode,
+  AWS_LAMBDA_FUNCTION_NAME,
 } = process.env;
 
-// SDK and third party client imports
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { IdentitystoreClient } from "@aws-sdk/client-identitystore";
-import { SFNClient } from "@aws-sdk/client-sfn";
-import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
-import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
+import {
+  DynamoDBClient,
+  DynamoDBServiceException,
+} from "@aws-sdk/client-dynamodb";
+import {
+  IdentitystoreClient,
+  IdentitystoreServiceException,
+} from "@aws-sdk/client-identitystore";
+import { SFNClient, SFNServiceException } from "@aws-sdk/client-sfn";
+import {
+  PublishCommand,
+  SNSClient,
+  SNSServiceException,
+} from "@aws-sdk/client-sns";
+import {
+  SendMessageCommand,
+  SQSClient,
+  SQSServiceException,
+} from "@aws-sdk/client-sqs";
 import {
   ListInstancesCommand,
   ListInstancesCommandOutput,
   SSOAdminClient,
+  SSOAdminServiceException,
 } from "@aws-sdk/client-sso-admin";
 import { fromTemporaryCredentials } from "@aws-sdk/credential-providers";
 import {
@@ -49,18 +64,19 @@ import {
 import { SNSEvent } from "aws-lambda";
 import { v4 as uuidv4 } from "uuid";
 import {
-  ErrorMessage,
+  logModes,
   requestStatus,
   StateMachinePayload,
   StaticSSOPayload,
 } from "../../helpers/src/interfaces";
 import {
+  constructExceptionMessage,
+  constructExceptionMessageforLogger,
   invokeStepFunction,
   logger,
   resolvePrincipal,
 } from "../../helpers/src/utilities";
 
-// SDK and third party client object initialistaion
 const ddbClientObject = new DynamoDBClient({
   region: AWS_REGION,
   maxAttempts: 2,
@@ -96,18 +112,26 @@ const sfnClientObject = new SFNClient({
   maxAttempts: 2,
 });
 
-//Error notification
-const errorMessage: ErrorMessage = {
-  Subject: "Error Processing link stream handler",
-};
+const handlerName = AWS_LAMBDA_FUNCTION_NAME + "";
+const messageSubject = "Exception in permission set sync processing";
+let permissionSetName = "";
 
 export const handler = async (event: SNSEvent) => {
   const requestId = uuidv4().toString();
+  logger(
+    {
+      handler: handlerName,
+      logMode: logModes.Info,
+      requestId: requestId,
+      status: requestStatus.InProgress,
+      statusMessage: `Initiating permission set sync check logic`,
+    },
+    functionLogMode
+  );
   try {
     const message = JSON.parse(event.Records[0].Sns.Message);
+    permissionSetName = message.permission_set_name;
     const relatedLinks: QueryCommandOutput = await ddbDocClientObject.send(
-      // QueryCommand is a pagniated call, however the logic requires
-      // checking only if the result set is greater than 0
       new QueryCommand({
         TableName: linksTableName,
         IndexName: "permissionSetName",
@@ -118,21 +142,46 @@ export const handler = async (event: SNSEvent) => {
         },
       })
     );
-    logger({
-      handler: "permissionSetSyncHandler",
-      logMode: "info",
-      requestId: requestId,
-      relatedData: `${message.permission_set_name}`,
-      status: requestStatus.InProgress,
-      statusMessage: `Permission Set sync - operation started`,
-    });
+    logger(
+      {
+        handler: handlerName,
+        logMode: logModes.Debug,
+        requestId: requestId,
+        relatedData: permissionSetName,
+        status: requestStatus.InProgress,
+        statusMessage: `Validating if there are related account assignment links for this permission set`,
+      },
+      functionLogMode
+    );
 
     if (relatedLinks.Items && relatedLinks.Items.length !== 0) {
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Debug,
+          requestId: requestId,
+          relatedData: permissionSetName,
+          status: requestStatus.InProgress,
+          statusMessage: `Resolved that there are ${relatedLinks.Items.length} no of account assignments for this permission set`,
+        },
+        functionLogMode
+      );
       const resolvedInstances: ListInstancesCommandOutput =
         await ssoAdminClientObject.send(new ListInstancesCommand({}));
       const instanceArn = resolvedInstances.Instances?.[0].InstanceArn + "";
       const identityStoreId =
         resolvedInstances.Instances?.[0].IdentityStoreId + "";
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Debug,
+          requestId: requestId,
+          relatedData: permissionSetName,
+          status: requestStatus.InProgress,
+          statusMessage: `Resolved instanceArn as ${instanceArn} and identityStoreId as ${identityStoreId}`,
+        },
+        functionLogMode
+      );
 
       await Promise.all(
         relatedLinks.Items.map(async (Item) => {
@@ -140,6 +189,17 @@ export const handler = async (event: SNSEvent) => {
           if (adUsed === "true" && domainName !== "") {
             principalNameToLookUp = `${Item.principalName}@${domainName}`;
           }
+          logger(
+            {
+              handler: handlerName,
+              logMode: logModes.Info,
+              requestId: requestId,
+              relatedData: permissionSetName,
+              status: requestStatus.InProgress,
+              statusMessage: `Compputed principalName as ${principalNameToLookUp} for looking up in identity store`,
+            },
+            functionLogMode
+          );
           const principalId = await resolvePrincipal(
             identityStoreId,
             identityStoreClientObject,
@@ -152,7 +212,17 @@ export const handler = async (event: SNSEvent) => {
             PrincipalType: Item.principalType,
           };
           if (principalId !== "0") {
-            // Resolved the principal ID and proceeding with the operation
+            logger(
+              {
+                handler: handlerName,
+                logMode: logModes.Info,
+                requestId: requestId,
+                relatedData: permissionSetName,
+                status: requestStatus.InProgress,
+                statusMessage: `Resolved principalId as ${principalId} for principalName ${principalNameToLookUp}`,
+              },
+              functionLogMode
+            );
             if (Item.awsEntityType === "account") {
               await sqsClientObject.send(
                 new SendMessageCommand({
@@ -172,14 +242,17 @@ export const handler = async (event: SNSEvent) => {
                   MessageGroupId: Item.awsEntityData.slice(-1),
                 })
               );
-              logger({
-                handler: "permissionSetSyncHandler",
-                logMode: "info",
-                relatedData: `${message.permission_set_name}`,
-                status: requestStatus.Completed,
-                requestId: requestId,
-                statusMessage: `Permission Set sync - posted to link manager topic`,
-              });
+              logger(
+                {
+                  handler: handlerName,
+                  logMode: logModes.Info,
+                  requestId: requestId,
+                  relatedData: permissionSetName,
+                  status: requestStatus.Completed,
+                  statusMessage: `Triggered permission set based account assignment create for accountId ${Item.awsEntityData} tagged to principalID ${principalId}`,
+                },
+                functionLogMode
+              );
             } else if (
               Item.awsEntityType === "ou_id" ||
               Item.awsEntityType === "root" ||
@@ -205,59 +278,106 @@ export const handler = async (event: SNSEvent) => {
                 processTargetAccountSMArn + "",
                 sfnClientObject
               );
-              logger({
-                handler: "permissionSetSyncHandler",
-                logMode: "info",
-                relatedData: `${message.permission_set_name}`,
-                requestId: requestId,
-                status: requestStatus.Completed,
-                statusMessage: `Permission Set sync - posted to step function`,
-              });
+              logger(
+                {
+                  handler: handlerName,
+                  logMode: logModes.Info,
+                  requestId: requestId,
+                  relatedData: permissionSetName,
+                  status: requestStatus.Completed,
+                  statusMessage: `Triggered state machine for non-account assignment create for entityType  ${Item.awsEntityType} with entityData ${Item.awsEntityData}`,
+                },
+                functionLogMode
+              );
             }
           } else {
-            // No related principalsfound for this link
-            logger({
-              handler: "permissionSetSyncHandler",
-              logMode: "info",
-              relatedData: `${message.permission_set_name}`,
-              requestId: requestId,
-              status: requestStatus.Completed,
-              statusMessage: `Permission Set sync - no related principals found`,
-            });
+            logger(
+              {
+                handler: handlerName,
+                logMode: logModes.Info,
+                requestId: requestId,
+                relatedData: permissionSetName,
+                status: requestStatus.Completed,
+                statusMessage: `No related principals found, completing permission set sync operation`,
+              },
+              functionLogMode
+            );
           }
         })
       );
     } else {
-      // Ignoring permission set sync as there are no
-      // related links already provisioined for this permission set
-      logger({
-        handler: "permissionSetSyncHandler",
-        logMode: "info",
-        relatedData: `${message.permission_set_name}`,
-        requestId: requestId,
-        status: requestStatus.Completed,
-        statusMessage: `Permission Set sync - ignoring operation as there are no related links already provisioined for this permission set`,
-      });
+      logger(
+        {
+          handler: handlerName,
+          logMode: logModes.Info,
+          requestId: requestId,
+          relatedData: permissionSetName,
+          status: requestStatus.Completed,
+          statusMessage: `No related account assignments found, completing permission set sync operation`,
+        },
+        functionLogMode
+      );
     }
   } catch (err) {
-    await snsClientObject.send(
-      new PublishCommand({
-        TopicArn: errorNotificationsTopicArn,
-        Message: JSON.stringify({
-          ...errorMessage,
-          eventDetail: event,
-          errorDetails: err,
-        }),
-      })
-    );
-    logger({
-      handler: "permissionSetSyncHandler",
-      logMode: "error",
-      status: requestStatus.FailedWithException,
-      requestId: requestId,
-      statusMessage: `permission set sync processor failed with exception: ${JSON.stringify(
-        err
-      )} for eventDetail: ${JSON.stringify(event)}`,
-    });
+    if (
+      err instanceof DynamoDBServiceException ||
+      err instanceof IdentitystoreServiceException ||
+      err instanceof SFNServiceException ||
+      err instanceof SNSServiceException ||
+      err instanceof SQSServiceException ||
+      err instanceof SSOAdminServiceException
+    ) {
+      await snsClientObject.send(
+        new PublishCommand({
+          TopicArn: errorNotificationsTopicArn,
+          Subject: messageSubject,
+          Message: constructExceptionMessage(
+            requestId,
+            handlerName,
+            err.name,
+            err.message,
+            permissionSetName
+          ),
+        })
+      );
+      logger({
+        handler: handlerName,
+        requestId: requestId,
+        logMode: logModes.Exception,
+        status: requestStatus.FailedWithException,
+        statusMessage: constructExceptionMessageforLogger(
+          requestId,
+          err.name,
+          err.message,
+          permissionSetName
+        ),
+      });
+    } else {
+      await snsClientObject.send(
+        new PublishCommand({
+          TopicArn: errorNotificationsTopicArn,
+          Subject: messageSubject,
+          Message: constructExceptionMessage(
+            requestId,
+            handlerName,
+            "Unhandled exception",
+            JSON.stringify(err),
+            permissionSetName
+          ),
+        })
+      );
+      logger({
+        handler: handlerName,
+        requestId: requestId,
+        logMode: logModes.Exception,
+        status: requestStatus.FailedWithException,
+        statusMessage: constructExceptionMessageforLogger(
+          requestId,
+          "Unhandled exception",
+          JSON.stringify(err),
+          permissionSetName
+        ),
+      });
+    }
   }
 };
