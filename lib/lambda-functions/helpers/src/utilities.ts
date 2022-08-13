@@ -207,3 +207,6 @@ export const resolvePrincipal = async (
   }
   return "0";
 };
+
+export const sleep = async (waitTime: number) =>
+  new Promise((resolve) => setTimeout(resolve, waitTime));

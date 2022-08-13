@@ -5,6 +5,7 @@
 import { CustomResource, Duration, Stack, StackProps } from "aws-cdk-lib";
 import { PolicyStatement } from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";
+import { Architecture } from "aws-cdk-lib/aws-lambda";
 import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Provider } from "aws-cdk-lib/custom-resources";
@@ -37,6 +38,7 @@ export class SSOImportArtefactsPart2 extends Stack {
       name(buildConfig, `importAccountAssignmentHandler`),
       {
         runtime: lambda.Runtime.NODEJS_16_X,
+        architecture: Architecture.ARM_64,
         functionName: name(buildConfig, `importAccountAssignmentHandler`),
         layers: [deployImportArtefacts.nodeJsLayer],
         entry: join(
@@ -92,6 +94,7 @@ export class SSOImportArtefactsPart2 extends Stack {
       name(buildConfig, `importPermissionSetHandler`),
       {
         runtime: lambda.Runtime.NODEJS_16_X,
+        architecture: Architecture.ARM_64,
         functionName: name(buildConfig, `importPermissionSetHandler`),
         layers: [deployImportArtefacts.nodeJsLayer],
         entry: join(
@@ -165,6 +168,7 @@ export class SSOImportArtefactsPart2 extends Stack {
       name(buildConfig, `updateCustomResourceHandler`),
       {
         runtime: lambda.Runtime.NODEJS_16_X,
+        architecture: Architecture.ARM_64,
         functionName: name(buildConfig, `updateCustomResourceHandler`),
         layers: [deployImportArtefacts.nodeJsLayer],
         entry: join(
@@ -212,6 +216,7 @@ export class SSOImportArtefactsPart2 extends Stack {
       name(buildConfig, `parentSMInvokeFunction`),
       {
         runtime: lambda.Runtime.NODEJS_16_X,
+        architecture: Architecture.ARM_64,
         functionName: name(buildConfig, `parentSMInvokeFunction`),
         layers: [deployImportArtefacts.nodeJsLayer],
         entry: join(

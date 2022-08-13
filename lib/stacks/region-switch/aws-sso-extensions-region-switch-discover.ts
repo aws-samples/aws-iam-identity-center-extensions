@@ -12,7 +12,12 @@ import {
   TableEncryption,
 } from "aws-cdk-lib/aws-dynamodb";
 import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
-import { Code, LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
+import {
+  Architecture,
+  Code,
+  LayerVersion,
+  Runtime,
+} from "aws-cdk-lib/aws-lambda";
 import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import {
@@ -52,6 +57,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
         join(__dirname, "../../", "lambda-layers", "nodejs-layer")
       ),
       compatibleRuntimes: [Runtime.NODEJS_16_X],
+      compatibleArchitectures: [Architecture.ARM_64],
     });
 
     /**
@@ -444,6 +450,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       fullname(`rsImportPermissionSetsHandler`),
       {
         runtime: Runtime.NODEJS_16_X,
+        architecture: Architecture.ARM_64,
         layers: [rsNodeJsLayer],
         entry: join(
           __dirname,
@@ -486,6 +493,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       fullname(`rsImportAccountAssignmentHandler`),
       {
         runtime: Runtime.NODEJS_16_X,
+        architecture: Architecture.ARM_64,
         layers: [rsNodeJsLayer],
         entry: join(
           __dirname,
@@ -539,6 +547,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       fullname(`updateCustomResourceHandler`),
       {
         runtime: Runtime.NODEJS_16_X,
+        architecture: Architecture.ARM_64,
         layers: [rsNodeJsLayer],
         entry: join(
           __dirname,
@@ -577,6 +586,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       fullname(`parentSMInvokeFunction`),
       {
         runtime: Runtime.NODEJS_16_X,
+        architecture: Architecture.ARM_64,
         functionName: fullname(`parentSMInvokeFunction`),
         layers: [rsNodeJsLayer],
         entry: join(

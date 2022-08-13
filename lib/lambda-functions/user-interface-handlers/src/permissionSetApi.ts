@@ -154,6 +154,47 @@ export const handler = async (
           functionLogMode
         );
         permissionSetName = payload.permissionSetData.permissionSetName;
+        let totalManagedPoliciesCount = 0;
+        if (
+          payload.permissionSetData.managedPoliciesArnList &&
+          payload.permissionSetData.managedPoliciesArnList.length > 0
+        ) {
+          totalManagedPoliciesCount +=
+            payload.permissionSetData.managedPoliciesArnList.length;
+        }
+        if (
+          payload.permissionSetData.customerManagedPoliciesList &&
+          payload.permissionSetData.customerManagedPoliciesList.length > 0
+        ) {
+          totalManagedPoliciesCount +=
+            payload.permissionSetData.customerManagedPoliciesList.length;
+        }
+        if (totalManagedPoliciesCount > 10) {
+          logger({
+            handler: handlerName,
+            requestId: requestId,
+            logMode: logModes.Exception,
+            status: requestStatus.FailedWithException,
+            statusMessage: constructExceptionMessageforLogger(
+              requestId,
+              "MangedPoliciesLimitExceeded",
+              `Permisison set cannot have more that 10 managed policies (both AWS managed and customer managed) assigned. You provided ${totalManagedPoliciesCount} managedPolicies in total`,
+              permissionSetName
+            ),
+          });
+          return {
+            statusCode: 500,
+            body: JSON.stringify({
+              message: constructExceptionMessageforLogger(
+                requestId,
+                "MangedPoliciesLimitExceeded",
+                `Permisison set cannot have more that 10 managed policies (both AWS managed and customer managed) assigned. You provided ${totalManagedPoliciesCount} managedPolicies in total`,
+                permissionSetName
+              ),
+              requestId: requestId,
+            }),
+          };
+        }
         await s3clientObject.send(
           new PutObjectCommand({
             Bucket: artefactsBucketName,

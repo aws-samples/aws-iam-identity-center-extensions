@@ -6,7 +6,7 @@
 import { Duration } from "aws-cdk-lib";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
 import { IKey } from "aws-cdk-lib/aws-kms";
-import { ILayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
+import { Architecture, ILayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { ITopic, Topic } from "aws-cdk-lib/aws-sns";
@@ -59,6 +59,7 @@ export class PermissionSetProcessor extends Construct {
       {
         functionName: name(buildConfig, "permissionSetTopicProcessor"),
         runtime: Runtime.NODEJS_16_X,
+        architecture: Architecture.ARM_64,
         entry: join(
           __dirname,
           "../",
@@ -110,6 +111,7 @@ export class PermissionSetProcessor extends Construct {
       name(buildConfig, "permissionSetSyncHandler"),
       {
         runtime: Runtime.NODEJS_16_X,
+        architecture: Architecture.ARM_64,
         functionName: name(buildConfig, "permissionSetSyncHandler"),
         entry: join(
           __dirname,

@@ -10,6 +10,11 @@ export interface Tag {
   readonly Key: string;
   readonly Value: string;
 }
+
+export interface CustomerManagedPolicyObject {
+  readonly Name: string;
+  readonly Path?: string;
+}
 export interface CreateUpdatePermissionSetDataProps {
   readonly permissionSetName: string;
   readonly description?: string;
@@ -17,6 +22,7 @@ export interface CreateUpdatePermissionSetDataProps {
   readonly relayState: string;
   readonly tags: Array<Tag>;
   readonly managedPoliciesArnList: Array<string>;
+  readonly customerManagedPoliciesList: Array<CustomerManagedPolicyObject>;
   readonly inlinePolicyDocument: Record<string, unknown>;
 }
 export interface CreateUpdatePermissionSetPayload {

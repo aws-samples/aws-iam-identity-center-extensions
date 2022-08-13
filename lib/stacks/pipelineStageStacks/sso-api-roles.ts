@@ -68,6 +68,12 @@ export class SSOApiRoles extends Stack {
             "sso:GetInlinePolicyForPermissionSet",
             "sso:ListManagedPoliciesInPermissionSet",
             "sso:DescribePermissionSetProvisioningStatus",
+            "sso:AttachCustomerManagedPolicyReferenceToPermissionSet",
+            "sso:DetachCustomerManagedPolicyReferenceFromPermissionSet",
+            "sso:ListCustomerManagedPolicyReferencesInPermissionSet",
+            "sso:PutPermissionsBoundaryToPermissionSet",
+            "sso:DeletePermissionsBoundaryFromPermissionSet",
+            "sso:GetPermissionsBoundaryForPermissionSet",
           ],
         }),
       }

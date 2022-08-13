@@ -1,6 +1,11 @@
 /** Lambda layers construct */
 
-import { Code, LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
+import {
+  Architecture,
+  Code,
+  LayerVersion,
+  Runtime,
+} from "aws-cdk-lib/aws-lambda";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 import { join } from "path";
@@ -21,6 +26,7 @@ export class LambdaLayers extends Construct {
           join(__dirname, "../", "lambda-layers", "nodejs-layer")
         ),
         compatibleRuntimes: [Runtime.NODEJS_16_X],
+        compatibleArchitectures: [Architecture.ARM_64],
       }
     );
 

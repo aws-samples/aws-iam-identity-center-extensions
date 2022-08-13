@@ -20,8 +20,11 @@ export interface PipelineSettings {
   readonly SSOServiceAccountId: string;
   readonly SSOServiceAccountRegion: string;
   readonly OrgMainAccountId: string;
+  readonly RepoType: string /** Source repo type - accepted values are one of ["codecommit","codestar"] */;
   readonly RepoArn: string /** AWS CodeCommit source code repository ARN */;
   readonly RepoBranchName: string /** AWS CodeCommit source code repository branch */;
+  readonly RepoName: string /** AWS CodeStar repo name */;
+  readonly CodeStarConnectionArn: string /** AWS CodeStar connection ARN */;
   readonly SynthCommand: string /** CDK synthesise command */;
 }
 
