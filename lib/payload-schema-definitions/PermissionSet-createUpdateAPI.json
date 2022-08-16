@@ -27,7 +27,7 @@
           "description": "Permission Set Name",
           "minLength": 1,
           "maxLength": 32,
-          "pattern": "[\\w+=,.@-]+"
+          "pattern": "^[A-Za-z0-9\\+=,.@-]+$"
         },
         "description": {
           "$id": "#/properties/permissionSetData/properties/description",

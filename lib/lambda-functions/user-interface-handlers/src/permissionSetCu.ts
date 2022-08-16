@@ -104,7 +104,7 @@ export const handler = async (event: S3Event) => {
         const originalText: GetObjectCommandOutput = await s3clientObject.send(
           new GetObjectCommand({
             Bucket: record.s3.bucket.name,
-            Key: record.s3.object.key,
+            Key: record.s3.object.key.replace(/\+/g, " "),
           })
         );
         logger(
@@ -117,7 +117,7 @@ export const handler = async (event: S3Event) => {
           },
           functionLogMode
         );
-        permissionSetFileName = record.s3.object.key;
+        permissionSetFileName = record.s3.object.key.replace(/\+/g, " ");
         const jsonData = JSON.parse(
           await streamToString(originalText.Body as Readable)
         );
