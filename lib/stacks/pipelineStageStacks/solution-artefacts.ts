@@ -116,6 +116,13 @@ export class SolutionArtefacts extends Stack {
           deployFetchCrossStackValues.waiterHandlerSSOAPIRoleArn,
         permissionSetProcessorTopic:
           deployFetchCrossStackValues.permissionSetProcessorTopic,
+        sqsKey: deployFetchCrossStackValues.queuesKey,
+        customerManagedPolicyOpArn:
+          deployFetchCrossStackValues.customerManagedPolicyProcessOpArn,
+        managedPolicyOpArn:
+          deployFetchCrossStackValues.managedPolicyProcessOpArn,
+        iteratorArn: deployFetchCrossStackValues.iteratorArn,
+        ssoMPRoleArn: deployFetchCrossStackValues.ssoMpRoleArn,
       }
     );
 

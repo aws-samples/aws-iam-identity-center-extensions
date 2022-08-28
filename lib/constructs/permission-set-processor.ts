@@ -7,9 +7,13 @@ import { Duration } from "aws-cdk-lib";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
 import { IKey } from "aws-cdk-lib/aws-kms";
 import { Architecture, ILayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
-import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
+import {
+  SnsEventSource,
+  SqsEventSource,
+} from "aws-cdk-lib/aws-lambda-event-sources";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { ITopic, Topic } from "aws-cdk-lib/aws-sns";
+import { Queue, QueueEncryption } from "aws-cdk-lib/aws-sqs";
 import { Construct } from "constructs";
 import { join } from "path";
 import { BuildConfig } from "../build/buildConfig";
@@ -29,12 +33,20 @@ export interface PermissionSetProcessProps {
   readonly processTargetAccountSMTopic: ITopic;
   readonly permissionSetProcessorTopic: ITopic;
   readonly snsTopicsKey: IKey;
+  readonly sqsKey: IKey;
+  readonly ssoMPRoleArn: string;
+  readonly managedPolicyOpArn: string;
+  readonly customerManagedPolicyOpArn: string;
+  readonly iteratorArn: string;
 }
 
 export class PermissionSetProcessor extends Construct {
   public readonly permissionSetTopicProcessor: NodejsFunction;
   public readonly permissionSetSyncTopic: Topic;
   public readonly permissionSetSyncHandler: NodejsFunction;
+  public readonly managedPolicyQueue: Queue;
+  public readonly managedPolicyDLQ: Queue;
+  public readonly managedPolicyQueueProcessor: NodejsFunction;
 
   constructor(
     scope: Construct,
@@ -50,6 +62,36 @@ export class PermissionSetProcessor extends Construct {
       {
         displayName: name(buildConfig, "permissionSetSyncTopic"),
         masterKey: permissionSetProcessorProps.snsTopicsKey,
+      }
+    );
+
+    this.managedPolicyDLQ = new Queue(
+      this,
+      name(buildConfig, "managedPolicyDLQ"),
+      {
+        fifo: true,
+        encryption: QueueEncryption.KMS,
+        encryptionMasterKey: permissionSetProcessorProps.sqsKey,
+        visibilityTimeout: Duration.hours(1),
+        queueName: name(buildConfig, "managedPolicyDLQ.fifo"),
+      }
+    );
+
+    this.managedPolicyQueue = new Queue(
+      this,
+      name(buildConfig, "managedPolicyQueue"),
+      {
+        fifo: true,
+        encryption: QueueEncryption.KMS,
+        encryptionMasterKey: permissionSetProcessorProps.sqsKey,
+        visibilityTimeout: Duration.hours(2),
+        contentBasedDeduplication: true,
+        queueName: name(buildConfig, "managedPolicyQueue.fifo"),
+        deadLetterQueue: {
+          queue: this.managedPolicyDLQ,
+          maxReceiveCount: 2,
+        },
+        retentionPeriod: Duration.days(1),
       }
     );
 
@@ -71,6 +113,7 @@ export class PermissionSetProcessor extends Construct {
         bundling: {
           externalModules: [
             "@aws-sdk/client-sns",
+            "@aws-sdk/client-sqs",
             "@aws-sdk/client-dynamodb",
             "@aws-sdk/client-sso-admin",
             "@aws-sdk/credential-providers",
@@ -94,6 +137,13 @@ export class PermissionSetProcessor extends Construct {
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
           waiterHandlerSSOAPIRoleArn:
             permissionSetProcessorProps.waiterHandlerSSOAPIRoleArn,
+          managedPolicyQueueUrl: this.managedPolicyQueue.queueUrl,
+          iteratorArn: permissionSetProcessorProps.iteratorArn,
+          customerManagedPolicyOpArn:
+            permissionSetProcessorProps.customerManagedPolicyOpArn,
+          managedPolicyOpArn: permissionSetProcessorProps.managedPolicyOpArn,
+          customerManagedPolicySM: `arn:aws:states:${buildConfig.PipelineSettings.SSOServiceAccountRegion}:${buildConfig.PipelineSettings.SSOServiceAccountId}:stateMachine:${buildConfig.Environment}-customerManagedPolicySM`,
+          managedPolicySM: `arn:aws:states:${buildConfig.PipelineSettings.SSOServiceAccountRegion}:${buildConfig.PipelineSettings.SSOServiceAccountId}:stateMachine:${buildConfig.Environment}-managedPolicySM`,
           functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
         timeout: Duration.minutes(11), //aggressive timeout to accommodate SSO Admin API's workflow based logic
@@ -160,6 +210,49 @@ export class PermissionSetProcessor extends Construct {
 
     this.permissionSetSyncHandler.addEventSource(
       new SnsEventSource(this.permissionSetSyncTopic)
+    );
+
+    this.managedPolicyQueueProcessor = new NodejsFunction(
+      this,
+      name(buildConfig, "managedPolicyQueueProcessor"),
+      {
+        runtime: Runtime.NODEJS_16_X,
+        architecture: Architecture.ARM_64,
+        functionName: name(buildConfig, "managedPolicyQueueProcessor"),
+        entry: join(
+          __dirname,
+          "../",
+          "lambda-functions",
+          "application-handlers",
+          "src",
+          "managedPolicyQueueProcessor.ts"
+        ),
+        bundling: {
+          externalModules: [
+            "@aws-sdk/client-sns",
+            "@aws-sdk/client-sfn",
+            "@aws-sdk/credential-providers",
+            "uuid",
+          ],
+          minify: true,
+        },
+        layers: [permissionSetProcessorProps.nodeJsLayer],
+        environment: {
+          SSOMPRoleArn: permissionSetProcessorProps.ssoMPRoleArn,
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
+          errorNotificationsTopicArn:
+            permissionSetProcessorProps.errorNotificationsTopic.topicArn,
+          ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
+          functionLogMode: buildConfig.Parameters.FunctionLogMode,
+        },
+      }
+    );
+
+    this.managedPolicyQueueProcessor.addEventSource(
+      new SqsEventSource(this.managedPolicyQueue, {
+        batchSize: 5,
+        reportBatchItemFailures: true,
+      })
     );
   }
 }

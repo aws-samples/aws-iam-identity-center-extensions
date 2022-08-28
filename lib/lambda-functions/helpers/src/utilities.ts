@@ -122,11 +122,11 @@ export function logger(logMessage: LogMessage, functionLogMode?: string) {
 }
 
 export const constructExceptionMessage = (
+  requestId: string,
   handler: string,
   name: string,
   message: string,
-  relatedData: string,
-  requestId: string
+  relatedData: string
 ) => {
   return JSON.stringify(
     JSON.parse(

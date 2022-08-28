@@ -3,6 +3,7 @@
 import { DefaultStackSynthesizer, Stage, StageProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { BuildConfig } from "../../build/buildConfig";
+import { ManagedPolicies } from "../pipelineStageStacks/managed-policies";
 import { OrgEventsProcessor } from "../pipelineStageStacks/org-events-processor";
 import { PreSolutionArtefacts } from "../pipelineStageStacks/pre-solution-artefacts";
 import { SolutionArtefacts } from "../pipelineStageStacks/solution-artefacts";
@@ -65,6 +66,18 @@ export class SSOArtefactsDeploymentStage extends Stage {
       fullname(buildConfig, "ssoAPIRolesstack"),
       {
         stackName: fullname(buildConfig, "ssoAPIRolesstack"),
+        synthesizer: new DefaultStackSynthesizer({
+          qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
+        }),
+      },
+      buildConfig
+    );
+
+    new ManagedPolicies(
+      this,
+      fullname(buildConfig, "managedPoliciesStack"),
+      {
+        stackName: fullname(buildConfig, "managedPoliciesStack"),
         synthesizer: new DefaultStackSynthesizer({
           qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
         }),
