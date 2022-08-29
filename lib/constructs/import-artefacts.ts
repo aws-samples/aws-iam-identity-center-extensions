@@ -30,6 +30,7 @@ export class ImportArtefacts extends Construct {
   public readonly importedLinksTable: ITable;
   public readonly importedProvisionedLinksTable: ITable;
   public readonly importedddbTablesKey: IKey;
+  public readonly importCmpAndPbFunctionArn: string;
 
   constructor(scope: Construct, id: string, buildConfig: BuildConfig) {
     super(scope, id);
@@ -82,6 +83,17 @@ export class ImportArtefacts extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "permissionSetHandler-ssoapi-roleArn",
+      }
+    ).paramValue;
+
+    this.importCmpAndPbFunctionArn = new SSMParamReader(
+      this,
+      name(buildConfig, "importCmpAndPbFunctionArn"),
+      buildConfig,
+      {
+        ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
+        ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
+        ParamNameKey: "importCmpAndPbArn",
       }
     ).paramValue;
 

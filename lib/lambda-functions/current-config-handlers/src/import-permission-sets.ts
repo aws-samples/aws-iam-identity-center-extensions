@@ -72,6 +72,9 @@ export const handler = async (event: SNSEvent) => {
   const requestId = uuidv4().toString();
   try {
     const message = JSON.parse(event.Records[0].Sns.Message);
+    console.log(`Debugging - \n`);
+    console.log(JSON.stringify(message));
+    console.log(`\n End of debug`);
     const permissionSetName = message.describePermissionSet.PermissionSet.Name;
     const permissionSetArn =
       message.describePermissionSet.PermissionSet.PermissionSetArn;
@@ -210,6 +213,33 @@ export const handler = async (event: SNSEvent) => {
         },
         functionLogMode
       );
+    }
+
+    /** Permissions boundary is an optional attribute */
+    if (
+      message.fetchPermissionsBoundary.Payload.result.PermissionsBoundary &&
+      Object.keys(
+        message.fetchPermissionsBoundary.Payload.result.PermissionsBoundary
+      ).length !== 0
+    ) {
+      Object.assign(permissionSetObject, {
+        permissionsBoundary:
+          message.fetchPermissionsBoundary.Payload.result.PermissionsBoundary,
+      });
+    }
+
+    /** Customer Managed Policies are an optional attribute */
+    if (
+      message.fetchCustomerManagedPolicies.Payload.result
+        .CustomerManagedPolicyReferences &&
+      message.fetchCustomerManagedPolicies.Payload.result
+        .CustomerManagedPolicyReferences.length !== 0
+    ) {
+      Object.assign(permissionSetObject, {
+        customerManagedPoliciesList:
+          message.fetchCustomerManagedPolicies.Payload.result
+            .CustomerManagedPolicyReferences,
+      });
     }
 
     if (message.triggerSource === "CloudFormation") {

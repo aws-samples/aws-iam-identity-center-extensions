@@ -233,7 +233,7 @@
             },
             "Resource": "arn:aws:states:::aws-sdk:ssoadmin:getInlinePolicyForPermissionSet",
             "ResultPath": "$.getInlinePolicyForPermissionSet",
-            "Next": "ListTagsForResource",
+            "Next": "Fetch customer managed Policies",
             "Retry": [
               {
                 "ErrorEquals": ["States.TaskFailed"],
@@ -247,6 +247,70 @@
                 "ErrorEquals": ["States.ALL"],
                 "Next": "Catchall for error handling",
                 "ResultPath": "$.solutionError"
+              }
+            ]
+          },
+          "Fetch customer managed Policies": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "Parameters": {
+              "FunctionName.$": "$.importCmpAndPbArn",
+              "Payload": {
+                "instanceArn.$": "$.instanceArn",
+                "permissionSetArn.$": "$.permissionSetArn",
+                "objectToDescribe": "customerManagedPolicy"
+              }
+            },
+            "Retry": [
+              {
+                "ErrorEquals": [
+                  "Lambda.ServiceException",
+                  "Lambda.AWSLambdaException",
+                  "Lambda.SdkClientException"
+                ],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 6,
+                "BackoffRate": 2
+              }
+            ],
+            "Next": "Fetch permissions boundary",
+            "ResultPath": "$.fetchCustomerManagedPolicies",
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall for error handling"
+              }
+            ]
+          },
+          "Fetch permissions boundary": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "Parameters": {
+              "FunctionName.$": "$.importCmpAndPbArn",
+              "Payload": {
+                "instanceArn.$": "$.instanceArn",
+                "permissionSetArn.$": "$.permissionSetArn",
+                "objectToDescribe": "permissionsBoundary"
+              }
+            },
+            "Retry": [
+              {
+                "ErrorEquals": [
+                  "Lambda.ServiceException",
+                  "Lambda.AWSLambdaException",
+                  "Lambda.SdkClientException"
+                ],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 6,
+                "BackoffRate": 2
+              }
+            ],
+            "Next": "ListTagsForResource",
+            "ResultPath": "$.fetchPermissionsBoundary",
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall for error handling"
               }
             ]
           },
@@ -602,7 +666,8 @@
         "requestId.$": "$.requestId",
         "triggerSource.$": "$.triggerSource",
         "waitSeconds.$": "$.waitSeconds",
-        "pageSize.$": "$.pageSize"
+        "pageSize.$": "$.pageSize",
+        "importCmpAndPbArn.$": "$.importCmpAndPbArn"
       },
       "ResultPath": null
     },

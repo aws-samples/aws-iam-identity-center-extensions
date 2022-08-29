@@ -271,6 +271,7 @@ export class SSOImportArtefactsPart2 extends Stack {
             deployImportArtefacts.accountAssignmentImportTopic.topicArn,
           permissionSetImportTopicArn:
             deployImportArtefacts.permissionSetImportTopic.topicArn,
+          importCmpAndPbArn: deployImportArtefacts.importCmpAndPbFunctionArn,
           temporaryPermissionSetTableName: `${buildConfig.Environment}-temp-PermissionSets`,
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
           functionLogMode: buildConfig.Parameters.FunctionLogMode,

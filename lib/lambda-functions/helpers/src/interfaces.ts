@@ -115,6 +115,12 @@ export interface CustomerManagedPolicyObjectOp {
   readonly instanceArn: string;
 }
 
+export interface DescribeCmpAndPb {
+  readonly objectToDescribe: "customerManagedPolicy" | "permissionsBoundary";
+  readonly instanceArn: string;
+  readonly permissionSetArn: string;
+}
+
 export interface ManagedPolicyObjectOp {
   readonly operation: "attach" | "detach" | "describe";
   readonly parentOperation?: "attach" | "detach";

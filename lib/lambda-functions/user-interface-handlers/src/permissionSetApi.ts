@@ -154,6 +154,10 @@ export const handler = async (
           functionLogMode
         );
         permissionSetName = payload.permissionSetData.permissionSetName;
+        /**
+         * AWS SSO enforces that the count of both AWS and customer managed
+         * policies cannot exceed 10, validating this check
+         */
         let totalManagedPoliciesCount = 0;
         if (
           payload.permissionSetData.managedPoliciesArnList &&
