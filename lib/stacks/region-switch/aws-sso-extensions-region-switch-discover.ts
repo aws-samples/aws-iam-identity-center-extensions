@@ -129,7 +129,8 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
 
     /**
      * Account assignment discovery state machine related artefacts This state
-     * machine discovers all the current account assignments for a given permission set
+     * machine discovers all the current account assignments for a given
+     * permission set
      */
 
     /** Log group to attach to discover state machine for capturing logs */
@@ -223,7 +224,8 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
 
     /**
      * Permission set discovery state machine related artefacts This state
-     * machine discovers all the permission sets and the attributes of a permission set
+     * machine discovers all the permission sets and the attributes of a
+     * permission set
      */
 
     /**

@@ -9,7 +9,8 @@
  *   depending on the identity store)
  * - If create/delete
  *
- *   - Determine if there are related links already provisioned by looking up links table
+ *   - Determine if there are related links already provisioned by looking up links
+ *       table
  *   - If there are related links, then
  *
  *       - For each related link

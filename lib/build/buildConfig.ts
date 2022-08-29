@@ -38,7 +38,11 @@ export interface PipelineSettings {
 
 /** Solution specific parameters */
 export interface Parameters {
-  readonly LinksProvisioningMode: string /** Account assignments provisioning mode - accepted values are one of ["api", "s3"] */;
+  readonly LinksProvisioningMode: string
+  /**
+   * Account assignments provisioning mode - accepted values are one of ["api",
+   * "s3"]
+   */;
   readonly PermissionSetProvisioningMode: string /** Permission set provisioning mode - accepted values are one of ["api", "s3"] */;
   /**
    * IAM role arn created in target account with permissions to upload account
@@ -51,7 +55,11 @@ export interface Parameters {
    */
   readonly PermissionSetCallerRoleArn: string;
   readonly NotificationEmail: string /** Notification email used by solution to send error notifications etc */;
-  readonly AccountAssignmentVisibilityTimeoutHours: number /** Visibility timeout parameter , used for scaling the solution in large enterprises */;
+  readonly AccountAssignmentVisibilityTimeoutHours: number
+  /**
+   * Visibility timeout parameter , used for scaling the solution in large
+   * enterprises
+   */;
   readonly IsAdUsed: boolean;
   readonly DomainName: string;
   /**
@@ -69,6 +77,9 @@ export interface Parameters {
    * full tree traversal
    */
   readonly SupportNestedOU: boolean;
-  /** Used as switch to set the level of lambda function logging the solution should use */
+  /**
+   * Used as switch to set the level of lambda function logging the solution
+   * should use
+   */
   readonly FunctionLogMode: string;
 }

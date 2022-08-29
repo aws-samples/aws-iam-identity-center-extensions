@@ -31,7 +31,10 @@ export class AwsSsoExtensionsForEnterprise extends Stack {
 
     /** Instantiate this to empty file set producer initially */
     let inputSource: IFileSetProducer = {};
-    /** Based on the pipeline source type, instantiate the source connection appropriately */
+    /**
+     * Based on the pipeline source type, instantiate the source connection
+     * appropriately
+     */
     if (buildConfig.PipelineSettings.RepoType.toLowerCase() === "codecommit") {
       inputSource = CodePipelineSource.codeCommit(
         Repository.fromRepositoryArn(

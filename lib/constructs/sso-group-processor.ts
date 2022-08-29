@@ -1,4 +1,7 @@
-/** Composite construct that sets up all resources for SSO event life cycle notifications */
+/**
+ * Composite construct that sets up all resources for SSO event life cycle
+ * notifications
+ */
 
 import { Architecture, ILayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";

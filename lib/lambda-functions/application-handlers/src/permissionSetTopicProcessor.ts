@@ -18,7 +18,8 @@
  *       policy session duration relay state tags
  *   - Process update permission set if any of the above fields are changed
  *   - If the changes include managed policy or inline policy changes, trigger a
- *       reprovisioning operation as well and post the request id to waiter handler
+ *       reprovisioning operation as well and post the request id to waiter
+ *       handler
  * - If operation type is delete
  *
  *   - Delete the permission set first
@@ -705,12 +706,18 @@ export const handler = async (event: SNSEvent) => {
                   break;
                 }
                 case "sortedManagedPoliciesArnList-update": {
-                  /** Eslint disable to force the declaration to be let instead of const */
+                  /**
+                   * Eslint disable to force the declaration to be let instead
+                   * of const
+                   */
                   /* eslint-disable  prefer-const  */
                   let changeSettoRemove: Array<string> = [];
                   /* eslint-disable  prefer-const  */
                   let changeSettoAdd: Array<string> = [];
-                  /** Eslint disable as the payload has already been schema validated */
+                  /**
+                   * Eslint disable as the payload has already been schema
+                   * validated
+                   */
                   /* eslint-disable  security/detect-object-injection */
                   const changeArray = diffCalculated[
                     k
@@ -1134,7 +1141,10 @@ export const handler = async (event: SNSEvent) => {
                 case "tags-update":
                 case "tags-delete": {
                   if (oldItem.tags && oldItem.tags.length > 0) {
-                    /** Eslint disable to force the declaration to be let instead of const */
+                    /**
+                     * Eslint disable to force the declaration to be let instead
+                     * of const
+                     */
                     /* eslint-disable  prefer-const  */
                     let tagKeysToRemove: Array<string> = [];
                     await Promise.all(

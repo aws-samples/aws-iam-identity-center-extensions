@@ -2,7 +2,8 @@
  * This construct allows read the non-deterministic values of resources created
  * in preSolutions stack. This is to avoid creating circular dependencies
  * between preSolutions and ssoImportArtefacts-part2 through the default CFN
- * exports. We circumvent that by relying on AWS SSM parameter store based reads
+ * exports. We circumvent that by relying on AWS SSM parameter store based
+ * reads
  */
 
 import { ITable, Table } from "aws-cdk-lib/aws-dynamodb";

@@ -125,7 +125,10 @@ export class SSOImportArtefactsPart1 extends Stack {
       }
     );
 
-    /** Custom lambda for describing customer managed policies and permission boundary */
+    /**
+     * Custom lambda for describing customer managed policies and permission
+     * boundary
+     */
 
     const layersResource = new LayerVersion(
       this,

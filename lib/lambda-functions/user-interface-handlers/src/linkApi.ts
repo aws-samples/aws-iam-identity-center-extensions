@@ -1,5 +1,6 @@
 /**
- * Objective: Implement lambda proxy for link importer API Trigger source: link API
+ * Objective: Implement lambda proxy for link importer API Trigger source: link
+ * API
  *
  * - Schema validation of the payload
  * - Upsert / delete in links DDB table depending on the operation

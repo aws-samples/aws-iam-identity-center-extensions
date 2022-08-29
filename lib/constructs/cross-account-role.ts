@@ -41,7 +41,10 @@ export class CrossAccountRole extends Construct {
       }
     );
 
-    /** Add the required permissions passed in as part of the construct initiation */
+    /**
+     * Add the required permissions passed in as part of the construct
+     * initiation
+     */
     this.role.addToPrincipalPolicy(crossAccountRoleProps.policyStatement);
 
     /**

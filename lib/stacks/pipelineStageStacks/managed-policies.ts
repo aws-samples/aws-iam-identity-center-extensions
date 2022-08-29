@@ -67,7 +67,10 @@ export class ManagedPolicies extends Stack {
       ReaderAccountId: buildConfig.PipelineSettings.TargetAccountId,
     });
 
-    /** Define lambda function to attach/detach/describe customer managed policies */
+    /**
+     * Define lambda function to attach/detach/describe customer managed
+     * policies
+     */
     const processCustomerManagedPolicyHandler = new NodejsFunction(
       this,
       name(buildConfig, `processCustomerManagedPolicyHandler`),
@@ -95,7 +98,10 @@ export class ManagedPolicies extends Stack {
       }
     );
 
-    /** Grant lambda permissions to attach/detach/describe customer managed policies */
+    /**
+     * Grant lambda permissions to attach/detach/describe customer managed
+     * policies
+     */
 
     processCustomerManagedPolicyHandler.addToRolePolicy(
       new PolicyStatement({
