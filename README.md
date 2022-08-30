@@ -117,6 +117,22 @@ This solution provides a composite API for managing permission set lifecycles, a
           "Sid": "AllowReadIAMActions"
         }
       ]
+    },
+    "customerManagedPoliciesList": [
+      {
+        "Name": "cmp-1",
+        "Path": "/cmp/1/"
+      },
+      {
+        "Name": "cmp-2",
+        "Path": "/cmp/2/"
+      },
+      {
+        "Name": "cmp-3"
+      }
+    ],
+    "permissionsBoundary": {
+      "ManagedPolicyArn": "arn:aws:iam::aws:policy/job-function/NetworkAdministrator"
     }
   }
 }
@@ -161,6 +177,25 @@ This solution provides a composite API for managing permission set lifecycles, a
           "Sid": "AllowReadIAMActions"
         }
       ]
+    },
+    "customerManagedPoliciesList": [
+      {
+        "Name": "cmp-1",
+        "Path": "/cmp/1/"
+      },
+      {
+        "Name": "cmp-2",
+        "Path": "/cmp/2/"
+      },
+      {
+        "Name": "cmp-3"
+      }
+    ],
+    "permissionsBoundary": {
+      "CustomerManagedPolicyReference": {
+        "Name": "cmp-pb",
+        "Path": "/cmp/pb/"
+      }
     }
   }
 }
