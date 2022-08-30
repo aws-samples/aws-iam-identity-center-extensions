@@ -38,11 +38,11 @@ export interface PipelineSettings {
 
 /** Solution specific parameters */
 export interface Parameters {
-  readonly LinksProvisioningMode: string
+  readonly LinksProvisioningMode: string;
   /**
    * Account assignments provisioning mode - accepted values are one of ["api",
    * "s3"]
-   */;
+   */
   readonly PermissionSetProvisioningMode: string /** Permission set provisioning mode - accepted values are one of ["api", "s3"] */;
   /**
    * IAM role arn created in target account with permissions to upload account
@@ -55,11 +55,11 @@ export interface Parameters {
    */
   readonly PermissionSetCallerRoleArn: string;
   readonly NotificationEmail: string /** Notification email used by solution to send error notifications etc */;
-  readonly AccountAssignmentVisibilityTimeoutHours: number
+  readonly AccountAssignmentVisibilityTimeoutHours: number;
   /**
    * Visibility timeout parameter , used for scaling the solution in large
    * enterprises
-   */;
+   */
   readonly IsAdUsed: boolean;
   readonly DomainName: string;
   /**

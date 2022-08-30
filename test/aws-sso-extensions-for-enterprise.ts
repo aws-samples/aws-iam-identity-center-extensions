@@ -55,7 +55,7 @@ test("Empty Stack", () => {
       }
     } else {
       throw new Error(
-        `Repo type ${repoType} is not one of valid values - ["codecommit","codestart"]`
+        `Repo type ${repoType} is not one of valid values - ["codecommit","codestar"]`
       );
     }
     /** Making the linter happy */
