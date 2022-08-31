@@ -72,9 +72,6 @@ export const handler = async (event: SNSEvent) => {
   const requestId = uuidv4().toString();
   try {
     const message = JSON.parse(event.Records[0].Sns.Message);
-    console.log(`Debugging - \n`);
-    console.log(JSON.stringify(message));
-    console.log(`\n End of debug`);
     const permissionSetName = message.describePermissionSet.PermissionSet.Name;
     const permissionSetArn =
       message.describePermissionSet.PermissionSet.PermissionSetArn;

@@ -6,7 +6,6 @@
 import { DescribeOpIterator } from "../../helpers/src/interfaces";
 
 export const handler = async (event: DescribeOpIterator) => {
-  console.log(`Full event - ${JSON.stringify(event)}`);
   let index = event.iterator.index;
   const count = event.iterator.count;
   const step = event.iterator.step;
