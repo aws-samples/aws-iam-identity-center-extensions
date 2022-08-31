@@ -50,7 +50,6 @@ import {
 import {
   imperativeParseJSON,
   JSONParserError,
-  ManagedPolicyError,
 } from "../../helpers/src/payload-validator";
 import {
   constructExceptionMessage,
@@ -84,7 +83,6 @@ const createUpdateSchemaDefinition = JSON.parse(
 const createUpdateValidate = ajv.compile(createUpdateSchemaDefinition);
 const handlerName = AWS_LAMBDA_FUNCTION_NAME + "";
 let permissionSetFileName = "";
-let totalManagedPoliciesCount = 0;
 const messageSubject =
   "Exception in permission set create/update operation through S3 interface";
 
@@ -159,27 +157,7 @@ export const handler = async (event: S3Event) => {
           },
           functionLogMode
         );
-        /**
-         * AWS SSO enforces that the count of both AWS and customer managed
-         * policies cannot exceed 10, validating this check
-         */
 
-        if (
-          upsertData.managedPoliciesArnList &&
-          upsertData.managedPoliciesArnList.length > 0
-        ) {
-          totalManagedPoliciesCount += upsertData.managedPoliciesArnList.length;
-        }
-        if (
-          upsertData.customerManagedPoliciesList &&
-          upsertData.customerManagedPoliciesList.length > 0
-        ) {
-          totalManagedPoliciesCount +=
-            upsertData.customerManagedPoliciesList.length;
-        }
-        if (totalManagedPoliciesCount > 10) {
-          throw new ManagedPolicyError(upsertData.permissionSetName);
-        }
         /**
          * The fetchPermissionSet place holder is used when sending the payload
          * to topic processor and determining if it's a create/update operation
@@ -270,33 +248,7 @@ export const handler = async (event: S3Event) => {
           );
         }
       } catch (err) {
-        if (err instanceof ManagedPolicyError) {
-          await snsClientObject.send(
-            new PublishCommand({
-              TopicArn: errorNotificationsTopicArn,
-              Subject: messageSubject,
-              Message: constructExceptionMessage(
-                requestId,
-                handlerName,
-                "MangedPoliciesLimitExceeded",
-                `Permisison set cannot have more that 10 managed policies (both AWS managed and customer managed) assigned. You provided ${totalManagedPoliciesCount} managedPolicies in total`,
-                permissionSetFileName
-              ),
-            })
-          );
-          logger({
-            handler: handlerName,
-            requestId: requestId,
-            logMode: logModes.Exception,
-            status: requestStatus.FailedWithException,
-            statusMessage: constructExceptionMessageforLogger(
-              requestId,
-              "MangedPoliciesLimitExceeded",
-              `Permisison set cannot have more that 10 managed policies (both AWS managed and customer managed) assigned. You provided ${totalManagedPoliciesCount} managedPolicies in total`,
-              permissionSetFileName
-            ),
-          });
-        } else if (err instanceof JSONParserError) {
+        if (err instanceof JSONParserError) {
           await snsClientObject.send(
             new PublishCommand({
               TopicArn: errorNotificationsTopicArn,

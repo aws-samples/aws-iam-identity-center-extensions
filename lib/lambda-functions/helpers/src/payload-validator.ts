@@ -6,12 +6,6 @@ export class JSONParserError extends Error {
   }
 }
 
-export class ManagedPolicyError extends Error {
-  constructor(public permissionSetName: string) {
-    super();
-  }
-}
-
 export const imperativeParseJSON = <T = object>(
   data: object | string | null,
   validate: ValidateFunction
