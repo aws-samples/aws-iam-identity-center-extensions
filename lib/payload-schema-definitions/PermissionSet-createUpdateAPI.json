@@ -27,7 +27,7 @@
           "description": "Permission Set Name",
           "minLength": 1,
           "maxLength": 32,
-          "pattern": "[\\w+=,.@-]+"
+          "pattern": "^[A-Za-z0-9\\+=,.@-]+$"
         },
         "description": {
           "$id": "#/properties/permissionSetData/properties/description",
@@ -62,7 +62,7 @@
           "description": "tags",
           "default": [],
           "items": {
-            "$id": "#/properties/tags/items",
+            "$id": "#/properties/permissionSetData/properties/tags/items",
             "anyOf": [
               {
                 "$id": "#/properties/permissionSetData/properties/tags/items/anyOf/0",
@@ -115,6 +115,95 @@
               }
             ]
           }
+        },
+        "customerManagedPoliciesList": {
+          "$id": "#/properties/permissionSetData/properties/customerManagedPoliciesList",
+          "type": "array",
+          "title": "List of customer managed policies to attach",
+          "description": "List of customer managed policies to attach",
+          "default": [],
+          "items": {
+            "anyOf": [
+              {
+                "$id": "#/properties/permissionSetData/properties/customerManagedPoliciesList/items/anyOf/0",
+                "type": "object",
+                "title": "Customer Managed Policy object",
+                "required": ["Name"],
+                "properties": {
+                  "Name": {
+                    "$id": "#/properties/permissionSetData/properties/customerManagedPoliciesList/items/anyOf/0/propertites/Name",
+                    "type": "string",
+                    "title": "Customer Managed Policy Name",
+                    "description": "Customer Managed Policy Name",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "[\\w+=,.@-]+"
+                  },
+                  "Path": {
+                    "$id": "#/properties/permissionSetData/properties/customerManagedPoliciesList/items/anyOf/0/propertites/Path",
+                    "type": "string",
+                    "title": "Customer Managed Policy path",
+                    "description": "Customer Managed Policy path",
+                    "minLength": 1,
+                    "maxLength": 512,
+                    "pattern": "(^(/[A-Za-z0-9\\.,\\+@=_-]+)*)/$"
+                  }
+                },
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "permissionsBoundary": {
+          "$id": "#/properties/permissionSetData/properties/permissionsBoundary",
+          "type": "object",
+          "title": "Permissions Boundary object $schema",
+          "description": "Permissions Boundary object schema",
+          "default": {},
+          "properties": {
+            "ManagedPolicyArn": {
+              "$id": "#/properties/permissionSetData/properties/permissionsBoundary/properties/ManagedPolicyArn",
+              "type": "string",
+              "title": "Managed Policies $schema",
+              "description": "Managed Policies $schema",
+              "pattern": "arn:aws:iam::aws:policy/[A-Za-z]+"
+            },
+            "CustomerManagedPolicyReference": {
+              "type": "object",
+              "title": "Customer Managed Policy object",
+              "required": ["Name"],
+              "properties": {
+                "Name": {
+                  "$id": "#/properties/permissionSetData/properties/permissionsBoundary/properties/CustomerManagedPolicyReference/properties/Name",
+                  "type": "string",
+                  "title": "Customer Managed Policy Name",
+                  "description": "Customer Managed Policy Name",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "[\\w+=,.@-]+"
+                },
+                "Path": {
+                  "$id": "#/properties/permissionSetData/properties/permissionsBoundary/properties/CustomerManagedPolicyReference/properties/Path",
+                  "type": "string",
+                  "title": "Customer Managed Policy path",
+                  "description": "Customer Managed Policy path",
+                  "minLength": 1,
+                  "maxLength": 512,
+                  "pattern": "(^(/[A-Za-z0-9\\.,\\+@=_-]+)*)/$"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false,
+          "oneOf": [
+            {
+              "required": ["ManagedPolicyArn"]
+            },
+            {
+              "required": ["CustomerManagedPolicyReference"]
+            }
+          ]
         },
         "inlinePolicyDocument": {
           "$id": "#/properties/permissionSetData/properties/inlinePolicyDocument",

@@ -1,6 +1,9 @@
-/** Composite construct that sets up all resources for SSO event life cycle notifications */
+/**
+ * Composite construct that sets up all resources for SSO event life cycle
+ * notifications
+ */
 
-import { ILayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
+import { Architecture, ILayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { ITopic } from "aws-cdk-lib/aws-sns";
@@ -41,6 +44,7 @@ export class SSOGroupProcessor extends Construct {
       {
         runtime: Runtime.NODEJS_16_X,
         functionName: name(buildConfig, "ssoGroupHandler"),
+        architecture: Architecture.ARM_64,
         entry: join(
           __dirname,
           "../",
@@ -92,6 +96,7 @@ export class SSOGroupProcessor extends Construct {
       {
         runtime: Runtime.NODEJS_16_X,
         functionName: name(buildConfig, "ssoUserHandler"),
+        architecture: Architecture.ARM_64,
         entry: join(
           __dirname,
           "../",

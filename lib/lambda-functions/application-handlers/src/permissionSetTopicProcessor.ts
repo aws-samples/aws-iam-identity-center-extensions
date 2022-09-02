@@ -18,7 +18,8 @@
  *       policy session duration relay state tags
  *   - Process update permission set if any of the above fields are changed
  *   - If the changes include managed policy or inline policy changes, trigger a
- *       reprovisioning operation as well and post the request id to waiter handler
+ *       reprovisioning operation as well and post the request id to waiter
+ *       handler
  * - If operation type is delete
  *
  *   - Delete the permission set first
@@ -37,6 +38,12 @@ const {
   permissionSetSyncTopicArn,
   waiterHandlerSSOAPIRoleArn,
   ssoRegion,
+  managedPolicyQueueUrl,
+  iteratorArn,
+  customerManagedPolicyOpArn,
+  managedPolicyOpArn,
+  customerManagedPolicySM,
+  managedPolicySM,
   AWS_REGION,
   functionLogMode,
   AWS_LAMBDA_FUNCTION_NAME,
@@ -51,17 +58,18 @@ import {
   SNSClient,
   SNSServiceException,
 } from "@aws-sdk/client-sns";
+import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
 import {
-  AttachManagedPolicyToPermissionSetCommand,
   CreatePermissionSetCommand,
   DeleteInlinePolicyFromPermissionSetCommand,
+  DeletePermissionsBoundaryFromPermissionSetCommand,
   DeletePermissionSetCommand,
-  DetachManagedPolicyFromPermissionSetCommand,
   ListAccountsForProvisionedPermissionSetCommand,
   ListInstancesCommand,
   ListInstancesCommandOutput,
   ProvisionPermissionSetCommand,
   PutInlinePolicyToPermissionSetCommand,
+  PutPermissionsBoundaryToPermissionSetCommand,
   SSOAdminClient,
   SSOAdminServiceException,
   TagResourceCommand,
@@ -79,7 +87,13 @@ import {
 import { SNSEvent } from "aws-lambda";
 import { diff } from "json-diff";
 import { waitUntilPermissionSetProvisioned } from "../../custom-waiters/src/waitUntilPermissionSetProvisioned";
-import { logModes, requestStatus, Tag } from "../../helpers/src/interfaces";
+import {
+  CustomerManagedPolicyObject,
+  logModes,
+  ManagedPolicyQueueObject,
+  requestStatus,
+  Tag,
+} from "../../helpers/src/interfaces";
 import { serializeDurationToISOFormat } from "../../helpers/src/isoDurationUtility";
 import {
   constructExceptionMessage,
@@ -87,13 +101,14 @@ import {
   logger,
 } from "../../helpers/src/utilities";
 
-// SDK and third party client object initialistaion
+/** SDK and third party client object initialistaion */
 const ddbClientObject = new DynamoDBClient({
   region: AWS_REGION,
   maxAttempts: 2,
 });
 const ddbDocClientObject = DynamoDBDocumentClient.from(ddbClientObject);
 const snsClientObject = new SNSClient({ region: AWS_REGION, maxAttempts: 2 });
+const sqsClientObject = new SQSClient({ region: AWS_REGION, maxAttempts: 2 });
 
 const ssoAdminWaiterClientObject = new SSOAdminClient({
   region: ssoRegion,
@@ -359,21 +374,32 @@ export const handler = async (event: SNSEvent) => {
             functionLogMode
           );
         }
-        if (currentItem.managedPoliciesArnList.length !== 0) {
-          await Promise.all(
-            currentItem.managedPoliciesArnList.map(
-              async (manaagedPolicyArn: string) => {
-                await ssoAdminClientObject.send(
-                  new AttachManagedPolicyToPermissionSetCommand({
-                    InstanceArn: instanceArn,
-                    PermissionSetArn:
-                      createOp.PermissionSet?.PermissionSetArn?.toString(),
-                    ManagedPolicyArn: manaagedPolicyArn,
-                  })
-                );
-              }
-            )
+        if (
+          currentItem.managedPoliciesArnList &&
+          currentItem.managedPoliciesArnList.length !== 0
+        ) {
+          const managedPolicyPayload: ManagedPolicyQueueObject = {
+            stateMachineArn: managedPolicySM + "",
+            managedPolicytype: "aws",
+            managedPolicyObject: {
+              instanceArn: instanceArn,
+              iteratorArn: iteratorArn + "",
+              processOpArn: managedPolicyOpArn + "",
+              managedPoliciesArnList: currentItem.managedPoliciesArnList,
+              permissionSetArn:
+                createOp.PermissionSet?.PermissionSetArn?.toString() + "",
+              waitSeconds: "5",
+              operation: "attach",
+            },
+          };
+          await sqsClientObject.send(
+            new SendMessageCommand({
+              QueueUrl: managedPolicyQueueUrl,
+              MessageBody: JSON.stringify(managedPolicyPayload),
+              MessageGroupId: `${permissionSetName}-aws`,
+            })
           );
+
           logger(
             {
               handler: handlerName,
@@ -386,6 +412,46 @@ export const handler = async (event: SNSEvent) => {
             functionLogMode
           );
         }
+        if (
+          currentItem.customerManagedPoliciesList &&
+          currentItem.customerManagedPoliciesList.length !== 0
+        ) {
+          const customerManagedPolicyPayload: ManagedPolicyQueueObject = {
+            stateMachineArn: customerManagedPolicySM + "",
+            managedPolicytype: "customer",
+            managedPolicyObject: {
+              instanceArn: instanceArn,
+              iteratorArn: iteratorArn + "",
+              processOpArn: customerManagedPolicyOpArn + "",
+              customerManagedPoliciesList:
+                currentItem.customerManagedPoliciesList,
+              permissionSetArn:
+                createOp.PermissionSet?.PermissionSetArn?.toString() + "",
+              waitSeconds: "5",
+              operation: "attach",
+            },
+          };
+          await sqsClientObject.send(
+            new SendMessageCommand({
+              QueueUrl: managedPolicyQueueUrl,
+              MessageBody: JSON.stringify(customerManagedPolicyPayload),
+              MessageGroupId: `${permissionSetName}-customer`,
+            })
+          );
+
+          logger(
+            {
+              handler: handlerName,
+              logMode: logModes.Info,
+              requestId: requestIdValue,
+              relatedData: permissionSetNameValue,
+              status: requestStatus.InProgress,
+              statusMessage: `Customer managed policies attached for permissionSet create operation`,
+            },
+            functionLogMode
+          );
+        }
+
         if ("inlinePolicyDocument" in currentItem) {
           if (Object.keys(currentItem.inlinePolicyDocument).length !== 0) {
             await ssoAdminClientObject.send(
@@ -409,6 +475,31 @@ export const handler = async (event: SNSEvent) => {
             );
           }
         }
+
+        if ("permissionsBoundary" in currentItem) {
+          if (Object.keys(currentItem.permissionsBoundary).length !== 0) {
+            await ssoAdminClientObject.send(
+              new PutPermissionsBoundaryToPermissionSetCommand({
+                InstanceArn: instanceArn,
+                PermissionSetArn:
+                  createOp.PermissionSet?.PermissionSetArn?.toString(),
+                PermissionsBoundary: { ...currentItem.permissionsBoundary },
+              })
+            );
+            logger(
+              {
+                handler: handlerName,
+                logMode: logModes.Info,
+                requestId: requestIdValue,
+                relatedData: permissionSetNameValue,
+                status: requestStatus.InProgress,
+                statusMessage: `Permissions Boundary attached for permission set create operation`,
+              },
+              functionLogMode
+            );
+          }
+        }
+
         syncPermissionSet = true;
         logger(
           {
@@ -424,7 +515,10 @@ export const handler = async (event: SNSEvent) => {
       } else if (message.action === "update") {
         const oldItem = message.oldPermissionSetData;
 
-        // Sort managed policies before delta calculation and prepare the permission sorted objects to compare using the sorted lists
+        /**
+         * Sort managed policies before delta calculation and prepare the
+         * permission sorted objects to compare using the sorted lists
+         */
         const sortedOldItemManagedPoliciesArnList: Array<string> =
           oldItem.managedPoliciesArnList.sort();
         const sortedCurrentItemManagedPoliciesArnList: Array<string> =
@@ -435,6 +529,7 @@ export const handler = async (event: SNSEvent) => {
           sortedOldItemManagedPoliciesArnList;
         currentItem["sortedManagedPoliciesArnList"] =
           sortedCurrentItemManagedPoliciesArnList;
+
         logger(
           {
             handler: handlerName,
@@ -537,15 +632,26 @@ export const handler = async (event: SNSEvent) => {
                 case "sortedManagedPoliciesArnList-add": {
                   const changeSettoAdd: Array<string> =
                     sortedManagedPoliciesArnList;
-                  for (const managedPolicyArn of changeSettoAdd) {
-                    await ssoAdminClientObject.send(
-                      new AttachManagedPolicyToPermissionSetCommand({
-                        InstanceArn: instanceArn,
-                        PermissionSetArn: permissionSetArn,
-                        ManagedPolicyArn: managedPolicyArn,
-                      })
-                    );
-                  }
+                  const managedPolicyPayload: ManagedPolicyQueueObject = {
+                    stateMachineArn: managedPolicySM + "",
+                    managedPolicytype: "aws",
+                    managedPolicyObject: {
+                      instanceArn: instanceArn,
+                      iteratorArn: iteratorArn + "",
+                      processOpArn: managedPolicyOpArn + "",
+                      managedPoliciesArnList: changeSettoAdd,
+                      permissionSetArn: permissionSetArn,
+                      waitSeconds: "5",
+                      operation: "attach",
+                    },
+                  };
+                  await sqsClientObject.send(
+                    new SendMessageCommand({
+                      QueueUrl: managedPolicyQueueUrl,
+                      MessageBody: JSON.stringify(managedPolicyPayload),
+                      MessageGroupId: `${permissionSetName}-aws`,
+                    })
+                  );
                   reProvision = true;
                   logger(
                     {
@@ -564,15 +670,26 @@ export const handler = async (event: SNSEvent) => {
                 case "sortedManagedPoliciesArnList-remove": {
                   const changeSettoRemove: Array<string> =
                     oldItem.sortedManagedPoliciesArnList;
-                  for (const managedPolicyArn of changeSettoRemove) {
-                    await ssoAdminClientObject.send(
-                      new DetachManagedPolicyFromPermissionSetCommand({
-                        InstanceArn: instanceArn,
-                        PermissionSetArn: permissionSetArn,
-                        ManagedPolicyArn: managedPolicyArn,
-                      })
-                    );
-                  }
+                  const managedPolicyPayload: ManagedPolicyQueueObject = {
+                    stateMachineArn: managedPolicySM + "",
+                    managedPolicytype: "aws",
+                    managedPolicyObject: {
+                      instanceArn: instanceArn,
+                      iteratorArn: iteratorArn + "",
+                      processOpArn: managedPolicyOpArn + "",
+                      managedPoliciesArnList: changeSettoRemove,
+                      permissionSetArn: permissionSetArn,
+                      waitSeconds: "5",
+                      operation: "detach",
+                    },
+                  };
+                  await sqsClientObject.send(
+                    new SendMessageCommand({
+                      QueueUrl: managedPolicyQueueUrl,
+                      MessageBody: JSON.stringify(managedPolicyPayload),
+                      MessageGroupId: `${permissionSetName}-aws`,
+                    })
+                  );
                   reProvision = true;
                   logger(
                     {
@@ -589,12 +706,18 @@ export const handler = async (event: SNSEvent) => {
                   break;
                 }
                 case "sortedManagedPoliciesArnList-update": {
-                  //Eslint disable to force the declaration to be let instead of const
+                  /**
+                   * Eslint disable to force the declaration to be let instead
+                   * of const
+                   */
                   /* eslint-disable  prefer-const  */
                   let changeSettoRemove: Array<string> = [];
                   /* eslint-disable  prefer-const  */
                   let changeSettoAdd: Array<string> = [];
-                  //Eslint disable as the payload has already been schema validated
+                  /**
+                   * Eslint disable as the payload has already been schema
+                   * validated
+                   */
                   /* eslint-disable  security/detect-object-injection */
                   const changeArray = diffCalculated[
                     k
@@ -613,15 +736,26 @@ export const handler = async (event: SNSEvent) => {
                     })
                   );
                   if (changeSettoRemove.length > 0) {
-                    for (const managedPolicyArn of changeSettoRemove) {
-                      await ssoAdminClientObject.send(
-                        new DetachManagedPolicyFromPermissionSetCommand({
-                          InstanceArn: instanceArn,
-                          PermissionSetArn: permissionSetArn,
-                          ManagedPolicyArn: managedPolicyArn,
-                        })
-                      );
-                    }
+                    const managedPolicyPayload: ManagedPolicyQueueObject = {
+                      stateMachineArn: managedPolicySM + "",
+                      managedPolicytype: "aws",
+                      managedPolicyObject: {
+                        instanceArn: instanceArn,
+                        iteratorArn: iteratorArn + "",
+                        processOpArn: managedPolicyOpArn + "",
+                        managedPoliciesArnList: changeSettoRemove,
+                        permissionSetArn: permissionSetArn,
+                        waitSeconds: "5",
+                        operation: "detach",
+                      },
+                    };
+                    await sqsClientObject.send(
+                      new SendMessageCommand({
+                        QueueUrl: managedPolicyQueueUrl,
+                        MessageBody: JSON.stringify(managedPolicyPayload),
+                        MessageGroupId: `${permissionSetName}-aws`,
+                      })
+                    );
 
                     reProvision = true;
                     logger(
@@ -637,16 +771,26 @@ export const handler = async (event: SNSEvent) => {
                     );
                   }
                   if (changeSettoAdd.length > 0) {
-                    for (const managedPolicyArn of changeSettoAdd) {
-                      await ssoAdminClientObject.send(
-                        new AttachManagedPolicyToPermissionSetCommand({
-                          InstanceArn: instanceArn,
-                          PermissionSetArn: permissionSetArn,
-                          ManagedPolicyArn: managedPolicyArn,
-                        })
-                      );
-                    }
-
+                    const managedPolicyPayload: ManagedPolicyQueueObject = {
+                      stateMachineArn: managedPolicySM + "",
+                      managedPolicytype: "aws",
+                      managedPolicyObject: {
+                        instanceArn: instanceArn,
+                        iteratorArn: iteratorArn + "",
+                        processOpArn: managedPolicyOpArn + "",
+                        managedPoliciesArnList: changeSettoAdd,
+                        permissionSetArn: permissionSetArn,
+                        waitSeconds: "5",
+                        operation: "attach",
+                      },
+                    };
+                    await sqsClientObject.send(
+                      new SendMessageCommand({
+                        QueueUrl: managedPolicyQueueUrl,
+                        MessageBody: JSON.stringify(managedPolicyPayload),
+                        MessageGroupId: `${permissionSetName}-aws`,
+                      })
+                    );
                     logger(
                       {
                         handler: handlerName,
@@ -663,9 +807,243 @@ export const handler = async (event: SNSEvent) => {
                   }
                   break;
                 }
+                case "customerManagedPoliciesList-add": {
+                  if (currentItem.customerManagedPoliciesList.length !== 0) {
+                    const customerManagedPolicyPayload: ManagedPolicyQueueObject =
+                      {
+                        stateMachineArn: customerManagedPolicySM + "",
+                        managedPolicytype: "customer",
+                        managedPolicyObject: {
+                          instanceArn: instanceArn,
+                          iteratorArn: iteratorArn + "",
+                          processOpArn: customerManagedPolicyOpArn + "",
+                          customerManagedPoliciesList:
+                            currentItem.customerManagedPoliciesList,
+                          permissionSetArn: permissionSetArn,
+                          waitSeconds: "5",
+                          operation: "attach",
+                        },
+                      };
+                    await sqsClientObject.send(
+                      new SendMessageCommand({
+                        QueueUrl: managedPolicyQueueUrl,
+                        MessageBody: JSON.stringify(
+                          customerManagedPolicyPayload
+                        ),
+                        MessageGroupId: `${permissionSetName}-customer`,
+                      })
+                    );
+                    logger(
+                      {
+                        handler: handlerName,
+                        logMode: logModes.Info,
+                        requestId: requestIdValue,
+                        relatedData: permissionSetNameValue,
+                        status: requestStatus.InProgress,
+                        statusMessage: `added customer managed policies from changeSet calculated for permission Set update operation`,
+                      },
+                      functionLogMode
+                    );
+
+                    reProvision = true;
+                  }
+
+                  break;
+                }
+                case "customerManagedPoliciesList-update": {
+                  const oldCustomerManagedPolicies: Array<CustomerManagedPolicyObject> =
+                    oldItem.customerManagedPoliciesList;
+                  const newCustomerManagedPolicies: Array<CustomerManagedPolicyObject> =
+                    currentItem.customerManagedPoliciesList;
+
+                  const changeSettoRemove: Array<CustomerManagedPolicyObject> =
+                    oldCustomerManagedPolicies.filter((cmp1) =>
+                      newCustomerManagedPolicies.every(
+                        (cmp2) =>
+                          !(cmp2.Name.toLowerCase() === cmp1.Name.toLowerCase())
+                      )
+                    );
+                  const changeSettoAdd: Array<CustomerManagedPolicyObject> =
+                    newCustomerManagedPolicies.filter((cmp1) =>
+                      oldCustomerManagedPolicies.every(
+                        (cmp2) =>
+                          !(cmp2.Name.toLowerCase() === cmp1.Name.toLowerCase())
+                      )
+                    );
+                  if (changeSettoRemove.length > 0) {
+                    const customerManagedPolicyPayload: ManagedPolicyQueueObject =
+                      {
+                        stateMachineArn: customerManagedPolicySM + "",
+                        managedPolicytype: "customer",
+                        managedPolicyObject: {
+                          instanceArn: instanceArn,
+                          iteratorArn: iteratorArn + "",
+                          processOpArn: customerManagedPolicyOpArn + "",
+                          customerManagedPoliciesList: changeSettoRemove,
+                          permissionSetArn: permissionSetArn,
+                          waitSeconds: "5",
+                          operation: "detach",
+                        },
+                      };
+                    await sqsClientObject.send(
+                      new SendMessageCommand({
+                        QueueUrl: managedPolicyQueueUrl,
+                        MessageBody: JSON.stringify(
+                          customerManagedPolicyPayload
+                        ),
+                        MessageGroupId: `${permissionSetName}-customer`,
+                      })
+                    );
+                    logger(
+                      {
+                        handler: handlerName,
+                        logMode: logModes.Info,
+                        requestId: requestIdValue,
+                        relatedData: permissionSetNameValue,
+                        status: requestStatus.InProgress,
+                        statusMessage: `removed old customer managed policies from changeSet calculated for permission Set update operation`,
+                      },
+                      functionLogMode
+                    );
+                    reProvision = true;
+                  }
+
+                  if (changeSettoAdd.length > 0) {
+                    const customerManagedPolicyPayload: ManagedPolicyQueueObject =
+                      {
+                        stateMachineArn: customerManagedPolicySM + "",
+                        managedPolicytype: "customer",
+                        managedPolicyObject: {
+                          instanceArn: instanceArn,
+                          iteratorArn: iteratorArn + "",
+                          processOpArn: customerManagedPolicyOpArn + "",
+                          customerManagedPoliciesList: changeSettoAdd,
+                          permissionSetArn: permissionSetArn,
+                          waitSeconds: "5",
+                          operation: "attach",
+                        },
+                      };
+                    await sqsClientObject.send(
+                      new SendMessageCommand({
+                        QueueUrl: managedPolicyQueueUrl,
+                        MessageBody: JSON.stringify(
+                          customerManagedPolicyPayload
+                        ),
+                        MessageGroupId: `${permissionSetName}-customer`,
+                      })
+                    );
+                    logger(
+                      {
+                        handler: handlerName,
+                        logMode: logModes.Info,
+                        requestId: requestIdValue,
+                        relatedData: permissionSetNameValue,
+                        status: requestStatus.InProgress,
+                        statusMessage: `added customer managed policies from changeSet calculated for permission Set update operation`,
+                      },
+                      functionLogMode
+                    );
+                    reProvision = true;
+                  }
+
+                  break;
+                }
+                case "customerManagedPoliciesList-remove": {
+                  if (oldItem.customerManagedPoliciesList.length !== 0) {
+                    const customerManagedPolicyPayload: ManagedPolicyQueueObject =
+                      {
+                        stateMachineArn: customerManagedPolicySM + "",
+                        managedPolicytype: "customer",
+                        managedPolicyObject: {
+                          instanceArn: instanceArn,
+                          iteratorArn: iteratorArn + "",
+                          processOpArn: customerManagedPolicyOpArn + "",
+                          customerManagedPoliciesList:
+                            oldItem.customerManagedPoliciesList,
+                          permissionSetArn: permissionSetArn,
+                          waitSeconds: "5",
+                          operation: "detach",
+                        },
+                      };
+                    await sqsClientObject.send(
+                      new SendMessageCommand({
+                        QueueUrl: managedPolicyQueueUrl,
+                        MessageBody: JSON.stringify(
+                          customerManagedPolicyPayload
+                        ),
+                        MessageGroupId: `${permissionSetName}-customer`,
+                      })
+                    );
+                    logger(
+                      {
+                        handler: handlerName,
+                        logMode: logModes.Info,
+                        requestId: requestIdValue,
+                        relatedData: permissionSetNameValue,
+                        status: requestStatus.InProgress,
+                        statusMessage: `removed old customer managed policies from changeSet calculated for permission Set update operation`,
+                      },
+                      functionLogMode
+                    );
+                    reProvision = true;
+                  }
+                  break;
+                }
+                case "permissionsBoundary-add":
+                case "permissionsBoundary-update": {
+                  if (
+                    Object.keys(currentItem.permissionsBoundary).length !== 0
+                  ) {
+                    await ssoAdminClientObject.send(
+                      new PutPermissionsBoundaryToPermissionSetCommand({
+                        InstanceArn: instanceArn,
+                        PermissionSetArn: permissionSetArn,
+                        PermissionsBoundary: {
+                          ...currentItem.permissionsBoundary,
+                        },
+                      })
+                    );
+                    logger(
+                      {
+                        handler: handlerName,
+                        logMode: logModes.Info,
+                        requestId: requestIdValue,
+                        relatedData: permissionSetNameValue,
+                        status: requestStatus.InProgress,
+                        statusMessage: `created/updated permission set boundary for permission Set update operation`,
+                      },
+                      functionLogMode
+                    );
+                    reProvision = true;
+                  }
+                  break;
+                }
+                case "permissionsBoundary-remove": {
+                  await ssoAdminClientObject.send(
+                    new DeletePermissionsBoundaryFromPermissionSetCommand({
+                      InstanceArn: instanceArn,
+                      PermissionSetArn: permissionSetArn,
+                    })
+                  );
+                  logger(
+                    {
+                      handler: handlerName,
+                      logMode: logModes.Info,
+                      requestId: requestIdValue,
+                      relatedData: permissionSetNameValue,
+                      status: requestStatus.InProgress,
+                      statusMessage: `removed permission set boundary for permission Set update operation`,
+                    },
+                    functionLogMode
+                  );
+                  reProvision = true;
+                  break;
+                }
                 case "inlinePolicyDocument-add":
                 case "inlinePolicyDocument-update": {
-                  if (currentItem.inlinePolicyDocument.length !== 0) {
+                  if (
+                    Object.keys(currentItem.inlinePolicyDocument).length !== 0
+                  ) {
                     await ssoAdminClientObject.send(
                       new PutInlinePolicyToPermissionSetCommand({
                         InstanceArn: instanceArn,
@@ -763,7 +1141,10 @@ export const handler = async (event: SNSEvent) => {
                 case "tags-update":
                 case "tags-delete": {
                   if (oldItem.tags && oldItem.tags.length > 0) {
-                    //Eslint disable to force the declaration to be let instead of const
+                    /**
+                     * Eslint disable to force the declaration to be let instead
+                     * of const
+                     */
                     /* eslint-disable  prefer-const  */
                     let tagKeysToRemove: Array<string> = [];
                     await Promise.all(
@@ -829,7 +1210,7 @@ export const handler = async (event: SNSEvent) => {
             }
 
             if (updatePermissionSetAttributes) {
-              // Processing permission set attributes updates
+              /** Processing permission set attributes updates */
               await ssoAdminClientObject.send(
                 new UpdatePermissionSetCommand({
                   PermissionSetArn: permissionSetArn,
@@ -925,13 +1306,14 @@ export const handler = async (event: SNSEvent) => {
             }
 
             if (reProvision) {
-              // Permission set had an update on managed policies or
-              // inline policy content, so triggering re-provisioning
-              // operation to ALL_PROVISIONED_ACCOUNTS
-
-              // ListAccountsForProvisionedPermissionSetCommand is a paginated operation,
-              // however won't paginate through the iterator as we are interested
-              // if the result set is more than 0 only
+              /**
+               * Permission set had an update on managed policies or inline
+               * policy content, so triggering re-provisioning operation to
+               * ALL_PROVISIONED_ACCOUNTS
+               * ListAccountsForProvisionedPermissionSetCommand is a paginated
+               * operation, however won't paginate through the iterator as we
+               * are interested if the result set is more than 0 only
+               */
               const fetchAccountsList = await ssoAdminClientObject.send(
                 new ListAccountsForProvisionedPermissionSetCommand({
                   InstanceArn: instanceArn,
@@ -961,7 +1343,7 @@ export const handler = async (event: SNSEvent) => {
                 await waitUntilPermissionSetProvisioned(
                   {
                     client: ssoAdminWaiterClientObject,
-                    maxWaitTime: 600, //aggressive timeout to accommodate SSO Admin API's workflow based logic
+                    maxWaitTime: 600 /** Aggressive timeout to accommodate SSO Admin API's workflow based logic */,
                   },
                   {
                     InstanceArn: instanceArn,

@@ -27,7 +27,7 @@
           "description": "Name of the permission set name",
           "minLength": 1,
           "maxLength": 32,
-          "pattern": "[\\w+=,.@-]+"
+          "pattern": "^[A-Za-z0-9\\+=,.@-]+$"
         }
       },
       "additionalProperties": false

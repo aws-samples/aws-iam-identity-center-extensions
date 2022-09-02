@@ -1,0 +1,199 @@
+{
+  "Comment": "Managed policies attach/detach statemachine",
+  "StartAt": "Loop through the managed policies",
+  "States": {
+    "Loop through the managed policies": {
+      "Type": "Map",
+      "Iterator": {
+        "StartAt": "Process managedPolicy Operation",
+        "States": {
+          "Process managedPolicy Operation": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "Parameters": {
+              "Payload": {
+                "managedPolicyArn.$": "$.managedPolicyArn",
+                "instanceArn.$": "$.instanceArn",
+                "permissionSetArn.$": "$.permissionSetArn",
+                "operation.$": "$.operation"
+              },
+              "FunctionName.$": "$.processOpArn"
+            },
+            "Retry": [
+              {
+                "ErrorEquals": [
+                  "Lambda.ServiceException",
+                  "Lambda.AWSLambdaException",
+                  "Lambda.SdkClientException"
+                ],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 6,
+                "BackoffRate": 2
+              }
+            ],
+            "Next": "If managedPolicy operation is succcessful?",
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall error state"
+              }
+            ],
+            "ResultPath": "$.mpOp"
+          },
+          "If managedPolicy operation is succcessful?": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "Variable": "$.mpOp.Payload.status",
+                "StringMatches": "true",
+                "Next": "Wait for operation to propagate"
+              }
+            ],
+            "Default": "Catchall error state"
+          },
+          "Catchall error state": {
+            "Type": "Pass",
+            "End": true
+          },
+          "Wait for operation to propagate": {
+            "Type": "Wait",
+            "SecondsPath": "$.waitSeconds",
+            "Next": "Configure iterator count"
+          },
+          "Configure iterator count": {
+            "Type": "Pass",
+            "Next": "Invoke managedPolicy verification iterator",
+            "Parameters": {
+              "managedPolicyArn.$": "$.managedPolicyArn",
+              "instanceArn.$": "$.instanceArn",
+              "permissionSetArn.$": "$.permissionSetArn",
+              "operation.$": "$.operation",
+              "waitSeconds.$": "$.waitSeconds",
+              "iteratorArn.$": "$.iteratorArn",
+              "processOpArn.$": "$.processOpArn"
+            },
+            "Result": {
+              "Payload": {
+                "count": 3,
+                "index": 0,
+                "step": 1
+              }
+            },
+            "ResultPath": "$.iterator"
+          },
+          "Invoke managedPolicy verification iterator": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "Parameters": {
+              "Payload": {
+                "iterator": {
+                  "index.$": "$.iterator.Payload.index",
+                  "count.$": "$.iterator.Payload.count",
+                  "step.$": "$.iterator.Payload.step"
+                }
+              },
+              "FunctionName.$": "$.iteratorArn"
+            },
+            "Retry": [
+              {
+                "ErrorEquals": [
+                  "Lambda.ServiceException",
+                  "Lambda.AWSLambdaException",
+                  "Lambda.SdkClientException"
+                ],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 6,
+                "BackoffRate": 2
+              }
+            ],
+            "Next": "If count is reached?",
+            "ResultPath": "$.iterator",
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall error state"
+              }
+            ]
+          },
+          "If count is reached?": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "Variable": "$.iterator.Payload.continue",
+                "BooleanEquals": true,
+                "Next": "Verify managedPolicy Operation"
+              }
+            ],
+            "Default": "Catchall error state"
+          },
+          "Verify managedPolicy Operation": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "Parameters": {
+              "Payload": {
+                "managedPolicyArn.$": "$.managedPolicyArn",
+                "instanceArn.$": "$.instanceArn",
+                "permissionSetArn.$": "$.permissionSetArn",
+                "operation": "describe",
+                "parentOperation.$": "$.operation"
+              },
+              "FunctionName.$": "$.processOpArn"
+            },
+            "Retry": [
+              {
+                "ErrorEquals": [
+                  "Lambda.ServiceException",
+                  "Lambda.AWSLambdaException",
+                  "Lambda.SdkClientException"
+                ],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 6,
+                "BackoffRate": 2
+              }
+            ],
+            "Next": "if managedPolicy operation is propagated?",
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall error state"
+              }
+            ],
+            "ResultPath": "$.describeOp"
+          },
+          "if managedPolicy operation is propagated?": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "Variable": "$.describeOp.Payload.status",
+                "StringMatches": "true",
+                "Next": "managedPolicy op successful"
+              }
+            ],
+            "Default": "Wait before describe retry"
+          },
+          "Wait before describe retry": {
+            "Type": "Wait",
+            "Next": "Invoke managedPolicy verification iterator",
+            "SecondsPath": "$.waitSeconds"
+          },
+          "managedPolicy op successful": {
+            "Type": "Pass",
+            "End": true
+          }
+        }
+      },
+      "MaxConcurrency": 1,
+      "End": true,
+      "ItemsPath": "$.managedPoliciesArnList",
+      "Parameters": {
+        "managedPolicyArn.$": "$$.Map.Item.Value",
+        "instanceArn.$": "$.instanceArn",
+        "permissionSetArn.$": "$.permissionSetArn",
+        "operation.$": "$.operation",
+        "waitSeconds.$": "$.waitSeconds",
+        "processOpArn.$": "$.processOpArn",
+        "iteratorArn.$": "$.iteratorArn"
+      }
+    }
+  }
+}

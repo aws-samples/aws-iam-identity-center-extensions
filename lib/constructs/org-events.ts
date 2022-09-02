@@ -1,7 +1,7 @@
 /** Composite construct that sets up all resources for org events handling */
 
 import { Duration } from "aws-cdk-lib";
-import { ILayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
+import { Architecture, ILayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { ITopic } from "aws-cdk-lib/aws-sns";
@@ -40,6 +40,7 @@ export class OrgEvents extends Construct {
       {
         runtime: Runtime.NODEJS_16_X,
         functionName: name(buildConfig, "orgEventsHandler"),
+        architecture: Architecture.ARM_64,
         entry: join(
           __dirname,
           "../",

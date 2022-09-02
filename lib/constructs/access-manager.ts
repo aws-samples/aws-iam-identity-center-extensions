@@ -109,6 +109,15 @@ export class AccessManager extends Construct {
         actions: ["sts:AssumeRole"],
       })
     );
+    accessManagerProps.PermissionSetProcessor.managedPolicyQueueProcessor.addToRolePolicy(
+      new PolicyStatement({
+        resources: [accessManagerProps.FetchCrossStackValues.ssoMpRoleArn],
+        actions: ["sts:AssumeRole"],
+      })
+    );
+    accessManagerProps.PermissionSetProcessor.managedPolicyQueue.grantSendMessages(
+      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor
+    );
 
     /**
      * All required access for self-sustaining flow on AWS SSO group

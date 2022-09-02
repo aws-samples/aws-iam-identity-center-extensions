@@ -84,8 +84,9 @@ export const handler = async (event: S3Event) => {
       );
 
       try {
-        const fileName = decodeURIComponent(record.s3.object.key.split("/")[1]);
-
+        const fileName = decodeURIComponent(
+          record.s3.object.key.replace(/\+/g, " ").split("/")[1]
+        );
         const payload: LinkS3Payload = imperativeParseJSON(
           { linkData: fileName },
           validate

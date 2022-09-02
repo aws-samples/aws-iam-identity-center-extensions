@@ -61,7 +61,8 @@ export const invokeStepFunction = async (
 };
 
 /**
- * Custom logger utility that serves as factory pattern for writing your own custom logs.
+ * Custom logger utility that serves as factory pattern for writing your own
+ * custom logs.
  *
  * - This utility considers log level of the log message as well as the log level
  *   of the function.
@@ -69,12 +70,14 @@ export const invokeStepFunction = async (
  *   logs are processed.
  * - If the function log level is info, then all info, warn and exception logs are
  *   processed.
- * - If the function log level is warn, then all warn and exception logs are processed.
+ * - If the function log level is warn, then all warn and exception logs are
+ *   processed.
  * - If the function log level is exception then all exception logs are processed.
  * - If no function log level is passed, then all logs are processed
  *
  * @param logMessage Raw log message
- * @param functionLogMode Function logging configuraiton as read from buildConfig
+ * @param functionLogMode Function logging configuraiton as read from
+ *   buildConfig
  */
 export function logger(logMessage: LogMessage, functionLogMode?: string) {
   switch (functionLogMode) {
@@ -109,7 +112,10 @@ export function logger(logMessage: LogMessage, functionLogMode?: string) {
       break;
     }
     case logModes.Exception.valueOf(): {
-      /** Since the function is set at exception level, only exception logs are processed */
+      /**
+       * Since the function is set at exception level, only exception logs are
+       * processed
+       */
       if (logMessage.logMode.valueOf() === logModes.Exception.valueOf())
         console.log(JSON.stringify(logMessage));
       break;
@@ -122,11 +128,11 @@ export function logger(logMessage: LogMessage, functionLogMode?: string) {
 }
 
 export const constructExceptionMessage = (
+  requestId: string,
   handler: string,
   name: string,
   message: string,
-  relatedData: string,
-  requestId: string
+  relatedData: string
 ) => {
   return JSON.stringify(
     JSON.parse(
@@ -207,3 +213,6 @@ export const resolvePrincipal = async (
   }
   return "0";
 };
+
+export const sleep = async (waitTime: number) =>
+  new Promise((resolve) => setTimeout(resolve, waitTime));

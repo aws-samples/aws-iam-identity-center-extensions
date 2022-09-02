@@ -89,22 +89,37 @@ export const handler = async (event: SNSEvent) => {
       },
       functionLogMode
     );
-    // Construct permission set object from the SNS message payload
+    /** Construct permission set object from the SNS message payload */
     const permissionSetObject = {};
-    let computedRelayState = "";
-    let computedInlinePolicy = {};
-    let computedSessionDurationInMinutes = "";
-    const computedManagedPoliciesArnList: Array<string> = [];
 
-    //Relay state is an optional attribute
+    /** Assing permissionSetName to permission set object */
+
+    Object.assign(permissionSetObject, {
+      permissionSetName: permissionSetName,
+    });
+
+    /** Tags are optional attributes */
+    if (
+      Object.prototype.hasOwnProperty.call(message.listTagsForResource, "Tags")
+    ) {
+      if (message.listTagsForResource.Tags.length > 0) {
+        Object.assign(permissionSetObject, {
+          tags: message.listTagsForResource.Tags,
+        });
+      }
+    }
+
+    /** Relay state is an optional attribute */
+
     if (
       Object.prototype.hasOwnProperty.call(
         message.describePermissionSet.PermissionSet,
         "RelayState"
       )
     ) {
-      computedRelayState =
-        message.describePermissionSet.PermissionSet.RelayState;
+      Object.assign(permissionSetObject, {
+        relayState: message.describePermissionSet.PermissionSet.RelayState,
+      });
       logger(
         {
           handler: handlerName,
@@ -113,11 +128,12 @@ export const handler = async (event: SNSEvent) => {
           sourceRequestId: sourceRequestIdValue,
           relatedData: permissionSetNameValue,
           status: requestStatus.InProgress,
-          statusMessage: `Determined that the imported permission set has relayState set as ${computedRelayState}`,
+          statusMessage: `Determined that the imported permission set has relayState set as ${message.describePermissionSet.PermissionSet.RelayState}`,
         },
         functionLogMode
       );
     }
+
     // Session Duration is an optional attribute
     if (
       Object.prototype.hasOwnProperty.call(
@@ -125,9 +141,11 @@ export const handler = async (event: SNSEvent) => {
         "SessionDuration"
       )
     ) {
-      computedSessionDurationInMinutes = getMinutesFromISODurationString(
-        message.describePermissionSet.PermissionSet.SessionDuration
-      );
+      Object.assign(permissionSetObject, {
+        sessionDurationInMinutes: getMinutesFromISODurationString(
+          message.describePermissionSet.PermissionSet.SessionDuration
+        ),
+      });
       logger(
         {
           handler: handlerName,
@@ -136,7 +154,9 @@ export const handler = async (event: SNSEvent) => {
           sourceRequestId: sourceRequestIdValue,
           relatedData: permissionSetNameValue,
           status: requestStatus.InProgress,
-          statusMessage: `Determined that the imported permission set has sessionDuration set as ${computedSessionDurationInMinutes} minutes`,
+          statusMessage: `Determined that the imported permission set has sessionDuration set as ${getMinutesFromISODurationString(
+            message.describePermissionSet.PermissionSet.SessionDuration
+          )} minutes`,
         },
         functionLogMode
       );
@@ -146,6 +166,18 @@ export const handler = async (event: SNSEvent) => {
       message.listManagedPoliciesInPermissionSet.AttachedManagedPolicies
         .length > 0
     ) {
+      /** Instantiate empty computedManagedPoliciesArnList array */
+      const computedManagedPoliciesArnList: Array<string> = [];
+      await Promise.all(
+        message.listManagedPoliciesInPermissionSet.AttachedManagedPolicies.map(
+          async (managedPolicy: Record<string, string>) => {
+            computedManagedPoliciesArnList.push(managedPolicy.Arn);
+          }
+        )
+      );
+      Object.assign(permissionSetObject, {
+        managedPoliciesArnList: [...computedManagedPoliciesArnList].sort(),
+      });
       logger(
         {
           handler: handlerName,
@@ -158,19 +190,14 @@ export const handler = async (event: SNSEvent) => {
         },
         functionLogMode
       );
-      await Promise.all(
-        message.listManagedPoliciesInPermissionSet.AttachedManagedPolicies.map(
-          async (managedPolicy: Record<string, string>) => {
-            computedManagedPoliciesArnList.push(managedPolicy.Arn);
-          }
-        )
-      );
     }
     // Inline policy is an optional attribute
     if (message.getInlinePolicyForPermissionSet.InlinePolicy.length > 0) {
-      computedInlinePolicy = JSON.parse(
-        message.getInlinePolicyForPermissionSet.InlinePolicy
-      );
+      Object.assign(permissionSetObject, {
+        inlinePolicyDocument: JSON.parse(
+          message.getInlinePolicyForPermissionSet.InlinePolicy
+        ),
+      });
       logger(
         {
           handler: handlerName,
@@ -185,14 +212,32 @@ export const handler = async (event: SNSEvent) => {
       );
     }
 
-    Object.assign(permissionSetObject, {
-      permissionSetName: permissionSetName,
-      sessionDurationInMinutes: computedSessionDurationInMinutes,
-      relayState: computedRelayState,
-      tags: message.listTagsForResource.Tags,
-      managedPoliciesArnList: [...computedManagedPoliciesArnList].sort(),
-      inlinePolicyDocument: computedInlinePolicy,
-    });
+    /** Permissions boundary is an optional attribute */
+    if (
+      message.fetchPermissionsBoundary.Payload.result.PermissionsBoundary &&
+      Object.keys(
+        message.fetchPermissionsBoundary.Payload.result.PermissionsBoundary
+      ).length !== 0
+    ) {
+      Object.assign(permissionSetObject, {
+        permissionsBoundary:
+          message.fetchPermissionsBoundary.Payload.result.PermissionsBoundary,
+      });
+    }
+
+    /** Customer Managed Policies are an optional attribute */
+    if (
+      message.fetchCustomerManagedPolicies.Payload.result
+        .CustomerManagedPolicyReferences &&
+      message.fetchCustomerManagedPolicies.Payload.result
+        .CustomerManagedPolicyReferences.length !== 0
+    ) {
+      Object.assign(permissionSetObject, {
+        customerManagedPoliciesList:
+          message.fetchCustomerManagedPolicies.Payload.result
+            .CustomerManagedPolicyReferences,
+      });
+    }
 
     if (message.triggerSource === "CloudFormation") {
       logger(

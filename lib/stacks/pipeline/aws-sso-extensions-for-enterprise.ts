@@ -1,13 +1,14 @@
 /** Main pipeline stack i.e. entry point of the application */
 
-import { Repository } from "aws-cdk-lib/aws-codecommit";
 import { Stack, StackProps, Tags } from "aws-cdk-lib";
-import { Construct } from "constructs";
+import { Repository } from "aws-cdk-lib/aws-codecommit";
 import {
   CodePipeline,
   CodePipelineSource,
+  IFileSetProducer,
   ShellStep,
 } from "aws-cdk-lib/pipelines";
+import { Construct } from "constructs";
 import { BuildConfig } from "../../build/buildConfig";
 import {
   OrgArtefactsDeploymentStage,
@@ -28,19 +29,38 @@ export class AwsSsoExtensionsForEnterprise extends Stack {
   ) {
     super(scope, id, props);
 
+    /** Instantiate this to empty file set producer initially */
+    let inputSource: IFileSetProducer = {};
+    /**
+     * Based on the pipeline source type, instantiate the source connection
+     * appropriately
+     */
+    if (buildConfig.PipelineSettings.RepoType.toLowerCase() === "codecommit") {
+      inputSource = CodePipelineSource.codeCommit(
+        Repository.fromRepositoryArn(
+          this,
+          fullname(buildConfig, "importedCodeCommitRepo"),
+          buildConfig.PipelineSettings.RepoArn
+        ),
+        buildConfig.PipelineSettings.RepoBranchName
+      );
+    } else if (
+      buildConfig.PipelineSettings.RepoType.toLowerCase() === "codestar"
+    ) {
+      inputSource = CodePipelineSource.connection(
+        buildConfig.PipelineSettings.RepoName,
+        buildConfig.PipelineSettings.RepoBranchName,
+        {
+          connectionArn: buildConfig.PipelineSettings.CodeStarConnectionArn,
+        }
+      );
+    }
     const pipeline = new CodePipeline(this, fullname(buildConfig, "pipeline"), {
       pipelineName: fullname(buildConfig, "pipeline"),
       crossAccountKeys: true,
       publishAssetsInParallel: false,
       synth: new ShellStep(fullname(buildConfig, "synth"), {
-        input: CodePipelineSource.codeCommit(
-          Repository.fromRepositoryArn(
-            this,
-            fullname(buildConfig, "importedRepo"),
-            buildConfig.PipelineSettings.RepoArn
-          ),
-          buildConfig.PipelineSettings.RepoBranchName
-        ),
+        input: inputSource,
         commands: [
           "yarn global add aws-cdk@2.x", //Because CodeBuild standard 5.0 does not yet have AWS CDK monorepo as default CDK package
           "mkdir ./lib/lambda-layers/nodejs-layer/nodejs/payload-schema-definitions",

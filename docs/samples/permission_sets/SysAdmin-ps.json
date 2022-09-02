@@ -102,5 +102,17 @@
         "Resource": "*"
       }
     ]
+  },
+  "customerManagedPoliciesList": [
+    {
+      "Name": "cmp-1",
+      "Path": "/cmp/1/"
+    }
+  ],
+  "permissionsBoundary": {
+    "CustomerManagedPolicyReference": {
+      "Name": "cmp-pb",
+      "Path": "/cmp/pb/"
+    }
   }
 }

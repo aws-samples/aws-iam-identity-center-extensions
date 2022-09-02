@@ -1,6 +1,6 @@
 {
   "name": "aws-sso-extensions-for-enterprise",
-  "version": "3.1.6",
+  "version": "3.1.7",
   "bin": {
     "aws-sso-extensions-for-enterprise": "bin/aws-sso-extensions-for-enterprise.js"
   },
@@ -25,29 +25,29 @@
     "postinstall": "yarn install --cwd ./lib/lambda-functions --frozen-lockfile"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.101",
-    "@types/jest": "^28.1.4",
+    "@types/aws-lambda": "^8.10.102",
+    "@types/jest": "^28.1.8",
     "@types/js-yaml": "^4.0.5",
-    "@types/node": "^18.0.3",
+    "@types/node": "^18.7.13",
     "@types/uuid": "^8.3.4",
-    "@typescript-eslint/eslint-plugin": "^5.30.5",
-    "@typescript-eslint/parser": "^5.30.5",
-    "aws-cdk": "^2.31.1",
-    "esbuild": "^0.14.48",
-    "eslint": "^8.19.0",
+    "@typescript-eslint/eslint-plugin": "^5.35.1",
+    "@typescript-eslint/parser": "^5.35.1",
+    "aws-cdk": "^2.39.0",
+    "esbuild": "^0.15.5",
+    "eslint": "^8.23.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-security": "^1.5.0",
-    "jest": "^28.1.2",
+    "jest": "^29.0.1",
     "prettier": "^2.7.1",
-    "prettier-plugin-jsdoc": "^0.3.38",
-    "ts-jest": "^28.0.5",
-    "ts-node": "^10.8.2",
-    "typescript": "^4.7.4",
+    "prettier-plugin-jsdoc": "^0.4.2",
+    "ts-jest": "^28.0.8",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.2",
     "uuid": "^8.3.2"
   },
   "dependencies": {
-    "aws-cdk-lib": "^2.31.1",
-    "constructs": "^10.1.43",
+    "aws-cdk-lib": "^2.39.0",
+    "constructs": "^10.1.90",
     "js-yaml": "^4.1.0",
     "source-map-support": "^0.5.21"
   }

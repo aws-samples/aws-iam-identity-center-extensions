@@ -24,9 +24,9 @@ export const imperativeParseJSON = <T = object>(
   }
 
   throw new JSONParserError(
-    validate.errors!.map(({ keyword, message }) => ({
-      errorCode: keyword,
-      message,
+    validate.errors!.map(({ instancePath, params }) => ({
+      errorCode: `pattern-error`,
+      message: `Failure on property ${instancePath} . Schema for property should match pattern ${params.pattern}`,
     }))
   );
 };

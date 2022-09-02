@@ -64,7 +64,10 @@ export const handler = async (event: S3Event) => {
           },
           functionLogMode
         );
-        const keyValue = record.s3.object.key.split("/")[1].split(".")[0];
+        const keyValue = record.s3.object.key
+          .replace(/\+/g, " ")
+          .split("/")[1]
+          .split(".")[0];
         permissionSetFileName = keyValue;
         logger(
           {

@@ -10,6 +10,11 @@ export interface Tag {
   readonly Key: string;
   readonly Value: string;
 }
+
+export interface CustomerManagedPolicyObject {
+  readonly Name: string;
+  readonly Path?: string;
+}
 export interface CreateUpdatePermissionSetDataProps {
   readonly permissionSetName: string;
   readonly description?: string;
@@ -17,6 +22,7 @@ export interface CreateUpdatePermissionSetDataProps {
   readonly relayState: string;
   readonly tags: Array<Tag>;
   readonly managedPoliciesArnList: Array<string>;
+  readonly customerManagedPoliciesList: Array<CustomerManagedPolicyObject>;
   readonly inlinePolicyDocument: Record<string, unknown>;
 }
 export interface CreateUpdatePermissionSetPayload {
@@ -99,4 +105,60 @@ export interface LogMessage {
   readonly relatedData?: string;
   readonly hasRelatedRequests?: boolean;
   readonly sourceRequestId?: string;
+}
+
+export interface CustomerManagedPolicyObjectOp {
+  readonly operation: "attach" | "detach" | "describe";
+  readonly parentOperation?: "attach" | "detach";
+  readonly customerManagedPolicy: CustomerManagedPolicyObject;
+  readonly permissionSetArn: string;
+  readonly instanceArn: string;
+}
+
+export interface DescribeCmpAndPb {
+  readonly objectToDescribe: "customerManagedPolicy" | "permissionsBoundary";
+  readonly instanceArn: string;
+  readonly permissionSetArn: string;
+}
+
+export interface ManagedPolicyObjectOp {
+  readonly operation: "attach" | "detach" | "describe";
+  readonly parentOperation?: "attach" | "detach";
+  readonly managedPolicyArn: string;
+  readonly permissionSetArn: string;
+  readonly instanceArn: string;
+}
+
+export interface DescribeOpIterator {
+  readonly iterator: {
+    readonly count: number;
+    readonly index: number;
+    readonly step: number;
+  };
+}
+
+export interface CustomerManagedPolicySFN {
+  readonly instanceArn: string;
+  readonly permissionSetArn: string;
+  readonly waitSeconds: string;
+  readonly operation: "attach" | "detach";
+  readonly processOpArn: string;
+  readonly iteratorArn: string;
+  readonly customerManagedPoliciesList: Array<CustomerManagedPolicyObject>;
+}
+
+export interface ManagedPolicySFN {
+  readonly instanceArn: string;
+  readonly permissionSetArn: string;
+  readonly waitSeconds: string;
+  readonly operation: "attach" | "detach";
+  readonly processOpArn: string;
+  readonly iteratorArn: string;
+  readonly managedPoliciesArnList: Array<string>;
+}
+
+export interface ManagedPolicyQueueObject {
+  readonly managedPolicytype: "aws" | "customer";
+  readonly stateMachineArn: string;
+  readonly managedPolicyObject: CustomerManagedPolicySFN | ManagedPolicySFN;
 }

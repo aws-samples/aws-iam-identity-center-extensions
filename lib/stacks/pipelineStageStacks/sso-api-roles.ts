@@ -50,7 +50,6 @@ export class SSOApiRoles extends Stack {
           resources: ["*"],
           actions: [
             "sso:DeleteInlinePolicyFromPermissionSet",
-            "sso:DetachManagedPolicyFromPermissionSet",
             "sso:DeletePermissionSet",
             "sso:CreatePermissionSet",
             "sso:GetPermissionSet",
@@ -63,11 +62,12 @@ export class SSOApiRoles extends Stack {
             "sso:ListPermissionSets",
             "sso:ListAccountsForProvisionedPermissionSet",
             "sso:PutInlinePolicyToPermissionSet",
-            "sso:AttachManagedPolicyToPermissionSet",
             "sso:UpdatePermissionSet",
             "sso:GetInlinePolicyForPermissionSet",
-            "sso:ListManagedPoliciesInPermissionSet",
             "sso:DescribePermissionSetProvisioningStatus",
+            "sso:PutPermissionsBoundaryToPermissionSet",
+            "sso:DeletePermissionsBoundaryFromPermissionSet",
+            "sso:GetPermissionsBoundaryForPermissionSet",
           ],
         }),
       }

@@ -2,7 +2,8 @@
  * Implements custom resource onEvent handler through CDK framework. This custom
  * resource maps to triggering the step function, by reading the resource
  * properties sent by cloudformation service, and then post triggering the state
- * machine, returns back the physical resource ID and state machine execution ARN
+ * machine, returns back the physical resource ID and state machine execution
+ * ARN
  */
 
 /** Get environment variables */

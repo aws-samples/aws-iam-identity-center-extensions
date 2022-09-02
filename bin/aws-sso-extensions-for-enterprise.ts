@@ -19,7 +19,6 @@ function ensureString(
 ): string {
   if (!object[`${propName}`] || object[`${propName}`].trim().length === 0)
     throw new Error(propName + " does not exist or is empty");
-
   return object[`${propName}`];
 }
 
@@ -75,6 +74,48 @@ function ensureBoolean(
   return object[`${propName}`];
 }
 
+function ensureDependentPropIsPresentForSourceRepo(
+  /* eslint-disable  @typescript-eslint/no-explicit-any */
+  object: { [name: string]: any },
+  repoTypePropName: string,
+  propName: string
+): string {
+  const repoType = ensureString(object, repoTypePropName);
+  let propValue = "";
+  if (repoType.toLowerCase() === "codecommit") {
+    switch (propName.toLowerCase()) {
+      case "repoarn":
+        propValue = ensureString(object, propName);
+        break;
+      case "repobranchname":
+        propValue = ensureString(object, propName);
+        break;
+      default:
+        return "";
+    }
+  } else if (repoType.toLowerCase() === "codestar") {
+    switch (propName.toLowerCase()) {
+      case "codestarconnectionarn":
+        propValue = ensureString(object, propName);
+        break;
+      case "reponame":
+        propValue = ensureString(object, propName);
+        break;
+      case "repobranchname":
+        propValue = ensureString(object, propName);
+        break;
+      default:
+        return "";
+    }
+  } else {
+    throw new Error(
+      `Repo type ${repoType} is not one of valid values - ["codecommit","codestar"]`
+    );
+  }
+  /** Making the linter happy */
+  return propValue;
+}
+
 function getConfig() {
   const env = app.node.tryGetContext("config");
   if (!env)
@@ -125,10 +166,29 @@ function getConfig() {
         unparsedEnv["PipelineSettings"],
         "OrgMainAccountId"
       ),
-      RepoArn: ensureString(unparsedEnv["PipelineSettings"], "RepoArn"),
-      RepoBranchName: ensureString(
+      RepoType: ensureValidString(unparsedEnv["PipelineSettings"], "RepoType", [
+        "CODECOMMIT",
+        "CODESTAR",
+      ]),
+      RepoArn: ensureDependentPropIsPresentForSourceRepo(
         unparsedEnv["PipelineSettings"],
+        "RepoType",
+        "RepoArn"
+      ),
+      RepoBranchName: ensureDependentPropIsPresentForSourceRepo(
+        unparsedEnv["PipelineSettings"],
+        "RepoType",
         "RepoBranchName"
+      ),
+      RepoName: ensureDependentPropIsPresentForSourceRepo(
+        unparsedEnv["PipelineSettings"],
+        "RepoType",
+        "RepoName"
+      ),
+      CodeStarConnectionArn: ensureDependentPropIsPresentForSourceRepo(
+        unparsedEnv["PipelineSettings"],
+        "RepoType",
+        "CodeStarConnectionArn"
       ),
       SynthCommand: ensureString(
         unparsedEnv["PipelineSettings"],

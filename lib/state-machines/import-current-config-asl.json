@@ -145,7 +145,8 @@
           "requestId.$": "$.requestId",
           "triggerSource.$": "$.triggerSource",
           "waitSeconds.$": "$.waitSeconds",
-          "pageSize.$": "$.pageSize"
+          "pageSize.$": "$.pageSize",
+          "importCmpAndPbArn.$": "$.importCmpAndPbArn"
         }
       },
       "Next": "Delete temporary permission sets table",

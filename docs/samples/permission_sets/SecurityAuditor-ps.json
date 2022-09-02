@@ -13,5 +13,11 @@
     }
   ],
   "managedPoliciesArnList": ["arn:aws:iam::aws:policy/SecurityAudit"],
-  "inlinePolicyDocument": {}
+  "inlinePolicyDocument": {},
+  "permissionsBoundary": {
+    "CustomerManagedPolicyReference": {
+      "Name": "cmp-pb",
+      "Path": "/cmp/pb/"
+    }
+  }
 }

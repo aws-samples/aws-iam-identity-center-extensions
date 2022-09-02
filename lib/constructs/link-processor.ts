@@ -5,7 +5,7 @@
 
 import { Duration } from "aws-cdk-lib";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
-import { ILayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
+import { Architecture, ILayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import {
   SnsEventSource,
   SqsEventSource,
@@ -53,6 +53,7 @@ export class LinkProcessor extends Construct {
       {
         functionName: name(buildConfig, "linkManagerHandler"),
         runtime: Runtime.NODEJS_16_X,
+        architecture: Architecture.ARM_64,
         entry: join(
           __dirname,
           "../",
