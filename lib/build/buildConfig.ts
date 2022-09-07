@@ -63,8 +63,8 @@ export interface Parameters {
   readonly IsAdUsed: boolean;
   readonly DomainName: string;
   /**
-   * Used as switch to do a one-time import of all AWS SSO account assignments
-   * and permission sets into the solution
+   * Used as switch to do a one-time import of all AWS IAM Identity Center
+   * account assignments and permission sets into the solution
    */
   readonly ImportCurrentSSOConfiguration: boolean;
   /**

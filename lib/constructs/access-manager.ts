@@ -120,8 +120,9 @@ export class AccessManager extends Construct {
     );
 
     /**
-     * All required access for self-sustaining flow on AWS SSO group
-     * creation/deletion lib/lambda-functions/application-handlers/groupsCud.ts
+     * All required access for self-sustaining flow on AWS IAM Identity Center
+     * group creation/deletion
+     * lib/lambda-functions/application-handlers/groupsCud.ts
      */
     accessManagerProps.FetchCrossStackValues.queuesKey.grantEncryptDecrypt(
       accessManagerProps.SSOGroupProcessor.ssoGroupHandler
@@ -155,8 +156,9 @@ export class AccessManager extends Construct {
     );
 
     /**
-     * All required access for self-sustaining flow on AWS SSO user
-     * creation/deletion lib/lambda-functions/application-handlers/usersCud.ts
+     * All required access for self-sustaining flow on AWS IAM Identity Center
+     * user creation/deletion
+     * lib/lambda-functions/application-handlers/usersCud.ts
      */
     accessManagerProps.FetchCrossStackValues.queuesKey.grantEncryptDecrypt(
       accessManagerProps.SSOGroupProcessor.ssoUserHandler

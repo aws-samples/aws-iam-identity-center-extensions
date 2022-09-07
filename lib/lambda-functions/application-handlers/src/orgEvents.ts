@@ -347,7 +347,7 @@ export const orgEventProvisioning = async (
                 requestId: requestId,
                 status: requestStatus.InProgress,
                 relatedData: entityData,
-                statusMessage: `For principal ${principalNameToLookUp} , resolved principal ID as ${principalId} from AWS SSO Identity store`,
+                statusMessage: `For principal ${principalNameToLookUp} , resolved principal ID as ${principalId} from AWS IAM Identity Center Identity store`,
               },
               functionLogMode
             );

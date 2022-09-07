@@ -7,8 +7,8 @@ Org Events Processor->Solution Persistence(DynamoDB): lookup if there are any ac
 alt resultSet.length >0
 Org Events Processor->Solution Persistence(DynamoDB): doesPermissionSetExist() ?
 alt Permission Set exists
-Org Events Processor->AWS SSO Identity Store: doesPrincipalExist()?
-AWS SSO Identity Store->Org Events Processor: return principal list result
+Org Events Processor->AWS IAM Identity Center Identity Store: doesPrincipalExist()?
+AWS IAM Identity Center Identity Store->Org Events Processor: return principal list result
 alt Principal exists
 Org Events Processor->Account assignment FIFO queue: post account assignment operation
 note over Account assignment FIFO queue: from this point, the same sequence\n as account assignment life cycle\n is followed

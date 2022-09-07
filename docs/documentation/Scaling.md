@@ -1,11 +1,11 @@
 # Scaling the solution for large enterprises
 
-- The solution is designed to scale for any organization size while ensuring that it works without being throttled against the [default AWS SSO Admin API quota](https://docs.aws.amazon.com/singlesignon/latest/userguide/limits.html)
+- The solution is designed to scale for any organization size while ensuring that it works without being throttled against the [default AWS IAM Identity Center Admin API quota](https://docs.aws.amazon.com/singlesignon/latest/userguide/limits.html)
 
 - The solution has been tested with the following load parameters:
 
   - For an AWS organizational unit with **60 accounts, 5 account assignments at the OU scope were created and deleted concurrently (within one minute)**.
-  - This resulted in **1200 account assignment operations (600 create, 600 delete)** being posted to the AWS SSO instance.
+  - This resulted in **1200 account assignment operations (600 create, 600 delete)** being posted to the AWS IAM Identity Center instance.
   - The solution processed all the **1200 account assignment operations in 61 minutes with 100% success rate**.
 
 ## Account assignment processing metrics

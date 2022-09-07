@@ -35,7 +35,7 @@ export const handler = async (event: DescribeCmpAndPb) => {
       handler: handlerName,
       logMode: logModes.Info,
       status: requestStatus.InProgress,
-      statusMessage: `AWS SSO customer managed policy import started for permissionSetArn ${event.permissionSetArn}`,
+      statusMessage: `AWS IAM Identity Center customer managed policy import started for permissionSetArn ${event.permissionSetArn}`,
     },
     functionLogMode
   );
@@ -52,7 +52,7 @@ export const handler = async (event: DescribeCmpAndPb) => {
         handler: handlerName,
         logMode: logModes.Info,
         status: requestStatus.Completed,
-        statusMessage: `AWS SSO customer managed policy import completed for permissionSetArn ${event.permissionSetArn}`,
+        statusMessage: `AWS IAM Identity Center customer managed policy import completed for permissionSetArn ${event.permissionSetArn}`,
       });
       return {
         status: "true",
@@ -69,7 +69,7 @@ export const handler = async (event: DescribeCmpAndPb) => {
         handler: handlerName,
         logMode: logModes.Info,
         status: requestStatus.Completed,
-        statusMessage: `AWS SSO permission boundary import completed for permissionSetArn ${event.permissionSetArn}`,
+        statusMessage: `AWS IAM Identity Center permission boundary import completed for permissionSetArn ${event.permissionSetArn}`,
       });
       return {
         status: "true",
@@ -80,7 +80,7 @@ export const handler = async (event: DescribeCmpAndPb) => {
         handler: handlerName,
         logMode: logModes.Warn,
         status: requestStatus.FailedWithError,
-        statusMessage: `AWS SSO customer managed policy/permissions boundary import completed for permissionSetArn ${event.permissionSetArn}`,
+        statusMessage: `AWS IAM Identity Center customer managed policy/permissions boundary import completed for permissionSetArn ${event.permissionSetArn}`,
       });
       return {
         status: "false",
@@ -96,7 +96,7 @@ export const handler = async (event: DescribeCmpAndPb) => {
         handler: handlerName,
         logMode: logModes.Info,
         status: requestStatus.Completed,
-        statusMessage: `AWS SSO customer managed policy/permissions boundary import completed for permissionSetArn ${event.permissionSetArn}`,
+        statusMessage: `AWS IAM Identity Center customer managed policy/permissions boundary import completed for permissionSetArn ${event.permissionSetArn}`,
       });
       return {
         status: "true",

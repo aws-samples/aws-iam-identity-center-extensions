@@ -104,7 +104,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       },
     });
 
-    /** Artefacts to discover current AWS SSO configuration */
+    /** Artefacts to discover current AWS IAM Identity Center configuration */
 
     /**
      * SNS topics that would be triggered by state machines with payload
@@ -125,7 +125,10 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       }
     );
 
-    /** State machines that discover the current AWS SSO configuration */
+    /**
+     * State machines that discover the current AWS IAM Identity Center
+     * configuration
+     */
 
     /**
      * Account assignment discovery state machine related artefacts This state
