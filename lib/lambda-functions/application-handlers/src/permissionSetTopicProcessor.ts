@@ -227,7 +227,7 @@ export const handler = async (event: SNSEvent) => {
             requestId: requestIdValue,
             relatedData: permissionSetNameValue,
             status: requestStatus.InProgress,
-            statusMessage: `Triggered create operation for permissionSet in AWS SSO`,
+            statusMessage: `Triggered create operation for permissionSet in AWS IAM Identity Center`,
           },
           functionLogMode
         );

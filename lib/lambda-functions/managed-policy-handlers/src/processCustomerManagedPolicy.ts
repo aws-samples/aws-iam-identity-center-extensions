@@ -40,7 +40,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
       handler: handlerName,
       logMode: logModes.Info,
       status: requestStatus.InProgress,
-      statusMessage: `AWS SSO customer managed policy processing started for operation ${event.operation} and customerManagedPolicyName ${event.customerManagedPolicy.Name} and permissionSetArn ${event.permissionSetArn}`,
+      statusMessage: `AWS IAM Identity Center customer managed policy processing started for operation ${event.operation} and customerManagedPolicyName ${event.customerManagedPolicy.Name} and permissionSetArn ${event.permissionSetArn}`,
     },
     functionLogMode
   );
@@ -59,7 +59,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
           handler: handlerName,
           logMode: logModes.Info,
           status: requestStatus.InProgress,
-          statusMessage: `Successfully attached AWS SSO customer managed policy ${event.customerManagedPolicy.Name} to permissionSetArn ${event.permissionSetArn}`,
+          statusMessage: `Successfully attached AWS IAM Identity Center customer managed policy ${event.customerManagedPolicy.Name} to permissionSetArn ${event.permissionSetArn}`,
         },
         functionLogMode
       );
@@ -79,7 +79,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
           handler: handlerName,
           logMode: logModes.Info,
           status: requestStatus.InProgress,
-          statusMessage: `Successfully detached AWS SSO customer managed policy ${event.customerManagedPolicy.Name} to permissionSetArn ${event.permissionSetArn}`,
+          statusMessage: `Successfully detached AWS IAM Identity Center customer managed policy ${event.customerManagedPolicy.Name} to permissionSetArn ${event.permissionSetArn}`,
         },
         functionLogMode
       );
@@ -111,7 +111,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
                   handler: handlerName,
                   logMode: logModes.Info,
                   status: requestStatus.InProgress,
-                  statusMessage: `Successfully validated that AWS SSO customer managed policy ${event.customerManagedPolicy.Name} is attached to permissionSetArn ${event.permissionSetArn}`,
+                  statusMessage: `Successfully validated that AWS IAM Identity Center customer managed policy ${event.customerManagedPolicy.Name} is attached to permissionSetArn ${event.permissionSetArn}`,
                 },
                 functionLogMode
               );
@@ -124,13 +124,13 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
                   handler: handlerName,
                   logMode: logModes.Info,
                   status: requestStatus.InProgress,
-                  statusMessage: `Can not validate that AWS SSO customer managed policy ${event.customerManagedPolicy.Name} is attached to permissionSetArn ${event.permissionSetArn}`,
+                  statusMessage: `Can not validate that AWS IAM Identity Center customer managed policy ${event.customerManagedPolicy.Name} is attached to permissionSetArn ${event.permissionSetArn}`,
                 },
                 functionLogMode
               );
               return {
                 status: "false",
-                statusReason: `Can not validate that AWS SSO customer managed policy ${event.customerManagedPolicy.Name} is attached to permissionSetArn ${event.permissionSetArn}`,
+                statusReason: `Can not validate that AWS IAM Identity Center customer managed policy ${event.customerManagedPolicy.Name} is attached to permissionSetArn ${event.permissionSetArn}`,
               };
             }
           } else {
@@ -155,7 +155,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
                   handler: handlerName,
                   logMode: logModes.Info,
                   status: requestStatus.InProgress,
-                  statusMessage: `Successfully validated that AWS SSO customer managed policy ${event.customerManagedPolicy.Name} is detached from permissionSetArn ${event.permissionSetArn}`,
+                  statusMessage: `Successfully validated that AWS IAM Identity Center customer managed policy ${event.customerManagedPolicy.Name} is detached from permissionSetArn ${event.permissionSetArn}`,
                 },
                 functionLogMode
               );
@@ -168,13 +168,13 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
                   handler: handlerName,
                   logMode: logModes.Info,
                   status: requestStatus.InProgress,
-                  statusMessage: `Can not validate that AWS SSO customer managed policy ${event.customerManagedPolicy.Name} is detached from permissionSetArn ${event.permissionSetArn}`,
+                  statusMessage: `Can not validate that AWS IAM Identity Center customer managed policy ${event.customerManagedPolicy.Name} is detached from permissionSetArn ${event.permissionSetArn}`,
                 },
                 functionLogMode
               );
               return {
                 status: "false",
-                statusReason: `Can not validate that AWS SSO customer managed policy ${event.customerManagedPolicy.Name} is detached from permissionSetArn ${event.permissionSetArn}`,
+                statusReason: `Can not validate that AWS IAM Identity Center customer managed policy ${event.customerManagedPolicy.Name} is detached from permissionSetArn ${event.permissionSetArn}`,
               };
             }
           } else {
@@ -183,7 +183,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
                 handler: handlerName,
                 logMode: logModes.Info,
                 status: requestStatus.InProgress,
-                statusMessage: `Successfully validated that AWS SSO customer managed policy ${event.customerManagedPolicy.Name} is detached from permissionSetArn ${event.permissionSetArn}`,
+                statusMessage: `Successfully validated that AWS IAM Identity Center customer managed policy ${event.customerManagedPolicy.Name} is detached from permissionSetArn ${event.permissionSetArn}`,
               },
               functionLogMode
             );

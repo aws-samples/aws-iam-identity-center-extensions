@@ -1,6 +1,7 @@
 /**
- * Deploys part 1 of artefacts required for importing current AWS SSO
- * configuration i.e. permission sets and account assignments in SSO account
+ * Deploys part 1 of artefacts required for importing current AWS IAM Identity
+ * Center configuration i.e. permission sets and account assignments in SSO
+ * account
  */
 import { Stack, StackProps } from "aws-cdk-lib";
 import {

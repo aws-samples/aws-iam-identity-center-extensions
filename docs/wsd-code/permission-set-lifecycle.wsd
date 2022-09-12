@@ -16,12 +16,12 @@ activate Topic Processor
 Topic Processor->Topic Processor: determineActionType()
 alt create:
 Topic Processor->Solution Persistence(DynamoDB): fetch permission set object
-Topic Processor->AWS SSO Admin API: create permission set operation
+Topic Processor->AWS IAM Identity Center Admin API: create permission set operation
 Topic Processor->Topic Processor: parse permissionSetArn from the result
 Topic Processor->Solution Persistence(DynamoDB): persist permissionSetArn
 Topic Processor->Topic Processor: determine if the permission set object has other attributes
 alt permission set has non-empty managed policies/inline policy document/tags
-Topic Processor->AWS SSO Admin API: update permission set object
+Topic Processor->AWS IAM Identity Center Admin API: update permission set object
 end
 Topic Processor->Permission Set Sync processor: Post permission set sync notification
 Permission Set Sync processor->Solution Persistence(DynamoDB): check if there are related account assignments for this permission set
@@ -29,8 +29,8 @@ Permission Set Sync processor->Permission Set Sync processor: check resultSet
 alt if resultSet.length > 0
 Permission Set Sync processor->Permission Set Sync processor: loop through the result set
 activate Permission Set Sync processor
-Permission Set Sync processor->AWS SSO Identity Store: doesPrincipalExist() ?
-AWS SSO Identity Store->Permission Set Sync processor: return principal list result
+Permission Set Sync processor->AWS IAM Identity Center Identity Store: doesPrincipalExist() ?
+AWS IAM Identity Center Identity Store->Permission Set Sync processor: return principal list result
 alt Principal exists
 Permission Set Sync processor->Permission Set Sync processor: checkScopeType?
 alt scopeType=account
@@ -51,8 +51,8 @@ else update:
 Topic Processor->Topic Processor: calculateDelta()
 alt deltaExists:
 Topic Processor->Topic Processor: Parse out the invididual delta elements
-Topic Processor->AWS SSO Admin API: update permission set object with the individual delta elements
-Topic Processor->AWS SSO Admin API: trigger re-provisioning of permission set to ALL_PROVISIONED_ACCOUNTS
+Topic Processor->AWS IAM Identity Center Admin API: update permission set object with the individual delta elements
+Topic Processor->AWS IAM Identity Center Admin API: trigger re-provisioning of permission set to ALL_PROVISIONED_ACCOUNTS
 Topic Processor->Permission Set Sync processor: Post permission set sync notification
 note over Permission Set Sync processor: from this point, the solution\n follows same sequence as\n create operation
 else deltaDoesNotExist:
@@ -60,7 +60,7 @@ Topic Processor->Topic Processor: log and complete the operation
 end
 else delete:
 Topic Processor->Solution Persistence(DynamoDB): fetch permissionSetArn value
-Topic Processor->AWS SSO Admin API: delete permission set object
+Topic Processor->AWS IAM Identity Center Admin API: delete permission set object
 Topic Processor->Solution Persistence(DynamoDB): delete permissionSetArn value
 end
 deactivate Topic Processor

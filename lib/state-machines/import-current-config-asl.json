@@ -189,8 +189,8 @@
     },
     "State machine failed": {
       "Type": "Fail",
-      "Error": "Import Current AWS SSO configuration failed",
-      "Cause": "Import Current AWS SSO configuration failed"
+      "Error": "Import Current AWS IAM Identity Center configuration failed",
+      "Cause": "Import Current AWS IAM Identity Center configuration failed"
     },
     "State machine succeeded": {
       "Type": "Pass",
