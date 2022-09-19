@@ -1,7 +1,12 @@
 /** Deploys artefacts that would handle customer managed policy CRUD */
 import { Stack, StackProps } from "aws-cdk-lib";
 import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
-import { Architecture, Runtime } from "aws-cdk-lib/aws-lambda";
+import {
+  Architecture,
+  Code,
+  LayerVersion,
+  Runtime,
+} from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { LogGroup, RetentionDays } from "aws-cdk-lib/aws-logs";
 import { CfnStateMachine } from "aws-cdk-lib/aws-stepfunctions";
@@ -9,7 +14,6 @@ import { Construct } from "constructs";
 import { join } from "path";
 import { BuildConfig } from "../../build/buildConfig";
 import { CrossAccountRole } from "../../constructs/cross-account-role";
-import { LambdaLayers } from "../../constructs/lambda-layers";
 import { SSMParamWriter } from "../../constructs/ssm-param-writer";
 import * as customerManagedPolicySMJSON from "../../state-machines/customer-managed-policies-asl.json";
 import * as managedPolicySMJSON from "../../state-machines/managed-policies-asl.json";
@@ -28,10 +32,16 @@ export class ManagedPolicies extends Stack {
     super(scope, id, props);
 
     /** Define lambda layer for AWS SDK v3 */
-    const deployLambdaLayer = new LambdaLayers(
+    const deployLambdaLayer = new LayerVersion(
       this,
-      name(buildConfig, `lambdaLayersforCMP`),
-      buildConfig
+      name(buildConfig, "nodeJsLayerforManagedPolicies"),
+      {
+        code: Code.fromAsset(
+          join(__dirname, "../../", "lambda-layers", "nodejs-layer")
+        ),
+        compatibleRuntimes: [Runtime.NODEJS_16_X],
+        compatibleArchitectures: [Architecture.ARM_64],
+      }
     );
 
     /**
@@ -78,7 +88,7 @@ export class ManagedPolicies extends Stack {
         runtime: Runtime.NODEJS_16_X,
         architecture: Architecture.ARM_64,
         functionName: name(buildConfig, `processCustomerManagedPolicyHandler`),
-        layers: [deployLambdaLayer.nodeJsLayer],
+        layers: [deployLambdaLayer],
         entry: join(
           __dirname,
           "../../../",
@@ -202,7 +212,7 @@ export class ManagedPolicies extends Stack {
         runtime: Runtime.NODEJS_16_X,
         architecture: Architecture.ARM_64,
         functionName: name(buildConfig, `processManagedPolicyHandler`),
-        layers: [deployLambdaLayer.nodeJsLayer],
+        layers: [deployLambdaLayer],
         entry: join(
           __dirname,
           "../../../",
