@@ -519,16 +519,30 @@ export const handler = async (event: SNSEvent) => {
          * Sort managed policies before delta calculation and prepare the
          * permission sorted objects to compare using the sorted lists
          */
-        const sortedOldItemManagedPoliciesArnList: Array<string> =
-          oldItem.managedPoliciesArnList.sort();
-        const sortedCurrentItemManagedPoliciesArnList: Array<string> =
-          currentItem.managedPoliciesArnList.sort();
-        delete oldItem["managedPoliciesArnList"];
-        delete currentItem["managedPoliciesArnList"];
-        oldItem["sortedManagedPoliciesArnList"] =
-          sortedOldItemManagedPoliciesArnList;
-        currentItem["sortedManagedPoliciesArnList"] =
-          sortedCurrentItemManagedPoliciesArnList;
+        let sortedOldItemManagedPoliciesArnList: Array<string> = [];
+        let sortedCurrentItemManagedPoliciesArnList: Array<string> = [];
+
+        if (
+          oldItem.managedPoliciesArnList &&
+          oldItem.managedPoliciesArnList.length > 0
+        ) {
+          sortedOldItemManagedPoliciesArnList =
+            oldItem.managedPoliciesArnList.sort();
+          delete oldItem["managedPoliciesArnList"];
+          oldItem["sortedManagedPoliciesArnList"] =
+            sortedOldItemManagedPoliciesArnList;
+        }
+
+        if (
+          currentItem.managedPoliciesArnList &&
+          currentItem.managedPoliciesArnList.length > 0
+        ) {
+          sortedCurrentItemManagedPoliciesArnList =
+            currentItem.managedPoliciesArnList.sort();
+          delete currentItem["managedPoliciesArnList"];
+          currentItem["sortedManagedPoliciesArnList"] =
+            sortedCurrentItemManagedPoliciesArnList;
+        }
 
         logger(
           {
