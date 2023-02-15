@@ -105,7 +105,7 @@ test("Empty Stack", () => {
     object: { [name: string]: any },
     propName: string
   ): number {
-    if (!object[`${propName}`] || typeof object[`${propName}`] !== "number")
+    if (!object[`${propName}`] || typeof object[`${propName}`] === "number")
       throw new Error(
         propName + " does not exist or is empty or is not a number data type"
       );
