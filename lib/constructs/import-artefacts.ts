@@ -2,7 +2,8 @@
  * This construct allows read the non-deterministic values of resources created
  * in preSolutions stack. This is to avoid creating circular dependencies
  * between preSolutions and ssoImportArtefacts-part2 through the default CFN
- * exports. We circumvent that by relying on AWS SSM parameter store based reads
+ * exports. We circumvent that by relying on AWS SSM parameter store based
+ * reads
  */
 
 import { ITable, Table } from "aws-cdk-lib/aws-dynamodb";
@@ -30,6 +31,7 @@ export class ImportArtefacts extends Construct {
   public readonly importedLinksTable: ITable;
   public readonly importedProvisionedLinksTable: ITable;
   public readonly importedddbTablesKey: IKey;
+  public readonly importCmpAndPbFunctionArn: string;
 
   constructor(scope: Construct, id: string, buildConfig: BuildConfig) {
     super(scope, id);
@@ -82,6 +84,17 @@ export class ImportArtefacts extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "permissionSetHandler-ssoapi-roleArn",
+      }
+    ).paramValue;
+
+    this.importCmpAndPbFunctionArn = new SSMParamReader(
+      this,
+      name(buildConfig, "importCmpAndPbFunctionArn"),
+      buildConfig,
+      {
+        ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
+        ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
+        ParamNameKey: "importCmpAndPbArn",
       }
     ).paramValue;
 

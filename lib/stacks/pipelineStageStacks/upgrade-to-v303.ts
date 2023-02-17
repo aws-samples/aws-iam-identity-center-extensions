@@ -6,7 +6,7 @@ import { CustomResource, Duration, Stack, StackProps } from "aws-cdk-lib";
 import { Table } from "aws-cdk-lib/aws-dynamodb";
 import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { Key } from "aws-cdk-lib/aws-kms";
-import { LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
+import { Architecture, LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import {
   CfnQueryDefinition,
@@ -93,6 +93,7 @@ export class UpgradeToV303 extends Stack {
       name(buildConfig, "processLinkDataFunction"),
       {
         runtime: Runtime.NODEJS_16_X,
+        architecture: Architecture.ARM_64,
         entry: join(
           __dirname,
           "../../../",
@@ -170,6 +171,7 @@ export class UpgradeToV303 extends Stack {
       name(buildConfig, `triggerUpgradeSM`),
       {
         runtime: Runtime.NODEJS_16_X,
+        architecture: Architecture.ARM_64,
         functionName: name(buildConfig, `triggerUpgradeSM`),
         layers: [nodeJsLayer],
         entry: join(
@@ -203,6 +205,7 @@ export class UpgradeToV303 extends Stack {
       name(buildConfig, `updateCustomResource`),
       {
         runtime: Runtime.NODEJS_16_X,
+        architecture: Architecture.ARM_64,
         functionName: name(buildConfig, `updateCustomResource`),
         layers: [nodeJsLayer],
         entry: join(

@@ -13,7 +13,7 @@ import {
 } from "aws-cdk-lib/aws-dynamodb";
 import { Role } from "aws-cdk-lib/aws-iam";
 import { Key } from "aws-cdk-lib/aws-kms";
-import { LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
+import { Architecture, LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Bucket, EventType } from "aws-cdk-lib/aws-s3";
 import { LambdaDestination } from "aws-cdk-lib/aws-s3-notifications";
@@ -104,6 +104,7 @@ export class PermissionSetCRUD extends Construct {
         {
           functionName: name(buildConfig, "psApiHandler"),
           runtime: Runtime.NODEJS_16_X,
+          architecture: Architecture.ARM_64,
           entry: join(
             __dirname,
             "../",
@@ -160,6 +161,7 @@ export class PermissionSetCRUD extends Construct {
         {
           functionName: name(buildConfig, "psCuHandler"),
           runtime: Runtime.NODEJS_16_X,
+          architecture: Architecture.ARM_64,
           entry: join(
             __dirname,
             "../",
@@ -223,6 +225,7 @@ export class PermissionSetCRUD extends Construct {
         {
           functionName: name(buildConfig, "psDelHandler"),
           runtime: Runtime.NODEJS_16_X,
+          architecture: Architecture.ARM_64,
           entry: join(
             __dirname,
             "../",

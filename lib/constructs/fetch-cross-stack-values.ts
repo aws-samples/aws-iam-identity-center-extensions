@@ -43,6 +43,10 @@ export class FetchCrossStackValues extends Construct {
   public readonly orgListSMRoleArn: string;
   public readonly orgListParentsRoleArn: string;
   public readonly waiterHandlerSSOAPIRoleArn: string;
+  public readonly iteratorArn: string;
+  public readonly customerManagedPolicyProcessOpArn: string;
+  public readonly managedPolicyProcessOpArn: string;
+  public readonly ssoMpRoleArn: string;
 
   constructor(scope: Construct, id: string, buildConfig: BuildConfig) {
     super(scope, id);
@@ -276,5 +280,49 @@ export class FetchCrossStackValues extends Construct {
       this,
       name(buildConfig, "waiterHandlerSSOAPIRoleArn")
     );
+
+    this.iteratorArn = new SSMParamReader(
+      this,
+      name(buildConfig, "iteratorArnpr"),
+      buildConfig,
+      {
+        ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
+        ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
+        ParamNameKey: "iteratorArn",
+      }
+    ).paramValue;
+
+    this.customerManagedPolicyProcessOpArn = new SSMParamReader(
+      this,
+      name(buildConfig, "customerManagedPolicyProcessOpArnpr"),
+      buildConfig,
+      {
+        ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
+        ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
+        ParamNameKey: "customerManagedPolicyProcessOpArn",
+      }
+    ).paramValue;
+
+    this.managedPolicyProcessOpArn = new SSMParamReader(
+      this,
+      name(buildConfig, "managedPolicyProcessOpArnpr"),
+      buildConfig,
+      {
+        ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
+        ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
+        ParamNameKey: "managedPolicyProcessOpArn",
+      }
+    ).paramValue;
+
+    this.ssoMpRoleArn = new SSMParamReader(
+      this,
+      name(buildConfig, "ssoMpRoleArnpr"),
+      buildConfig,
+      {
+        ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
+        ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
+        ParamNameKey: "ssoMp-ssoapi-roleArn",
+      }
+    ).paramValue;
   }
 }

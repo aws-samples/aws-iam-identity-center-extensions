@@ -12,7 +12,12 @@ import {
   TableEncryption,
 } from "aws-cdk-lib/aws-dynamodb";
 import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
-import { Code, LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
+import {
+  Architecture,
+  Code,
+  LayerVersion,
+  Runtime,
+} from "aws-cdk-lib/aws-lambda";
 import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import {
@@ -52,6 +57,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
         join(__dirname, "../../", "lambda-layers", "nodejs-layer")
       ),
       compatibleRuntimes: [Runtime.NODEJS_16_X],
+      compatibleArchitectures: [Architecture.ARM_64],
     });
 
     /**
@@ -98,7 +104,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       },
     });
 
-    /** Artefacts to discover current AWS SSO configuration */
+    /** Artefacts to discover current AWS IAM Identity Center configuration */
 
     /**
      * SNS topics that would be triggered by state machines with payload
@@ -119,11 +125,15 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       }
     );
 
-    /** State machines that discover the current AWS SSO configuration */
+    /**
+     * State machines that discover the current AWS IAM Identity Center
+     * configuration
+     */
 
     /**
      * Account assignment discovery state machine related artefacts This state
-     * machine discovers all the current account assignments for a given permission set
+     * machine discovers all the current account assignments for a given
+     * permission set
      */
 
     /** Log group to attach to discover state machine for capturing logs */
@@ -217,7 +227,8 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
 
     /**
      * Permission set discovery state machine related artefacts This state
-     * machine discovers all the permission sets and the attributes of a permission set
+     * machine discovers all the permission sets and the attributes of a
+     * permission set
      */
 
     /**
@@ -444,6 +455,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       fullname(`rsImportPermissionSetsHandler`),
       {
         runtime: Runtime.NODEJS_16_X,
+        architecture: Architecture.ARM_64,
         layers: [rsNodeJsLayer],
         entry: join(
           __dirname,
@@ -486,6 +498,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       fullname(`rsImportAccountAssignmentHandler`),
       {
         runtime: Runtime.NODEJS_16_X,
+        architecture: Architecture.ARM_64,
         layers: [rsNodeJsLayer],
         entry: join(
           __dirname,
@@ -539,6 +552,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       fullname(`updateCustomResourceHandler`),
       {
         runtime: Runtime.NODEJS_16_X,
+        architecture: Architecture.ARM_64,
         layers: [rsNodeJsLayer],
         entry: join(
           __dirname,
@@ -577,6 +591,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       fullname(`parentSMInvokeFunction`),
       {
         runtime: Runtime.NODEJS_16_X,
+        architecture: Architecture.ARM_64,
         functionName: fullname(`parentSMInvokeFunction`),
         layers: [rsNodeJsLayer],
         entry: join(

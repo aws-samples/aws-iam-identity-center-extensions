@@ -18,6 +18,6 @@ For more information on going through the use cases for this solution, see the w
 
 [![SSO events flow](../images/sso-events-flow.png)](../images/sso-events-flow.png)
 
-## Current AWS SSO Configuration Import flow
+## Current AWS IAM Identity Center Configuration Import flow
 
-[![Current AWS SSO Configuration Import flow](../images/current-aws-sso-configuration-import-flow.png)](../images/current-aws-sso-configuration-import-flow.png)
+[![Current AWS IAM Identity Center Configuration Import flow](../images/current-aws-sso-configuration-import-flow.png)](../images/current-aws-sso-configuration-import-flow.png)

@@ -109,10 +109,20 @@ export class AccessManager extends Construct {
         actions: ["sts:AssumeRole"],
       })
     );
+    accessManagerProps.PermissionSetProcessor.managedPolicyQueueProcessor.addToRolePolicy(
+      new PolicyStatement({
+        resources: [accessManagerProps.FetchCrossStackValues.ssoMpRoleArn],
+        actions: ["sts:AssumeRole"],
+      })
+    );
+    accessManagerProps.PermissionSetProcessor.managedPolicyQueue.grantSendMessages(
+      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor
+    );
 
     /**
-     * All required access for self-sustaining flow on AWS SSO group
-     * creation/deletion lib/lambda-functions/application-handlers/groupsCud.ts
+     * All required access for self-sustaining flow on AWS IAM Identity Center
+     * group creation/deletion
+     * lib/lambda-functions/application-handlers/groupsCud.ts
      */
     accessManagerProps.FetchCrossStackValues.queuesKey.grantEncryptDecrypt(
       accessManagerProps.SSOGroupProcessor.ssoGroupHandler
@@ -146,8 +156,9 @@ export class AccessManager extends Construct {
     );
 
     /**
-     * All required access for self-sustaining flow on AWS SSO user
-     * creation/deletion lib/lambda-functions/application-handlers/usersCud.ts
+     * All required access for self-sustaining flow on AWS IAM Identity Center
+     * user creation/deletion
+     * lib/lambda-functions/application-handlers/usersCud.ts
      */
     accessManagerProps.FetchCrossStackValues.queuesKey.grantEncryptDecrypt(
       accessManagerProps.SSOGroupProcessor.ssoUserHandler

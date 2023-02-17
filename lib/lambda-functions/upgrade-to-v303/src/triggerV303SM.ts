@@ -1,6 +1,7 @@
 /**
  * Objective: Implement custom resource that invokes upgrade V303 state machine
- * in target account Trigger source: Cloudformation custom resource provider framework
+ * in target account Trigger source: Cloudformation custom resource provider
+ * framework
  *
  * - Invoke the state machine witht the payload
  * - If the request type is delete, we don't do anything as this is a invoke type

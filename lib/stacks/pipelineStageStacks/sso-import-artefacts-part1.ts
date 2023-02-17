@@ -1,6 +1,7 @@
 /**
- * Deploys part 1 of artefacts required for importing current AWS SSO
- * configuration i.e. permission sets and account assignments in SSO account
+ * Deploys part 1 of artefacts required for importing current AWS IAM Identity
+ * Center configuration i.e. permission sets and account assignments in SSO
+ * account
  */
 import { Stack, StackProps } from "aws-cdk-lib";
 import {
@@ -10,20 +11,28 @@ import {
   ServicePrincipal,
 } from "aws-cdk-lib/aws-iam";
 import { Key } from "aws-cdk-lib/aws-kms";
-import { Topic } from "aws-cdk-lib/aws-sns";
-import { CfnStateMachine } from "aws-cdk-lib/aws-stepfunctions";
-import { Construct } from "constructs";
-import { BuildConfig } from "../../build/buildConfig";
-import { SSMParamWriter } from "../../constructs/ssm-param-writer";
-import * as importAccountAssignmentsSMJSON from "../../state-machines/import-account-assignments-asl.json";
-import * as importPermissionSetsSMJSON from "../../state-machines/import-permission-sets-asl.json";
-import * as importCurrentConfigSMJSON from "../../state-machines/import-current-config-asl.json";
-import { CrossAccountRole } from "../../constructs/cross-account-role";
+import {
+  Architecture,
+  Code,
+  LayerVersion,
+  Runtime,
+} from "aws-cdk-lib/aws-lambda";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import {
   CfnQueryDefinition,
   LogGroup,
   RetentionDays,
 } from "aws-cdk-lib/aws-logs";
+import { Topic } from "aws-cdk-lib/aws-sns";
+import { CfnStateMachine } from "aws-cdk-lib/aws-stepfunctions";
+import { Construct } from "constructs";
+import { join } from "path";
+import { BuildConfig } from "../../build/buildConfig";
+import { CrossAccountRole } from "../../constructs/cross-account-role";
+import { SSMParamWriter } from "../../constructs/ssm-param-writer";
+import * as importAccountAssignmentsSMJSON from "../../state-machines/import-account-assignments-asl.json";
+import * as importCurrentConfigSMJSON from "../../state-machines/import-current-config-asl.json";
+import * as importPermissionSetsSMJSON from "../../state-machines/import-permission-sets-asl.json";
 
 function name(buildConfig: BuildConfig, resourcename: string): string {
   return buildConfig.Environment + "-" + resourcename;
@@ -114,6 +123,72 @@ export class SSOImportArtefactsPart1 extends Stack {
       name(buildConfig, "importArtefactsSMLogGroup"),
       {
         retention: RetentionDays.ONE_MONTH,
+      }
+    );
+
+    /**
+     * Custom lambda for describing customer managed policies and permission
+     * boundary
+     */
+
+    const layersResource = new LayerVersion(
+      this,
+      name(buildConfig, "nodeJsLayerForCmpAndPb"),
+      {
+        code: Code.fromAsset(
+          join(__dirname, "../../../", "lib", "lambda-layers", "nodejs-layer")
+        ),
+        compatibleRuntimes: [Runtime.NODEJS_16_X],
+        compatibleArchitectures: [Architecture.ARM_64],
+      }
+    );
+
+    const importCmpAndPb = new NodejsFunction(
+      this,
+      name(buildConfig, `importCmpAndPb`),
+      {
+        runtime: Runtime.NODEJS_16_X,
+        architecture: Architecture.ARM_64,
+        functionName: name(buildConfig, `importCmpAndPbHandler`),
+        layers: [layersResource],
+        entry: join(
+          __dirname,
+          "../../../",
+          "lib",
+          "lambda-functions",
+          "current-config-handlers",
+          "src",
+          "import-customermanagedpolicies-permissionsboundary.ts"
+        ),
+        bundling: {
+          externalModules: ["@aws-sdk/client-ssoadmin"],
+          minify: true,
+        },
+      }
+    );
+
+    /**
+     * Add describe permissions for reading customer managed policies and
+     * permission boundaries
+     */
+    importCmpAndPb.addToRolePolicy(
+      new PolicyStatement({
+        actions: [
+          "sso:ListCustomerManagedPolicyReferencesInPermissionSet",
+          "sso:GetPermissionsBoundaryForPermissionSet",
+        ],
+        resources: ["*"],
+      })
+    );
+
+    new SSMParamWriter(
+      this,
+      name(buildConfig, "importCmpAndPbArn"),
+      buildConfig,
+      {
+        ParamNameKey: "importCmpAndPbArn",
+        ParamValue: importCmpAndPb.functionArn,
+        ReaderAccountId: buildConfig.PipelineSettings.TargetAccountId,
       }
     );
 
@@ -279,6 +354,7 @@ export class SSOImportArtefactsPart1 extends Stack {
 
     permissionSetImportTopic.grantPublish(importPermissionSetSMRole);
     ssoArtefactsKeyforImport.grantEncryptDecrypt(importPermissionSetSMRole);
+    importCmpAndPb.grantInvoke(importPermissionSetSMRole);
 
     const importPermissionSetSM = new CfnStateMachine(
       this,

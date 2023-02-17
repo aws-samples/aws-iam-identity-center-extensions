@@ -41,8 +41,8 @@
     },
     "Fail": {
       "Type": "Fail",
-      "Error": "Deploy Region Switch AWS SSO objects failed",
-      "Cause": "Deploy Region Switch AWS SSO objects failed"
+      "Error": "Deploy Region Switch AWS IAM Identity Center objects failed",
+      "Cause": "Deploy Region Switch AWS IAM Identity Center objects failed"
     },
     "Scan global permission sets table": {
       "Type": "Task",

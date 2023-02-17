@@ -347,7 +347,7 @@ export const orgEventProvisioning = async (
                 requestId: requestId,
                 status: requestStatus.InProgress,
                 relatedData: entityData,
-                statusMessage: `For principal ${principalNameToLookUp} , resolved principal ID as ${principalId} from AWS SSO Identity store`,
+                statusMessage: `For principal ${principalNameToLookUp} , resolved principal ID as ${principalId} from AWS IAM Identity Center Identity store`,
               },
               functionLogMode
             );
@@ -501,7 +501,8 @@ export const handler = async (event: SNSEvent) => {
        * assignments for any of the parents of the new OU until root. Both
        * removal and addition is inclusive of the actual OU ID and exclusive of
        * root If nested OU support is not enabled, then the function would
-       * simply remove and add any related account assignments for the old and new OU's
+       * simply remove and add any related account assignments for the old and
+       * new OU's
        */
       logger(
         {
@@ -681,7 +682,10 @@ export const handler = async (event: SNSEvent) => {
         },
         functionLogMode
       );
-      /** Start processing deletion of any related account assignments for old parents list */
+      /**
+       * Start processing deletion of any related account assignments for old
+       * parents list
+       */
       for (const parent of parentsToRemove) {
         logger(
           {
@@ -704,7 +708,10 @@ export const handler = async (event: SNSEvent) => {
           requestId
         );
       }
-      /** Start processing addition of any related account assignments for new parents list */
+      /**
+       * Start processing addition of any related account assignments for new
+       * parents list
+       */
       for (const parent of parentsToAdd) {
         logger(
           {

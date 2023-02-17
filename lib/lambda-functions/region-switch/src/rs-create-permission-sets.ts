@@ -1,12 +1,13 @@
 /**
- * Creates permission sets in AWS SSO. Triggered by Region switch deploy state
- * machine with payload containing instance arn, identity store Id and
- * permission set object payload. Permission set object payload aligns to the
- * format used by the solution interfaces Validates if optional attributes are
- * present first before triggering the create operation. The code reads
- * parameters that are not required by the lambda handler so that the subsequent
- * steps in the state machine only get the required data. Alternative is for the
- * lambda invocation to send back the full response payload which is not required
+ * Creates permission sets in AWS IAM Identity Center. Triggered by Region
+ * switch deploy state machine with payload containing instance arn, identity
+ * store Id and permission set object payload. Permission set object payload
+ * aligns to the format used by the solution interfaces Validates if optional
+ * attributes are present first before triggering the create operation. The code
+ * reads parameters that are not required by the lambda handler so that the
+ * subsequent steps in the state machine only get the required data. Alternative
+ * is for the lambda invocation to send back the full response payload which is
+ * not required
  */
 
 /** Get environment variables */
@@ -36,7 +37,10 @@ const ssoAdminClientObject = new SSOAdminClient({
   maxAttempts: 2,
 });
 
-/** Explicit any as the event is triggered through the state machine with a custom payload */
+/**
+ * Explicit any as the event is triggered through the state machine with a
+ * custom payload
+ */
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 export const handler = async (event: any) => {
   /** Instantiate UUID based request ID for observability */
@@ -100,7 +104,8 @@ export const handler = async (event: any) => {
     if (permissionSetObject.managedPoliciesArnList.length !== 0) {
       /**
        * Based on the recommmendation from service team, addition of managed
-       * policies to the permission set is serialised instead of being run in parallel
+       * policies to the permission set is serialised instead of being run in
+       * parallel
        */
       for (const managedPolicyArn of permissionSetObject.managedPoliciesArnList) {
         await ssoAdminClientObject.send(

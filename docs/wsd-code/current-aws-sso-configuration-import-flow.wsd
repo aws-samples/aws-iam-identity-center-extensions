@@ -1,4 +1,4 @@
-title Current AWS SSO configuration import flow
+title Current AWS IAM Identity Center configuration import flow
 
 Current config import StateMachine(SSO account)->Current config import StateMachine(SSO account): determineTriggerSource()
 alt triggerSource = "CloudFormation" and payload.eventType = "Delete"
@@ -7,23 +7,23 @@ else
 Current config import StateMachine(SSO account)->SSO account DynamoDB: create temporary permission set table
 Current config import StateMachine(SSO account)->Current config import StateMachine(SSO account): waitUntil temporary table is created
 Current config import StateMachine(SSO account)->Import Permission set stateMachine(SSO account): Invoke state machine passing the complete payload from the trigger source and wait
-Import Permission set stateMachine(SSO account)->AWS SSO Admin API: ListPermissionSets()
-AWS SSO Admin API->Import Permission set stateMachine(SSO account): return resultSet
+Import Permission set stateMachine(SSO account)->AWS IAM Identity Center Admin API: ListPermissionSets()
+AWS IAM Identity Center Admin API->Import Permission set stateMachine(SSO account): return resultSet
 Import Permission set stateMachine(SSO account)->Import Permission set stateMachine(SSO account): Loop through the result set
 activate Import Permission set stateMachine(SSO account)
-Import Permission set stateMachine(SSO account)->AWS SSO Admin API: describePermissionSet()
-AWS SSO Admin API->Import Permission set stateMachine(SSO account): return result
+Import Permission set stateMachine(SSO account)->AWS IAM Identity Center Admin API: describePermissionSet()
+AWS IAM Identity Center Admin API->Import Permission set stateMachine(SSO account): return result
 Import Permission set stateMachine(SSO account)->SSO account DynamoDB: upsert permissionSet object
-Import Permission set stateMachine(SSO account)->AWS SSO Admin API: listManagedPoliciesInPermissionSet()
-AWS SSO Admin API->Import Permission set stateMachine(SSO account): return resultSet
+Import Permission set stateMachine(SSO account)->AWS IAM Identity Center Admin API: listManagedPoliciesInPermissionSet()
+AWS IAM Identity Center Admin API->Import Permission set stateMachine(SSO account): return resultSet
 Import Permission set stateMachine(SSO account)->Import Permission set stateMachine(SSO account): Loop through the result set
 activate Import Permission set stateMachine(SSO account)
 Import Permission set stateMachine(SSO account)->SSO account DynamoDB: upsert permissionSet object
 deactivate Import Permission set stateMachine(SSO account)
-Import Permission set stateMachine(SSO account)->AWS SSO Admin API: getInlinePolicyDocument()
-AWS SSO Admin API->Import Permission set stateMachine(SSO account): return result
-Import Permission set stateMachine(SSO account)->AWS SSO Admin API: listTagsForPermissionSet()
-AWS SSO Admin API->Import Permission set stateMachine(SSO account): return resultSet
+Import Permission set stateMachine(SSO account)->AWS IAM Identity Center Admin API: getInlinePolicyDocument()
+AWS IAM Identity Center Admin API->Import Permission set stateMachine(SSO account): return result
+Import Permission set stateMachine(SSO account)->AWS IAM Identity Center Admin API: listTagsForPermissionSet()
+AWS IAM Identity Center Admin API->Import Permission set stateMachine(SSO account): return resultSet
 Import Permission set stateMachine(SSO account)->Import Permission set stateMachine(SSO account): Loop through the result set
 activate Import Permission set stateMachine(SSO account)
 Import Permission set stateMachine(SSO account)->SSO account DynamoDB: upsert permissionSet object
@@ -49,13 +49,13 @@ Permission set import topic->Permission set import topic: log and complete the o
 end
 end
 Import Permission set stateMachine(SSO account)->SSO account DynamoDB: delete permission set
-Import Permission set stateMachine(SSO account)->AWS SSO Admin API: list accounts for provisioned permission set
-AWS SSO Admin API->Import Permission set stateMachine(SSO account): return resultSet
+Import Permission set stateMachine(SSO account)->AWS IAM Identity Center Admin API: list accounts for provisioned permission set
+AWS IAM Identity Center Admin API->Import Permission set stateMachine(SSO account): return resultSet
 Import Permission set stateMachine(SSO account)->Import Permission set stateMachine(SSO account): Loop through result set
 activate Import Permission set stateMachine(SSO account)
 Import Permission set stateMachine(SSO account)->Import Account assignment stateMachine(SSO account): Invoke state machine with permission set arn as payload and wait
-Import Account assignment stateMachine(SSO account)->AWS SSO Admin API: listAccountAssignments() for permission set
-AWS SSO Admin API->Import Account assignment stateMachine(SSO account): return resultSet
+Import Account assignment stateMachine(SSO account)->AWS IAM Identity Center Admin API: listAccountAssignments() for permission set
+AWS IAM Identity Center Admin API->Import Account assignment stateMachine(SSO account): return resultSet
 Import Account assignment stateMachine(SSO account)->Import Account assignment stateMachine(SSO account): Loop through the result set
 activate Import Account assignment stateMachine(SSO account)
 Import Account assignment stateMachine(SSO account)->Import Account assignment stateMachine(SSO account):determine principal type

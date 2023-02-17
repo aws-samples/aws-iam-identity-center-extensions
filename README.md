@@ -1,4 +1,4 @@
-# AWS SSO Extensions For Enterprise
+# AWS IAM Identity Center Extensions For Enterprise
 
 ## Table of Contents
 
@@ -9,7 +9,7 @@
   - [The Composite Permission Set API](#the-composite-permission-set-api)
   - [Enterprise friendly account assignment life cycle](#enterprise-friendly-account-assignment-life-cycle)
   - [Automated access change management for root, ou_id and account_tag scopes](#automated-access-change-management-for-root-ou_id-and-account_tag-scopes)
-  - [Import existing AWS SSO access entitlements for management through the solution](#import-existing-aws-sso-access-entitlements-for-management-through-the-solution)
+  - [Import existing AWS IAM Identity Center access entitlements for management through the solution](#import-existing-aws-sso-access-entitlements-for-management-through-the-solution)
   - [De-couple life cycle management of different SSO objects and other features](#de-couple-life-cycle-management-of-different-sso-objects-and-other-features)
 
 - [Detailed Building Blocks Overview](docs/documentation/Building-Blocks.md)
@@ -19,7 +19,7 @@
 - [Using API interface for your use cases](#using-api-interface-for-your-use-cases)
 - [Using S3 interface for your use cases](#using-s3-interface-for-your-use-cases)
 - [Unicorn Rides use cases](https://catalog.workshops.aws/ssoextensions/en-US/03-usecases)
-- [AWS SSO Region Switch](docs/documentation//Region-Switch.md)
+- [AWS IAM Identity Center Region Switch](docs/documentation//Region-Switch.md)
 - [Troubleshooting](docs/documentation/TroubleShooting.md)
 - [Security](#security)
 - [License](#license)
@@ -28,10 +28,10 @@
 
 ![High level design](docs/images/aws-sso-extensions-for-enterprise-overview.png)
 
-**AWS SSO Extensions for Enterprise** simplifies the process to manage user
-access to AWS accounts with [AWS SSO](https://aws.amazon.com/single-sign-on/) by extending the [AWS SSO API](https://docs.aws.amazon.com/singlesignon/latest/APIReference/welcome.html).
+**AWS IAM Identity Center Extensions for Enterprise** simplifies the process to manage user
+access to AWS accounts with [AWS IAM Identity Center](https://aws.amazon.com/single-sign-on/) by extending the [AWS IAM Identity Center API](https://docs.aws.amazon.com/singlesignon/latest/APIReference/welcome.html).
 
-Instead of separately managing [AWS SSO permission sets](https://docs.aws.amazon.com/singlesignon/latest/userguide/permissionsetsconcept.html) and account
+Instead of separately managing [AWS IAM Identity Center permission sets](https://docs.aws.amazon.com/singlesignon/latest/userguide/permissionsetsconcept.html) and account
 assignments, you can use this solution to describe permission sets with one API call
 per set. Like with permission sets, you can also define and
 implement account assignments at a global level, an organizational unit level or an account tag
@@ -117,6 +117,22 @@ This solution provides a composite API for managing permission set lifecycles, a
           "Sid": "AllowReadIAMActions"
         }
       ]
+    },
+    "customerManagedPoliciesList": [
+      {
+        "Name": "cmp-1",
+        "Path": "/cmp/1/"
+      },
+      {
+        "Name": "cmp-2",
+        "Path": "/cmp/2/"
+      },
+      {
+        "Name": "cmp-3"
+      }
+    ],
+    "permissionsBoundary": {
+      "ManagedPolicyArn": "arn:aws:iam::aws:policy/job-function/NetworkAdministrator"
     }
   }
 }
@@ -161,6 +177,25 @@ This solution provides a composite API for managing permission set lifecycles, a
           "Sid": "AllowReadIAMActions"
         }
       ]
+    },
+    "customerManagedPoliciesList": [
+      {
+        "Name": "cmp-1",
+        "Path": "/cmp/1/"
+      },
+      {
+        "Name": "cmp-2",
+        "Path": "/cmp/2/"
+      },
+      {
+        "Name": "cmp-3"
+      }
+    ],
+    "permissionsBoundary": {
+      "CustomerManagedPolicyReference": {
+        "Name": "cmp-pb",
+        "Path": "/cmp/pb/"
+      }
     }
   }
 }
@@ -278,20 +313,20 @@ The solution provides automated change access management through the following f
 - The solution also supports nested OU behaviour for automated access change management. This behaviour could be configured by setting `SupportNestedOU` to `true` in your environment configuration file. If the nested OU support is configured, when an account moves from a source OU to a destination OU, the solution discovers all the parents of the source OU and destination OU until root , to determine the list of account assignments that need to be removed/added automatically.
 - If an account assignment has been created through the solution with scope set to account_tag, and an account is updated with this tag key value at a later time, this account assignment is automatically created for the new account by the solution. Additionally, when this tag key value is removed from the account/when this tag key is updated to a different value on the account at a later time, this account assignment is automatically deleted from the account by the solution.
 
-### Import existing AWS SSO access entitlements for management through the solution
+### Import existing AWS IAM Identity Center access entitlements for management through the solution
 
-- The solution enables a one-time import of existing AWS SSO access entitlements for management through the solution
+- The solution enables a one-time import of existing AWS IAM Identity Center access entitlements for management through the solution
 - Based on the `ImportCurrentSSOConfiguration` flag in the configuration file, the solution would import all existing permission sets and account assignments so that they could be updated/deleted through the solution interfaces
 - The solution ensures that all related attributes of permission sets/account assignments are imported in a format that would allow you to manage them through the solution interfaces
 - All account assignments would be imported as `account` scope types
-- While the solution triggers an automatic import one-time through the pipeline, once enabled the `env-importCurrentConfigSM` state machine in your `AWS SSO account` and `AWS SSO region` could be run as many times as you require. You could refer to the execution input that the solution uses as part of the pipeline deployment for reference.
+- While the solution triggers an automatic import one-time through the pipeline, once enabled the `env-importCurrentConfigSM` state machine in your `AWS IAM Identity Center account` and `AWS IAM Identity Center region` could be run as many times as you require. You could refer to the execution input that the solution uses as part of the pipeline deployment for reference.
 
 ### De-couple life cycle management of different SSO objects and other features
 
 - The solution enables de-coupling creation of permission sets , user groups and account assignment operations completely. They could be created in any sequence, thereby enabling enterprise teams to handle these objects lifecycles through different workflow process that align to their needs, and the solution would handle the target state appropriately
-- The solution enables usage of friendly names in managing permission set, account assignment life cycles and would handle the translation of friendly names into internal AWS SSO GUID's automatically
+- The solution enables usage of friendly names in managing permission set, account assignment life cycles and would handle the translation of friendly names into internal AWS IAM Identity Center GUID's automatically
 - The solution enables deployment in a distributed model i.e. orgmain, deployment and target account (or) in a single account model i.e. orgmain only. It's recommended that single account model of deployment be used only for demonstration purposes
-- The solution assumes that AWS SSO is enabled in a different account other than orgmain account and has the required cross-account permissions setup to enable the functionalities. This future-proofs the solution to support the scenario when AWS SSO service releases delegated admin support similar to other services such as GuardDuty
+- The solution assumes that AWS IAM Identity Center is enabled in a different account other than orgmain account and has the required cross-account permissions setup to enable the functionalities. This future-proofs the solution to support the scenario when AWS IAM Identity Center service releases delegated admin support similar to other services such as GuardDuty
 
 ## Schema details for account assignment and permission set operations
 

@@ -47,7 +47,8 @@ export const handler = async (event: SNSEvent) => {
     /**
      * Construct permission set object from the message payload by instantiating
      * all optional attributes as empty, and if the message payload has data for
-     * these optional attributes use that value, otherwise use the empty initialisation
+     * these optional attributes use that value, otherwise use the empty
+     * initialisation
      */
     const permissionSetObject = {};
     let computedRelayState = "";
@@ -92,7 +93,8 @@ export const handler = async (event: SNSEvent) => {
     }
     /**
      * Once all the optional attributes are verified, construct the permission
-     * set object in a format compatible with sso-extensions and ready for upsert
+     * set object in a format compatible with sso-extensions and ready for
+     * upsert
      */
 
     Object.assign(permissionSetObject, {

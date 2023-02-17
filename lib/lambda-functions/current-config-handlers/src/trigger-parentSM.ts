@@ -39,6 +39,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
       accountAssignmentImportTopicArn,
       permissionSetImportTopicArn,
       temporaryPermissionSetTableName,
+      importCmpAndPbArn,
       ssoRegion,
     } = event.ResourceProperties;
     const sfnClientObject = new SFNClient({
@@ -60,6 +61,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
           importPermissionSetSMArn: importPermissionSetSMArn,
           permissionSetImportTopicArn: permissionSetImportTopicArn,
           PhysicalResourceId: importCurrentConfigSMArn,
+          importCmpAndPbArn: importCmpAndPbArn,
           eventType: event.RequestType,
           triggerSource: "CloudFormation",
           requestId: requestId,

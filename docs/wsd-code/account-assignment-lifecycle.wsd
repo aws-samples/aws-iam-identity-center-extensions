@@ -14,17 +14,17 @@ User Interface Handler->Solution User: return success with requestId for tracing
 activate Topic Processor
 Topic Processor->Solution Persistence(DynamoDB): doesPermissionSetExist() ?
 alt Permission set exists
-Topic Processor->AWS SSO Identity Store: doesPrincipalExist()?
-AWS SSO Identity Store->Topic Processor: return principal list result
+Topic Processor->AWS IAM Identity Center Identity Store: doesPrincipalExist()?
+AWS IAM Identity Center Identity Store->Topic Processor: return principal list result
 alt Principal exists
 Topic Processor->Topic Processor: checkScopeType?
 alt scopeType=account
 Topic Processor->Account assignment FIFO queue: Post account assignment creation/deletion payload
 Account assignment FIFO queue->Account assignment queue processor: Pull latest message for the message_group_id
 activate Account assignment queue processor
-Account assignment queue processor->AWS SSO Admin API: Process account assignment operation
-Account assignment queue processor->AWS SSO Admin API: waitUntilAccountAssignment create/delete
-AWS SSO Admin API->Account assignment queue processor: respond AccountAssignment operation status
+Account assignment queue processor->AWS IAM Identity Center Admin API: Process account assignment operation
+Account assignment queue processor->AWS IAM Identity Center Admin API: waitUntilAccountAssignment create/delete
+AWS IAM Identity Center Admin API->Account assignment queue processor: respond AccountAssignment operation status
 Account assignment queue processor->Account assignment queue processor: determine if success/fail/time out and log the results
 Account assignment queue processor->Solution Persistence(DynamoDB): upsert/delete the provisioned/de-provisioned account assignment details
 deactivate Account assignment queue processor
