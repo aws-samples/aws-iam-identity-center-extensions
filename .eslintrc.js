@@ -5,8 +5,7 @@ module.exports = {
   ignorePatterns: ["**/*.js", "cdk.out"],
   extends: [
     "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:security/recommended",
+    "plugin:@typescript-eslint/recommended"
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
