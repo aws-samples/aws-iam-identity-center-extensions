@@ -38,7 +38,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
           processLinksFunctionName: processLinksFunctionName,
           eventType: event.RequestType,
         }),
-      })
+      }),
     );
     logger({
       handler: "upgradeSM",
@@ -62,7 +62,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
       relatedData: `${upgradeV303SMArn}`,
       status: requestStatus.FailedWithException,
       statusMessage: `Custom resource creation failed with exception: ${JSON.stringify(
-        e
+        e,
       )}`,
     });
     return {

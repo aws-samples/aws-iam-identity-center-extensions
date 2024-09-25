@@ -62,7 +62,7 @@ export const handler = async (event: S3Event) => {
             status: requestStatus.InProgress,
             statusMessage: `Permission Set delete operation started`,
           },
-          functionLogMode
+          functionLogMode,
         );
         const keyValue = record.s3.object.key
           .replace(/\+/g, " ")
@@ -78,7 +78,7 @@ export const handler = async (event: S3Event) => {
             relatedData: keyValue,
             statusMessage: `Split file name with path for fetching permission set name`,
           },
-          functionLogMode
+          functionLogMode,
         );
         const relatedLinks = await ddbDocClientObject.send(
           new QueryCommand({
@@ -89,7 +89,7 @@ export const handler = async (event: S3Event) => {
               "#permissionSetName": "permissionSetName",
             },
             ExpressionAttributeValues: { ":permissionSetName": keyValue },
-          })
+          }),
         );
         logger(
           {
@@ -100,7 +100,7 @@ export const handler = async (event: S3Event) => {
             relatedData: keyValue,
             statusMessage: `Queried if there are any related account assignments using this permission set`,
           },
-          functionLogMode
+          functionLogMode,
         );
         if (relatedLinks.Items?.length !== 0) {
           await snsClientObject.send(
@@ -112,9 +112,9 @@ export const handler = async (event: S3Event) => {
                 handlerName,
                 "Constraint violation exception",
                 "There are related account assignments for this permission set, and cannot be deleted without deleting the account assignments first",
-                keyValue
+                keyValue,
               ),
-            })
+            }),
           );
           logger({
             handler: handlerName,
@@ -126,7 +126,7 @@ export const handler = async (event: S3Event) => {
               handlerName,
               "Constraint violation exception",
               "There are related account assignments for this permission set, and cannot be deleted without deleting the account assignments first",
-              keyValue
+              keyValue,
             ),
           });
         } else {
@@ -139,7 +139,7 @@ export const handler = async (event: S3Event) => {
               relatedData: keyValue,
               statusMessage: `No related account assignments found, posting payload to permissionSetProecsstingTopic`,
             },
-            functionLogMode
+            functionLogMode,
           );
           await snsClientObject.send(
             new PublishCommand({
@@ -149,7 +149,7 @@ export const handler = async (event: S3Event) => {
                 action: "delete",
                 permissionSetName: keyValue,
               }),
-            })
+            }),
           );
         }
       } catch (err) {
@@ -163,9 +163,9 @@ export const handler = async (event: S3Event) => {
                 handlerName,
                 "Schema validation exception",
                 `Provided permission set ${permissionSetFileName} S3 file does not pass the schema validation`,
-                JSON.stringify(err.errors)
+                JSON.stringify(err.errors),
               ),
-            })
+            }),
           );
 
           logger({
@@ -176,7 +176,7 @@ export const handler = async (event: S3Event) => {
               handlerName,
               "Schema validation exception",
               `Provided permission set ${permissionSetFileName} S3 file does not pass the schema validation`,
-              JSON.stringify(err.errors)
+              JSON.stringify(err.errors),
             ),
           });
         } else if (
@@ -192,9 +192,9 @@ export const handler = async (event: S3Event) => {
                 handlerName,
                 err.name,
                 err.message,
-                permissionSetFileName
+                permissionSetFileName,
               ),
-            })
+            }),
           );
           logger({
             handler: handlerName,
@@ -205,7 +205,7 @@ export const handler = async (event: S3Event) => {
               handlerName,
               err.name,
               err.message,
-              permissionSetFileName
+              permissionSetFileName,
             ),
           });
         } else {
@@ -218,9 +218,9 @@ export const handler = async (event: S3Event) => {
                 handlerName,
                 "Unhandled exception",
                 JSON.stringify(err),
-                permissionSetFileName
+                permissionSetFileName,
               ),
-            })
+            }),
           );
           logger({
             handler: handlerName,
@@ -230,11 +230,11 @@ export const handler = async (event: S3Event) => {
               handlerName,
               "Unhandled exception",
               JSON.stringify(err),
-              permissionSetFileName
+              permissionSetFileName,
             ),
           });
         }
       }
-    })
+    }),
   );
 };

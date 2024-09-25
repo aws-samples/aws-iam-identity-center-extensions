@@ -43,7 +43,7 @@ export class SSOImportArtefactsPart1 extends Stack {
     scope: Construct,
     id: string,
     props: StackProps | undefined,
-    buildConfig: BuildConfig
+    buildConfig: BuildConfig,
   ) {
     super(scope, id, props);
 
@@ -54,10 +54,10 @@ export class SSOImportArtefactsPart1 extends Stack {
       {
         enableKeyRotation: true,
         alias: name(buildConfig, "ssoArtefactsKeyforImport"),
-      }
+      },
     );
     ssoArtefactsKeyforImport.grantEncryptDecrypt(
-      new ServicePrincipal("states.amazonaws.com")
+      new ServicePrincipal("states.amazonaws.com"),
     );
 
     // Topics that would allow cross account handlers to process import of existing configuration
@@ -67,7 +67,7 @@ export class SSOImportArtefactsPart1 extends Stack {
       {
         masterKey: ssoArtefactsKeyforImport,
         displayName: name(buildConfig, "permissionSetImportTopic"),
-      }
+      },
     );
     permissionSetImportTopic.addToResourcePolicy(
       new PolicyStatement({
@@ -76,7 +76,7 @@ export class SSOImportArtefactsPart1 extends Stack {
         ],
         actions: ["SNS:Subscribe", "SNS:Receive"],
         resources: [permissionSetImportTopic.topicArn],
-      })
+      }),
     );
     new SSMParamWriter(
       this,
@@ -86,7 +86,7 @@ export class SSOImportArtefactsPart1 extends Stack {
         ParamNameKey: "permissionSetImportTopicArn",
         ParamValue: permissionSetImportTopic.topicArn,
         ReaderAccountId: buildConfig.PipelineSettings.TargetAccountId,
-      }
+      },
     );
 
     const accountAssignmentImportTopic = new Topic(
@@ -95,7 +95,7 @@ export class SSOImportArtefactsPart1 extends Stack {
       {
         masterKey: ssoArtefactsKeyforImport,
         displayName: name(buildConfig, "accountAssignmentImportTopic"),
-      }
+      },
     );
     accountAssignmentImportTopic.addToResourcePolicy(
       new PolicyStatement({
@@ -104,7 +104,7 @@ export class SSOImportArtefactsPart1 extends Stack {
         ],
         actions: ["SNS:Subscribe", "SNS:Receive"],
         resources: [accountAssignmentImportTopic.topicArn],
-      })
+      }),
     );
     new SSMParamWriter(
       this,
@@ -114,7 +114,7 @@ export class SSOImportArtefactsPart1 extends Stack {
         ParamNameKey: "accountAssignmentImportTopicArn",
         ParamValue: accountAssignmentImportTopic.topicArn,
         ReaderAccountId: buildConfig.PipelineSettings.TargetAccountId,
-      }
+      },
     );
 
     /** Log group to attach to all the state machines for capturing logs */
@@ -123,7 +123,7 @@ export class SSOImportArtefactsPart1 extends Stack {
       name(buildConfig, "importArtefactsSMLogGroup"),
       {
         retention: RetentionDays.ONE_MONTH,
-      }
+      },
     );
 
     /**
@@ -136,11 +136,11 @@ export class SSOImportArtefactsPart1 extends Stack {
       name(buildConfig, "nodeJsLayerForCmpAndPb"),
       {
         code: Code.fromAsset(
-          join(__dirname, "../../../", "lib", "lambda-layers", "nodejs-layer")
+          join(__dirname, "../../../", "lib", "lambda-layers", "nodejs-layer"),
         ),
         compatibleRuntimes: [Runtime.NODEJS_20_X],
         compatibleArchitectures: [Architecture.ARM_64],
-      }
+      },
     );
 
     const importCmpAndPb = new NodejsFunction(
@@ -158,13 +158,13 @@ export class SSOImportArtefactsPart1 extends Stack {
           "lambda-functions",
           "current-config-handlers",
           "src",
-          "import-customermanagedpolicies-permissionsboundary.ts"
+          "import-customermanagedpolicies-permissionsboundary.ts",
         ),
         bundling: {
           externalModules: ["@aws-sdk/client-ssoadmin"],
           minify: true,
         },
-      }
+      },
     );
 
     /**
@@ -178,7 +178,7 @@ export class SSOImportArtefactsPart1 extends Stack {
           "sso:GetPermissionsBoundaryForPermissionSet",
         ],
         resources: ["*"],
-      })
+      }),
     );
 
     new SSMParamWriter(
@@ -189,7 +189,7 @@ export class SSOImportArtefactsPart1 extends Stack {
         ParamNameKey: "importCmpAndPbArn",
         ParamValue: importCmpAndPb.functionArn,
         ReaderAccountId: buildConfig.PipelineSettings.TargetAccountId,
-      }
+      },
     );
 
     // State Machine 01 - Import Account Assignments
@@ -200,23 +200,23 @@ export class SSOImportArtefactsPart1 extends Stack {
       {
         roleName: name(buildConfig, "importAccountAssignmentsSMRole"),
         assumedBy: new ServicePrincipal("states.amazonaws.com"),
-      }
+      },
     );
     importAccountAssignmentsSMRole.addToPrincipalPolicy(
       new PolicyStatement({
         resources: ["*"],
         actions: ["sso:ListAccountAssignments"],
-      })
+      }),
     );
     accountAssignmentImportTopic.grantPublish(importAccountAssignmentsSMRole);
     ssoArtefactsKeyforImport.grantEncryptDecrypt(
-      importAccountAssignmentsSMRole
+      importAccountAssignmentsSMRole,
     );
     importAccountAssignmentsSMRole.addToPrincipalPolicy(
       new PolicyStatement({
         actions: ["states:DescribeExecution", "states:StopExecution"],
         resources: ["*"],
-      })
+      }),
     );
     importAccountAssignmentsSMRole.addToPrincipalPolicy(
       new PolicyStatement({
@@ -224,7 +224,7 @@ export class SSOImportArtefactsPart1 extends Stack {
         resources: [
           `arn:aws:events:${buildConfig.PipelineSettings.SSOServiceAccountRegion}:${buildConfig.PipelineSettings.SSOServiceAccountId}:rule/StepFunctionsGetEventsForStepFunctionsExecutionRule`,
         ],
-      })
+      }),
     );
 
     importAccountAssignmentsSMRole.addToPrincipalPolicy(
@@ -236,7 +236,7 @@ export class SSOImportArtefactsPart1 extends Stack {
           "identitystore:DescribeGroup",
           "identitystore:DescribeUser",
         ],
-      })
+      }),
     );
     importAccountAssignmentsSMRole.addToPrincipalPolicy(
       new PolicyStatement({
@@ -251,7 +251,7 @@ export class SSOImportArtefactsPart1 extends Stack {
           "logs:DescribeLogGroups",
         ],
         resources: ["*"],
-      })
+      }),
     );
 
     const importAccountAssignmentSM = new CfnStateMachine(
@@ -272,10 +272,10 @@ export class SSOImportArtefactsPart1 extends Stack {
           includeExecutionData: true,
           level: "ALL",
         },
-      }
+      },
     );
     importAccountAssignmentSM.node.addDependency(
-      importAccountAssignmentsSMRole
+      importAccountAssignmentsSMRole,
     );
 
     // State Machine 02 - Import Permission Sets
@@ -286,7 +286,7 @@ export class SSOImportArtefactsPart1 extends Stack {
       {
         roleName: name(buildConfig, "importPermissionSetSMRole"),
         assumedBy: new ServicePrincipal("states.amazonaws.com"),
-      }
+      },
     );
     importPermissionSetSMRole.addToPrincipalPolicy(
       new PolicyStatement({
@@ -299,7 +299,7 @@ export class SSOImportArtefactsPart1 extends Stack {
           "sso:ListTagsForResource",
           "sso:ListAccountsForProvisionedPermissionSet",
         ],
-      })
+      }),
     );
     importPermissionSetSMRole.addToPrincipalPolicy(
       new PolicyStatement({
@@ -313,19 +313,19 @@ export class SSOImportArtefactsPart1 extends Stack {
           `arn:aws:dynamodb:${buildConfig.PipelineSettings.SSOServiceAccountRegion}:${buildConfig.PipelineSettings.SSOServiceAccountId}:table/${buildConfig.Environment}-temp-PermissionSets`,
           `arn:aws:dynamodb:${buildConfig.PipelineSettings.SSOServiceAccountRegion}:${buildConfig.PipelineSettings.SSOServiceAccountId}:table/${buildConfig.Environment}-temp-PermissionSets/index/*`,
         ],
-      })
+      }),
     );
     importPermissionSetSMRole.addToPrincipalPolicy(
       new PolicyStatement({
         actions: ["states:StartExecution"],
         resources: [importAccountAssignmentSM.ref],
-      })
+      }),
     );
     importPermissionSetSMRole.addToPrincipalPolicy(
       new PolicyStatement({
         actions: ["states:DescribeExecution", "states:StopExecution"],
         resources: ["*"],
-      })
+      }),
     );
 
     importPermissionSetSMRole.addToPrincipalPolicy(
@@ -334,7 +334,7 @@ export class SSOImportArtefactsPart1 extends Stack {
         resources: [
           `arn:aws:events:${buildConfig.PipelineSettings.SSOServiceAccountRegion}:${buildConfig.PipelineSettings.SSOServiceAccountId}:rule/StepFunctionsGetEventsForStepFunctionsExecutionRule`,
         ],
-      })
+      }),
     );
     importPermissionSetSMRole.addToPrincipalPolicy(
       new PolicyStatement({
@@ -349,7 +349,7 @@ export class SSOImportArtefactsPart1 extends Stack {
           "logs:DescribeLogGroups",
         ],
         resources: ["*"],
-      })
+      }),
     );
 
     permissionSetImportTopic.grantPublish(importPermissionSetSMRole);
@@ -374,7 +374,7 @@ export class SSOImportArtefactsPart1 extends Stack {
           includeExecutionData: true,
           level: "ALL",
         },
-      }
+      },
     );
     importPermissionSetSM.node.addDependency(importPermissionSetSMRole);
 
@@ -386,7 +386,7 @@ export class SSOImportArtefactsPart1 extends Stack {
       {
         roleName: name(buildConfig, "importCurrentConfigSMRole"),
         assumedBy: new ServicePrincipal("states.amazonaws.com"),
-      }
+      },
     );
     importCurrentConfigSMRole.addToPrincipalPolicy(
       new PolicyStatement({
@@ -399,25 +399,25 @@ export class SSOImportArtefactsPart1 extends Stack {
           `arn:aws:dynamodb:${buildConfig.PipelineSettings.SSOServiceAccountRegion}:${buildConfig.PipelineSettings.SSOServiceAccountId}:table/${buildConfig.Environment}-temp-PermissionSets`,
           `arn:aws:dynamodb:${buildConfig.PipelineSettings.SSOServiceAccountRegion}:${buildConfig.PipelineSettings.SSOServiceAccountId}:table/${buildConfig.Environment}-temp-PermissionSets/index/*`,
         ],
-      })
+      }),
     );
     importCurrentConfigSMRole.addToPrincipalPolicy(
       new PolicyStatement({
         resources: ["*"],
         actions: ["sso:ListInstances"],
-      })
+      }),
     );
     importCurrentConfigSMRole.addToPrincipalPolicy(
       new PolicyStatement({
         actions: ["states:StartExecution"],
         resources: [importPermissionSetSM.ref],
-      })
+      }),
     );
     importCurrentConfigSMRole.addToPrincipalPolicy(
       new PolicyStatement({
         actions: ["states:DescribeExecution", "states:StopExecution"],
         resources: ["*"],
-      })
+      }),
     );
 
     importCurrentConfigSMRole.addToPrincipalPolicy(
@@ -426,7 +426,7 @@ export class SSOImportArtefactsPart1 extends Stack {
         resources: [
           `arn:aws:events:${buildConfig.PipelineSettings.SSOServiceAccountRegion}:${buildConfig.PipelineSettings.SSOServiceAccountId}:rule/StepFunctionsGetEventsForStepFunctionsExecutionRule`,
         ],
-      })
+      }),
     );
     importCurrentConfigSMRole.addToPrincipalPolicy(
       new PolicyStatement({
@@ -441,7 +441,7 @@ export class SSOImportArtefactsPart1 extends Stack {
           "logs:DescribeLogGroups",
         ],
         resources: ["*"],
-      })
+      }),
     );
 
     const importCurrentConfigSM = new CfnStateMachine(
@@ -462,7 +462,7 @@ export class SSOImportArtefactsPart1 extends Stack {
           includeExecutionData: true,
           level: "ALL",
         },
-      }
+      },
     );
 
     importCurrentConfigSM.node.addDependency(importCurrentConfigSMRole);
@@ -487,7 +487,7 @@ export class SSOImportArtefactsPart1 extends Stack {
           resources: ["*"],
           actions: ["states:DescribeExecution"],
         }),
-      }
+      },
     );
 
     /** CloudWatch insights query to debug errors, if any */
@@ -499,7 +499,7 @@ export class SSOImportArtefactsPart1 extends Stack {
         queryString:
           "filter @message like 'solutionError' and details.name not like 'Catchall'| sort id asc",
         logGroupNames: [importArtefactsSMLogGroup.logGroupName],
-      }
+      },
     );
   }
 }

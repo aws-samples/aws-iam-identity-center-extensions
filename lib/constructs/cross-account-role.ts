@@ -25,7 +25,7 @@ export class CrossAccountRole extends Construct {
     scope: Construct,
     id: string,
     buildConfig: BuildConfig,
-    crossAccountRoleProps: CrossAccountRoleProps
+    crossAccountRoleProps: CrossAccountRoleProps,
   ) {
     super(scope, id);
 
@@ -38,7 +38,7 @@ export class CrossAccountRole extends Construct {
       name(buildConfig, `${crossAccountRoleProps.roleNameKey}-role`),
       {
         assumedBy: new AccountPrincipal(crossAccountRoleProps.assumeAccountID),
-      }
+      },
     );
 
     /**
@@ -59,7 +59,7 @@ export class CrossAccountRole extends Construct {
         ParamNameKey: `${crossAccountRoleProps.roleNameKey}-roleArn`,
         ParamValue: this.role.roleArn,
         ReaderAccountId: crossAccountRoleProps.assumeAccountID,
-      }
+      },
     );
   }
 }

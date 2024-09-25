@@ -30,7 +30,7 @@ export class OrgEvents extends Construct {
     scope: Construct,
     id: string,
     buildConfig: BuildConfig,
-    orgEventsProps: OrgEventsProps
+    orgEventsProps: OrgEventsProps,
   ) {
     super(scope, id);
 
@@ -47,7 +47,7 @@ export class OrgEvents extends Construct {
           "lambda-functions",
           "application-handlers",
           "src",
-          "orgEvents.ts"
+          "orgEvents.ts",
         ),
         bundling: {
           externalModules: [
@@ -80,11 +80,11 @@ export class OrgEvents extends Construct {
           functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
         timeout: Duration.minutes(5), //aggressive timeout to accommodate for child OU's having many parents
-      }
+      },
     );
 
     this.orgEventsHandler.addEventSource(
-      new SnsEventSource(orgEventsProps.orgEventsNotificationTopic)
+      new SnsEventSource(orgEventsProps.orgEventsNotificationTopic),
     );
   }
 }

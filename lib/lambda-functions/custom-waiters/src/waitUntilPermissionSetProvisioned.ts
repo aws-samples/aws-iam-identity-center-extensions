@@ -18,13 +18,13 @@ import { logger } from "../../helpers/src/utilities";
 
 const checkState = async (
   client: SSOAdminClient,
-  input: DescribePermissionSetProvisioningStatusCommandInput
+  input: DescribePermissionSetProvisioningStatusCommandInput,
 ): Promise<WaiterResult> => {
   let reason;
   try {
     const result: DescribePermissionSetProvisioningStatusCommandOutput =
       await client.send(
-        new DescribePermissionSetProvisioningStatusCommand(input)
+        new DescribePermissionSetProvisioningStatusCommand(input),
       );
     reason = result;
     if (
@@ -43,7 +43,7 @@ const checkState = async (
 export const waitUntilPermissionSetProvisioned = async (
   params: WaiterConfiguration<SSOAdminClient>,
   input: DescribePermissionSetProvisioningStatusCommandInput,
-  requestId: string
+  requestId: string,
 ): Promise<WaiterResult> => {
   logger({
     handler: "permissionSetProvisioningWaiter",
@@ -57,7 +57,7 @@ export const waitUntilPermissionSetProvisioned = async (
   const result = await createWaiter(
     { ...serviceDefaults, ...params },
     input,
-    checkState
+    checkState,
   );
   logger({
     handler: "permissionSetProvisioningWaiter",

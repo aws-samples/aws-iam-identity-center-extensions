@@ -30,7 +30,7 @@ export class AwsSsoExtensionsRegionSwitchDeploy extends Stack {
     scope: Construct,
     id: string,
     props: StackProps | undefined,
-    buildConfig: RegionSwitchBuildConfig
+    buildConfig: RegionSwitchBuildConfig,
   ) {
     super(scope, id, props);
 
@@ -40,7 +40,7 @@ export class AwsSsoExtensionsRegionSwitchDeploy extends Stack {
      */
     const rsNodeJsLayer = new LayerVersion(this, fullname("rsNodeJsLayer"), {
       code: Code.fromAsset(
-        join(__dirname, "../../", "lambda-layers", "nodejs-layer")
+        join(__dirname, "../../", "lambda-layers", "nodejs-layer"),
       ),
       compatibleRuntimes: [Runtime.NODEJS_20_X],
       compatibleArchitectures: [Architecture.ARM_64],
@@ -60,7 +60,7 @@ export class AwsSsoExtensionsRegionSwitchDeploy extends Stack {
       {
         tableName:
           "aws-sso-extensions-region-switch-discover-globalPermissionSetsTable",
-      }
+      },
     );
     const globalAccountAssignmentsTable = Table.fromTableAttributes(
       this,
@@ -69,7 +69,7 @@ export class AwsSsoExtensionsRegionSwitchDeploy extends Stack {
         tableName:
           "aws-sso-extensions-region-switch-discover-globalAccountAssignmentsTable",
         globalIndexes: ["permissionSetName"],
-      }
+      },
     );
 
     /**
@@ -92,7 +92,7 @@ export class AwsSsoExtensionsRegionSwitchDeploy extends Stack {
           "lambda-functions",
           "region-switch",
           "src",
-          "rs-create-permission-sets.ts"
+          "rs-create-permission-sets.ts",
         ),
         bundling: {
           externalModules: [
@@ -102,7 +102,7 @@ export class AwsSsoExtensionsRegionSwitchDeploy extends Stack {
           ],
           minify: true,
         },
-      }
+      },
     );
     rsCreatePermissionSetsHandler.addToRolePolicy(
       new PolicyStatement({
@@ -115,7 +115,7 @@ export class AwsSsoExtensionsRegionSwitchDeploy extends Stack {
           "sso:AttachManagedPolicyToPermissionSet",
           "sso:UpdatePermissionSet",
         ],
-      })
+      }),
     );
 
     /** Log group to attach to deploy state machine for capturing logs */
@@ -151,7 +151,7 @@ export class AwsSsoExtensionsRegionSwitchDeploy extends Stack {
           "logs:DescribeLogGroups",
         ],
         resources: ["*"],
-      })
+      }),
     );
     deploySMRole.addToPrincipalPolicy(
       new PolicyStatement({
@@ -163,7 +163,7 @@ export class AwsSsoExtensionsRegionSwitchDeploy extends Stack {
           "identitystore:ListUsers",
         ],
         resources: ["*"],
-      })
+      }),
     );
 
     /**
@@ -214,7 +214,7 @@ export class AwsSsoExtensionsRegionSwitchDeploy extends Stack {
           "lambda-functions",
           "region-switch",
           "src",
-          "update-custom-resource.ts"
+          "update-custom-resource.ts",
         ),
         bundling: {
           externalModules: ["@aws-sdk/client-sfn"],
@@ -224,14 +224,14 @@ export class AwsSsoExtensionsRegionSwitchDeploy extends Stack {
           ssoAccountId: buildConfig.SSOServiceAccountId,
           ssoRegion: buildConfig.SSOServiceTargetAccountRegion,
         },
-      }
+      },
     );
     if (updateCustomResourceHandler.role) {
       updateCustomResourceHandler.addToRolePolicy(
         new PolicyStatement({
           actions: ["states:DescribeExecution", "states:StopExecution"],
           resources: ["*"],
-        })
+        }),
       );
     }
 
@@ -254,20 +254,20 @@ export class AwsSsoExtensionsRegionSwitchDeploy extends Stack {
           "lambda-functions",
           "region-switch",
           "src",
-          "trigger-deploySM.ts"
+          "trigger-deploySM.ts",
         ),
         bundling: {
           externalModules: ["@aws-sdk/client-sfn", "uuid"],
           minify: true,
         },
-      }
+      },
     );
     if (parentSMInvokeFunction.role) {
       parentSMInvokeFunction.role.addToPrincipalPolicy(
         new PolicyStatement({
           actions: ["states:StartExecution"],
           resources: [deploySM.ref],
-        })
+        }),
       );
     }
 
@@ -283,7 +283,7 @@ export class AwsSsoExtensionsRegionSwitchDeploy extends Stack {
         isCompleteHandler: updateCustomResourceHandler,
         queryInterval: Duration.minutes(1),
         totalTimeout: Duration.minutes(240), // to handle scenarios where organisations have a lot of permission sets and account assignments discovered
-      }
+      },
     );
 
     /**
@@ -303,7 +303,7 @@ export class AwsSsoExtensionsRegionSwitchDeploy extends Stack {
             globalAccountAssignmentsTable.tableName,
           CreatePSFunctionName: rsCreatePermissionSetsHandler.functionName,
         },
-      }
+      },
     );
     /**
      * Add dependencies to ensure that the custom resource creation is not

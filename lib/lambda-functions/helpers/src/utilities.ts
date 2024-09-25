@@ -15,7 +15,7 @@ export const removeEmpty = (obj: { [x: string]: any }) => {
       (obj[`${k}`] &&
         typeof obj[`${k}`] === "object" &&
         removeEmpty(obj[`${k}`])) ||
-      (!obj[`${k}`] && obj[`${k}`] !== undefined && delete obj[`${k}`])
+      (!obj[`${k}`] && obj[`${k}`] !== undefined && delete obj[`${k}`]),
   );
   return obj;
 };
@@ -33,7 +33,7 @@ export const invokeStepFunction = async (
   payload: StateMachinePayload,
   entityValue: string,
   stateMachineArn: string,
-  sfnClient: SFNClient
+  sfnClient: SFNClient,
 ) => {
   let computedOUId = "";
   let computedTagKey = "";
@@ -56,7 +56,7 @@ export const invokeStepFunction = async (
         ou_id: computedOUId,
         resourceTypeFilters: "organizations:account",
       }),
-    })
+    }),
   );
 };
 
@@ -132,7 +132,7 @@ export const constructExceptionMessage = (
   handler: string,
   name: string,
   message: string,
-  relatedData: string
+  relatedData: string,
 ) => {
   return JSON.stringify(
     JSON.parse(
@@ -145,11 +145,11 @@ export const constructExceptionMessage = (
           relatedData: relatedData,
         },
         null,
-        2
-      )
+        2,
+      ),
     ),
     null,
-    2
+    2,
   );
 };
 
@@ -157,7 +157,7 @@ export const constructExceptionMessageforLogger = (
   requestId: string,
   name: string,
   message: string,
-  relatedData: string
+  relatedData: string,
 ) => {
   return `For requestID: ${requestId} , exception with exception name -> ${name} occurred. Exception message is -> ${message} . Related data for the exception -> ${relatedData}`;
 };
@@ -172,7 +172,7 @@ export const resolvePrincipal = async (
   identityStoreId: string,
   identityStoreClientObject: IdentitystoreClient,
   principalType: string,
-  principalName: string
+  principalName: string,
 ): Promise<string> => {
   if (principalType === "GROUP") {
     const listGroupsResult: ListGroupsCommandOutput =
@@ -185,7 +185,7 @@ export const resolvePrincipal = async (
               AttributeValue: principalName,
             },
           ],
-        })
+        }),
       );
     if (listGroupsResult.Groups?.length !== 0) {
       return listGroupsResult.Groups?.[0].GroupId + "";
@@ -203,7 +203,7 @@ export const resolvePrincipal = async (
               AttributeValue: principalName,
             },
           ],
-        })
+        }),
       );
     if (listUsersResult.Users?.length !== 0) {
       return listUsersResult.Users?.[0].UserId + "";

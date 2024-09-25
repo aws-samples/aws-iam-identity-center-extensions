@@ -39,7 +39,7 @@ const durationRegex = new RegExp(
     r("minutes", "M"),
     r("seconds", "S"),
     ")?", // end optional time
-  ].join("")
+  ].join(""),
 );
 
 function parseNum(stringValue: string): number | undefined {
@@ -84,7 +84,7 @@ export function parseISODurationString(durationStr: string): Duration {
 
 const s = (
   number: number | undefined,
-  component: string
+  component: string,
 ): string | undefined => {
   if (!number) {
     return undefined;

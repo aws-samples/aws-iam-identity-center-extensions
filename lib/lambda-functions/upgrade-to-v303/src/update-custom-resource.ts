@@ -28,7 +28,7 @@ export const handler = async (event: any) => {
     const stateMachineExecutionResult = await sfnClientObject.send(
       new DescribeExecutionCommand({
         executionArn: stateMachineExecutionArn,
-      })
+      }),
     );
 
     switch (stateMachineExecutionResult.status) {
@@ -108,13 +108,13 @@ export const handler = async (event: any) => {
         relatedData: `${stateMachineExecutionArn}`,
         status: requestStatus.FailedWithException,
         statusMessage: `Custom resource update - stateMachine with execution arn: ${stateMachineExecutionArn} failed with exception: ${JSON.stringify(
-          e
+          e,
         )}`,
       });
       throw new Error(
         `Custom resource update - stateMachine with execution arn: ${stateMachineExecutionArn} failed with exception: ${JSON.stringify(
-          e
-        )}`
+          e,
+        )}`,
       );
     }
   }

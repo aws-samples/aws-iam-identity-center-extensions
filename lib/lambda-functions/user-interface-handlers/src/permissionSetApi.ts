@@ -77,11 +77,11 @@ const createUpdateSchemaDefinition = JSON.parse(
       "/opt",
       "nodejs",
       "payload-schema-definitions",
-      "PermissionSet-createUpdateAPI.json"
-    )
+      "PermissionSet-createUpdateAPI.json",
+    ),
   )
     .valueOf()
-    .toString()
+    .toString(),
 );
 const createUpdateValidate = ajv.compile(createUpdateSchemaDefinition);
 const deleteSchemaDefinition = JSON.parse(
@@ -90,11 +90,11 @@ const deleteSchemaDefinition = JSON.parse(
       "/opt",
       "nodejs",
       "payload-schema-definitions",
-      "PermissionSet-DeleteAPI.json"
-    )
+      "PermissionSet-DeleteAPI.json",
+    ),
   )
     .valueOf()
-    .toString()
+    .toString(),
 );
 const deleteValidate = ajv.compile(deleteSchemaDefinition);
 
@@ -102,7 +102,7 @@ const handlerName = AWS_LAMBDA_FUNCTION_NAME + "";
 let permissionSetName = "";
 
 export const handler = async (
-  event: APIGatewayProxyEventV2
+  event: APIGatewayProxyEventV2,
 ): Promise<APIGatewayProxyResultV2> => {
   const requestId = uuidv4().toString();
   logger(
@@ -113,7 +113,7 @@ export const handler = async (
       status: requestStatus.InProgress,
       statusMessage: `Permission Set create/update/delete operation started`,
     },
-    functionLogMode
+    functionLogMode,
   );
   if (event.body !== null && event.body !== undefined) {
     try {
@@ -126,7 +126,7 @@ export const handler = async (
           status: requestStatus.InProgress,
           statusMessage: `Permission set parsed successfully from message body`,
         },
-        functionLogMode
+        functionLogMode,
       );
       logger(
         {
@@ -136,12 +136,12 @@ export const handler = async (
           status: requestStatus.InProgress,
           statusMessage: `Determined permission set operation is determined to be ${body.action}`,
         },
-        functionLogMode
+        functionLogMode,
       );
       if (body.action === "create" || body.action === "update") {
         const payload: CreateUpdatePermissionSetPayload = imperativeParseJSON(
           event.body,
-          createUpdateValidate
+          createUpdateValidate,
         );
         logger(
           {
@@ -151,7 +151,7 @@ export const handler = async (
             status: requestStatus.InProgress,
             statusMessage: `Permission Set validated successfully against the schema definition for create/update operation`,
           },
-          functionLogMode
+          functionLogMode,
         );
         permissionSetName = payload.permissionSetData.permissionSetName;
         await s3clientObject.send(
@@ -160,7 +160,7 @@ export const handler = async (
             Key: `permission_sets/${permissionSetName}.json`,
             Body: JSON.stringify(payload.permissionSetData),
             ServerSideEncryption: "AES256",
-          })
+          }),
         );
         logger(
           {
@@ -171,7 +171,7 @@ export const handler = async (
             statusMessage: `Permission Set upsert to S3 successful`,
             relatedData: permissionSetName,
           },
-          functionLogMode
+          functionLogMode,
         );
         const fetchPermissionSet: GetCommandOutput =
           await ddbDocClientObject.send(
@@ -180,7 +180,7 @@ export const handler = async (
               Key: {
                 permissionSetName: permissionSetName,
               },
-            })
+            }),
           );
         logger(
           {
@@ -191,7 +191,7 @@ export const handler = async (
             statusMessage: `Did a fetch on solution persistence to determine if we already know about this permission set`,
             relatedData: permissionSetName,
           },
-          functionLogMode
+          functionLogMode,
         );
         await ddbDocClientObject.send(
           new PutCommand({
@@ -199,7 +199,7 @@ export const handler = async (
             Item: {
               ...payload.permissionSetData,
             },
-          })
+          }),
         );
         logger(
           {
@@ -210,7 +210,7 @@ export const handler = async (
             statusMessage: `Permission Set upsert to Dynamo DB successful`,
             relatedData: permissionSetName,
           },
-          functionLogMode
+          functionLogMode,
         );
         if (fetchPermissionSet.Item) {
           await snsClientObject.send(
@@ -222,7 +222,7 @@ export const handler = async (
                 permissionSetName: permissionSetName,
                 oldPermissionSetData: fetchPermissionSet.Item,
               }),
-            })
+            }),
           );
           logger(
             {
@@ -233,7 +233,7 @@ export const handler = async (
               statusMessage: `Determined operation is update, posted the payload with upload action to permissionSetProcessorTopic`,
               relatedData: permissionSetName,
             },
-            functionLogMode
+            functionLogMode,
           );
         } else {
           await snsClientObject.send(
@@ -244,7 +244,7 @@ export const handler = async (
                 action: "create",
                 permissionSetName: permissionSetName,
               }),
-            })
+            }),
           );
           logger(
             {
@@ -255,7 +255,7 @@ export const handler = async (
               statusMessage: `Determined operation is create, posted the payload with create action to permissionSetProcessorTopic`,
               relatedData: permissionSetName,
             },
-            functionLogMode
+            functionLogMode,
           );
         }
 
@@ -268,7 +268,7 @@ export const handler = async (
             statusMessage: `Completed processing of permission set payload at the interface level`,
             relatedData: permissionSetName,
           },
-          functionLogMode
+          functionLogMode,
         );
         return {
           statusCode: 200,
@@ -280,7 +280,7 @@ export const handler = async (
       } else if (body.action === "delete") {
         const payload: DeletePermissionSetPayload = imperativeParseJSON(
           event.body,
-          deleteValidate
+          deleteValidate,
         );
         logger(
           {
@@ -290,7 +290,7 @@ export const handler = async (
             status: requestStatus.InProgress,
             statusMessage: `Permission Set validated successfully against the schema definition for delete operation`,
           },
-          functionLogMode
+          functionLogMode,
         );
         permissionSetName = payload.permissionSetData.permissionSetName;
         const relatedLinks: QueryCommandOutput = await ddbDocClientObject.send(
@@ -306,7 +306,7 @@ export const handler = async (
             ExpressionAttributeValues: {
               ":permissionSetName": payload.permissionSetData.permissionSetName,
             },
-          })
+          }),
         );
         logger(
           {
@@ -317,7 +317,7 @@ export const handler = async (
             relatedData: permissionSetName,
             statusMessage: `Queried if there are any related account assignments`,
           },
-          functionLogMode
+          functionLogMode,
         );
 
         if (relatedLinks.Items?.length !== 0) {
@@ -330,7 +330,7 @@ export const handler = async (
               relatedData: permissionSetName,
               statusMessage: `Permission set delete operation is aborted as there are existing account assignments referencing this permission set`,
             },
-            functionLogMode
+            functionLogMode,
           );
           return {
             statusCode: 400,
@@ -349,13 +349,13 @@ export const handler = async (
               relatedData: permissionSetName,
               statusMessage: `Determined there are no account assignments referencing this permission set`,
             },
-            functionLogMode
+            functionLogMode,
           );
           await s3clientObject.send(
             new DeleteObjectCommand({
               Bucket: artefactsBucketName,
               Key: `permission_sets/${payload.permissionSetData.permissionSetName}.json`,
-            })
+            }),
           );
           logger(
             {
@@ -366,7 +366,7 @@ export const handler = async (
               status: requestStatus.InProgress,
               statusMessage: `Processed delete in S3`,
             },
-            functionLogMode
+            functionLogMode,
           );
           await snsClientObject.send(
             new PublishCommand({
@@ -376,7 +376,7 @@ export const handler = async (
                 action: payload.action,
                 permissionSetName: payload.permissionSetData.permissionSetName,
               }),
-            })
+            }),
           );
           logger(
             {
@@ -387,7 +387,7 @@ export const handler = async (
               status: requestStatus.InProgress,
               statusMessage: `Sent delete payload to permissionSet processing topic`,
             },
-            functionLogMode
+            functionLogMode,
           );
           return {
             statusCode: 200,
@@ -407,7 +407,7 @@ export const handler = async (
             status: requestStatus.FailedWithException,
             statusMessage: `Permission Set operation failed due to invalid action - ${body.action}`,
           },
-          functionLogMode
+          functionLogMode,
         );
         return {
           statusCode: 400,
@@ -428,7 +428,7 @@ export const handler = async (
             requestId,
             "Schema validation exception",
             `Provided permission set ${permissionSetName} payload does not pass the schema validation`,
-            JSON.stringify(err.errors)
+            JSON.stringify(err.errors),
           ),
         });
         return {
@@ -438,7 +438,7 @@ export const handler = async (
               requestId,
               "Schema validation exception",
               `Provided permission set ${permissionSetName} payload does not pass the schema validation`,
-              JSON.stringify(err.errors)
+              JSON.stringify(err.errors),
             ),
             requestId: requestId,
           }),
@@ -457,7 +457,7 @@ export const handler = async (
             requestId,
             err.name,
             err.message,
-            permissionSetName
+            permissionSetName,
           ),
         });
         return {
@@ -467,7 +467,7 @@ export const handler = async (
               requestId,
               err.name,
               err.message,
-              permissionSetName
+              permissionSetName,
             ),
             requestId: requestId,
           }),
@@ -482,7 +482,7 @@ export const handler = async (
             requestId,
             "Unhandled exception",
             JSON.stringify(err),
-            permissionSetName
+            permissionSetName,
           ),
         });
         return {
@@ -493,7 +493,7 @@ export const handler = async (
               requestId,
               "Unhandled exception",
               JSON.stringify(err),
-              permissionSetName
+              permissionSetName,
             ),
           }),
         };
@@ -509,7 +509,7 @@ export const handler = async (
         requestId,
         "Invalid message body exception",
         "Message body provided is invalid",
-        permissionSetName
+        permissionSetName,
       ),
     });
     return {
@@ -520,7 +520,7 @@ export const handler = async (
           requestId,
           "Invalid message body exception",
           "Message body provided is invalid",
-          permissionSetName
+          permissionSetName,
         ),
       }),
     };

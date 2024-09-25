@@ -23,11 +23,11 @@ export class LambdaLayers extends Construct {
       name(buildConfig, "nodeJsLayer"),
       {
         code: Code.fromAsset(
-          join(__dirname, "../", "lambda-layers", "nodejs-layer")
+          join(__dirname, "../", "lambda-layers", "nodejs-layer"),
         ),
         compatibleRuntimes: [Runtime.NODEJS_20_X],
         compatibleArchitectures: [Architecture.ARM_64],
-      }
+      },
     );
 
     new StringParameter(this, name(buildConfig, "nodeJsLayerVersionArn"), {

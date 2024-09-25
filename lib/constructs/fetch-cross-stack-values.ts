@@ -56,8 +56,8 @@ export class FetchCrossStackValues extends Construct {
       name(buildConfig, "importedErrorNotificationsTopic"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "errorNotificationsTopicArn")
-      )
+        name(buildConfig, "errorNotificationsTopicArn"),
+      ),
     );
 
     this.ssoGroupEventNotificationsTopic = Topic.fromTopicArn(
@@ -65,8 +65,8 @@ export class FetchCrossStackValues extends Construct {
       name(buildConfig, "importedssoGroupEventNotificationsTopic"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "ssoGroupEventNotificationsTopicArn")
-      )
+        name(buildConfig, "ssoGroupEventNotificationsTopicArn"),
+      ),
     );
 
     this.ssoUserEventNotificationsTopic = Topic.fromTopicArn(
@@ -74,8 +74,8 @@ export class FetchCrossStackValues extends Construct {
       name(buildConfig, "importedssoUserEventNotificationsTopic"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "ssoUserEventsNotificationsTopicArn")
-      )
+        name(buildConfig, "ssoUserEventsNotificationsTopicArn"),
+      ),
     );
 
     this.orgEventsNotificationsTopic = Topic.fromTopicArn(
@@ -83,8 +83,8 @@ export class FetchCrossStackValues extends Construct {
       name(buildConfig, "importedOrgEventNotificationsTopic"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "importedOrgEventsNotificationsTopicArn")
-      )
+        name(buildConfig, "importedOrgEventsNotificationsTopicArn"),
+      ),
     );
 
     this.processTargetAccountSMTopic = Topic.fromTopicArn(
@@ -92,8 +92,8 @@ export class FetchCrossStackValues extends Construct {
       name(buildConfig, "importedprocessTargetAccountSMTopic"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "importedProcessTargetAccountSMTopicArn")
-      )
+        name(buildConfig, "importedProcessTargetAccountSMTopicArn"),
+      ),
     );
 
     this.linkProcessorTopic = Topic.fromTopicArn(
@@ -101,8 +101,8 @@ export class FetchCrossStackValues extends Construct {
       name(buildConfig, "importedLinkProcessorTopic"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "linkProcessorTopicArn")
-      )
+        name(buildConfig, "linkProcessorTopicArn"),
+      ),
     );
 
     this.permissionSetProcessorTopic = Topic.fromTopicArn(
@@ -110,8 +110,8 @@ export class FetchCrossStackValues extends Construct {
       name(buildConfig, "importedPermissionSetProcessorTopic"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "permissionSetProcessorTopicArn")
-      )
+        name(buildConfig, "permissionSetProcessorTopicArn"),
+      ),
     );
 
     this.linkManagerQueue = Queue.fromQueueArn(
@@ -119,8 +119,8 @@ export class FetchCrossStackValues extends Construct {
       name(buildConfig, "importedLinkManagerQueue"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "linkQueueArn")
-      )
+        name(buildConfig, "linkQueueArn"),
+      ),
     );
 
     this.nodeJsLayer = lambda.LayerVersion.fromLayerVersionArn(
@@ -128,8 +128,8 @@ export class FetchCrossStackValues extends Construct {
       name(buildConfig, "importedNodeJsLayerVersion"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "nodeJsLayerVersionArn")
-      ).toString()
+        name(buildConfig, "nodeJsLayerVersionArn"),
+      ).toString(),
     );
 
     this.linksTable = Table.fromTableAttributes(
@@ -138,7 +138,7 @@ export class FetchCrossStackValues extends Construct {
       {
         tableArn: StringParameter.valueForStringParameter(
           this,
-          name(buildConfig, "linksTableArn")
+          name(buildConfig, "linksTableArn"),
         ),
         globalIndexes: [
           "awsEntityData",
@@ -146,7 +146,7 @@ export class FetchCrossStackValues extends Construct {
           "permissionSetName",
           "principalType",
         ],
-      }
+      },
     );
 
     this.provisionedLinksTable = Table.fromTableAttributes(
@@ -155,10 +155,10 @@ export class FetchCrossStackValues extends Construct {
       {
         tableArn: StringParameter.valueForStringParameter(
           this,
-          name(buildConfig, "provisionedLinksTableArn")
+          name(buildConfig, "provisionedLinksTableArn"),
         ),
         globalIndexes: ["tagKeyLookUp"],
-      }
+      },
     );
 
     this.permissionSetTable = Table.fromTableAttributes(
@@ -167,9 +167,9 @@ export class FetchCrossStackValues extends Construct {
       {
         tableArn: StringParameter.valueForStringParameter(
           this,
-          name(buildConfig, "permissionSetTableArn")
+          name(buildConfig, "permissionSetTableArn"),
         ),
-      }
+      },
     );
 
     this.permissionSetArnTable = Table.fromTableArn(
@@ -177,8 +177,8 @@ export class FetchCrossStackValues extends Construct {
       name(buildConfig, "importedPermissionSetArnTable"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "permissionSetArnTableArn")
-      )
+        name(buildConfig, "permissionSetArnTableArn"),
+      ),
     );
 
     this.snsTopicsKey = Key.fromKeyArn(
@@ -186,16 +186,16 @@ export class FetchCrossStackValues extends Construct {
       name(buildConfig, "importedSnsTopicsKey"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "snsTopicsKeyArn")
-      )
+        name(buildConfig, "snsTopicsKeyArn"),
+      ),
     );
     this.ddbTablesKey = Key.fromKeyArn(
       this,
       name(buildConfig, "importedDdbTablesKey"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "ddbTablesKeyArn")
-      )
+        name(buildConfig, "ddbTablesKeyArn"),
+      ),
     );
 
     this.queuesKey = Key.fromKeyArn(
@@ -203,8 +203,8 @@ export class FetchCrossStackValues extends Construct {
       name(buildConfig, "importedQueuesKey"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "queuesKeyArn")
-      )
+        name(buildConfig, "queuesKeyArn"),
+      ),
     );
 
     this.permissionSetHandlerSSOAPIRoleArn = new SSMParamReader(
@@ -215,7 +215,7 @@ export class FetchCrossStackValues extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "permissionSetHandler-ssoapi-roleArn",
-      }
+      },
     ).paramValue;
 
     this.linkManagerHandlerSSOAPIRoleArn = new SSMParamReader(
@@ -226,7 +226,7 @@ export class FetchCrossStackValues extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "linkManagerHandler-ssoapi-roleArn",
-      }
+      },
     ).paramValue;
 
     this.listInstancesSSOAPIRoleArn = new SSMParamReader(
@@ -237,7 +237,7 @@ export class FetchCrossStackValues extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "listInstances-ssoapi-roleArn",
-      }
+      },
     ).paramValue;
 
     this.listGroupsIdentityStoreAPIRoleArn = new SSMParamReader(
@@ -248,7 +248,7 @@ export class FetchCrossStackValues extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "listPrincipals-identitystoreapi-roleArn",
-      }
+      },
     ).paramValue;
 
     this.orgListSMRoleArn = new SSMParamReader(
@@ -259,7 +259,7 @@ export class FetchCrossStackValues extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.OrgMainAccountId,
         ParamRegion: "us-east-1", // Organizations discovery can only be done in us-east-1, hence the step functions and related roles are declared in that region
         ParamNameKey: "orgListSM-orgapi-roleArn",
-      }
+      },
     ).paramValue;
 
     this.orgListParentsRoleArn = new SSMParamReader(
@@ -273,12 +273,12 @@ export class FetchCrossStackValues extends Construct {
          * Organizations discovery can only be done in us-east-1, hence the step
          * functions and related roles are declared in that region
          */ ParamNameKey: "orgListParents-orgapi-roleArn",
-      }
+      },
     ).paramValue;
 
     this.waiterHandlerSSOAPIRoleArn = StringParameter.valueForStringParameter(
       this,
-      name(buildConfig, "waiterHandlerSSOAPIRoleArn")
+      name(buildConfig, "waiterHandlerSSOAPIRoleArn"),
     );
 
     this.iteratorArn = new SSMParamReader(
@@ -289,7 +289,7 @@ export class FetchCrossStackValues extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "iteratorArn",
-      }
+      },
     ).paramValue;
 
     this.customerManagedPolicyProcessOpArn = new SSMParamReader(
@@ -300,7 +300,7 @@ export class FetchCrossStackValues extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "customerManagedPolicyProcessOpArn",
-      }
+      },
     ).paramValue;
 
     this.managedPolicyProcessOpArn = new SSMParamReader(
@@ -311,7 +311,7 @@ export class FetchCrossStackValues extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "managedPolicyProcessOpArn",
-      }
+      },
     ).paramValue;
 
     this.ssoMpRoleArn = new SSMParamReader(
@@ -322,7 +322,7 @@ export class FetchCrossStackValues extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "ssoMp-ssoapi-roleArn",
-      }
+      },
     ).paramValue;
   }
 }

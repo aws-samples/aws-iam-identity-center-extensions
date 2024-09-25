@@ -44,7 +44,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
     scope: Construct,
     id: string,
     props: StackProps | undefined,
-    buildConfig: RegionSwitchBuildConfig
+    buildConfig: RegionSwitchBuildConfig,
   ) {
     super(scope, id, props);
 
@@ -54,7 +54,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
      */
     const rsNodeJsLayer = new LayerVersion(this, fullname("rsNodeJsLayer"), {
       code: Code.fromAsset(
-        join(__dirname, "../../", "lambda-layers", "nodejs-layer")
+        join(__dirname, "../../", "lambda-layers", "nodejs-layer"),
       ),
       compatibleRuntimes: [Runtime.NODEJS_20_X],
       compatibleArchitectures: [Architecture.ARM_64],
@@ -79,7 +79,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
         encryption: TableEncryption.DEFAULT,
         removalPolicy: RemovalPolicy.DESTROY,
         replicationRegions: [buildConfig.SSOServiceTargetAccountRegion],
-      }
+      },
     );
     const globalAccountAssignmentsTable = new Table(
       this,
@@ -94,7 +94,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
         encryption: TableEncryption.DEFAULT,
         removalPolicy: RemovalPolicy.DESTROY,
         replicationRegions: [buildConfig.SSOServiceTargetAccountRegion],
-      }
+      },
     );
     globalAccountAssignmentsTable.addGlobalSecondaryIndex({
       indexName: "permissionSetName",
@@ -115,14 +115,14 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       fullname("rsPermissionSetImportTopic"),
       {
         displayName: fullname("rsPermissionSetImportTopic"),
-      }
+      },
     );
     const rsAccountAssignmentImportTopic = new Topic(
       this,
       fullname("rsAccountAssignmentImportTopic"),
       {
         displayName: fullname("rsAccountAssignmentImportTopic"),
-      }
+      },
     );
 
     /**
@@ -142,7 +142,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       fullname("discoverSMLogGroup"),
       {
         retention: RetentionDays.ONE_MONTH,
-      }
+      },
     );
 
     /**
@@ -157,13 +157,13 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       fullname("rsImportAccountAssignmentsSMRole"),
       {
         assumedBy: new ServicePrincipal("states.amazonaws.com"),
-      }
+      },
     );
     rsImportAccountAssignmentsSMRole.addToPrincipalPolicy(
       new PolicyStatement({
         resources: ["*"],
         actions: ["sso:ListAccountAssignments"],
-      })
+      }),
     );
     rsImportAccountAssignmentsSMRole.addToPrincipalPolicy(
       new PolicyStatement({
@@ -174,7 +174,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
           "identitystore:DescribeGroup",
           "identitystore:DescribeUser",
         ],
-      })
+      }),
     );
     rsImportAccountAssignmentsSMRole.addToPrincipalPolicy(
       new PolicyStatement({
@@ -189,10 +189,10 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
           "logs:DescribeLogGroups",
         ],
         resources: ["*"],
-      })
+      }),
     );
     rsAccountAssignmentImportTopic.grantPublish(
-      rsImportAccountAssignmentsSMRole
+      rsImportAccountAssignmentsSMRole,
     );
 
     /**
@@ -218,10 +218,10 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
           includeExecutionData: true,
           level: "ALL",
         },
-      }
+      },
     );
     rsImportAccountAssignmentSM.node.addDependency(
-      rsImportAccountAssignmentsSMRole
+      rsImportAccountAssignmentsSMRole,
     );
     rsImportAccountAssignmentSM.node.addDependency(discoverSMLogGroup);
 
@@ -247,7 +247,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       fullname("rsImportPermissionSetSMRole"),
       {
         assumedBy: new ServicePrincipal("states.amazonaws.com"),
-      }
+      },
     );
     rsImportPermissionSetSMRole.addToPrincipalPolicy(
       new PolicyStatement({
@@ -260,7 +260,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
           "sso:ListTagsForResource",
           "sso:ListAccountsForProvisionedPermissionSet",
         ],
-      })
+      }),
     );
     rsImportPermissionSetSMRole.addToPrincipalPolicy(
       new PolicyStatement({
@@ -274,19 +274,19 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
           `arn:aws:dynamodb:${buildConfig.SSOServiceAccountRegion}:${buildConfig.SSOServiceAccountId}:table/rs-temp-PermissionSets`,
           `arn:aws:dynamodb:${buildConfig.SSOServiceAccountRegion}:${buildConfig.SSOServiceAccountId}:table/rs-temp-PermissionSets/index/*`,
         ],
-      })
+      }),
     );
     rsImportPermissionSetSMRole.addToPrincipalPolicy(
       new PolicyStatement({
         actions: ["states:StartExecution"],
         resources: [rsImportAccountAssignmentSM.ref],
-      })
+      }),
     );
     rsImportPermissionSetSMRole.addToPrincipalPolicy(
       new PolicyStatement({
         actions: ["states:DescribeExecution", "states:StopExecution"],
         resources: ["*"],
-      })
+      }),
     );
     rsImportPermissionSetSMRole.addToPrincipalPolicy(
       new PolicyStatement({
@@ -294,7 +294,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
         resources: [
           `arn:aws:events:${buildConfig.SSOServiceAccountRegion}:${buildConfig.SSOServiceAccountId}:rule/StepFunctionsGetEventsForStepFunctionsExecutionRule`,
         ],
-      })
+      }),
     );
     rsImportPermissionSetSMRole.addToPrincipalPolicy(
       new PolicyStatement({
@@ -309,7 +309,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
           "logs:DescribeLogGroups",
         ],
         resources: ["*"],
-      })
+      }),
     );
     rsPermissionSetImportTopic.grantPublish(rsImportPermissionSetSMRole);
 
@@ -336,7 +336,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
           includeExecutionData: true,
           level: "ALL",
         },
-      }
+      },
     );
     rsImportPermissionSetSM.node.addDependency(rsImportPermissionSetSMRole);
     rsImportPermissionSetSM.node.addDependency(discoverSMLogGroup);
@@ -361,7 +361,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       fullname("rsImportCurrentConfigSMRole"),
       {
         assumedBy: new ServicePrincipal("states.amazonaws.com"),
-      }
+      },
     );
     rsImportCurrentConfigSMRole.addToPrincipalPolicy(
       new PolicyStatement({
@@ -374,25 +374,25 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
           `arn:aws:dynamodb:${buildConfig.SSOServiceAccountRegion}:${buildConfig.SSOServiceAccountId}:table/rs-temp-PermissionSets`,
           `arn:aws:dynamodb:${buildConfig.SSOServiceAccountRegion}:${buildConfig.SSOServiceAccountId}:table/rs-temp-PermissionSets/index/*`,
         ],
-      })
+      }),
     );
     rsImportCurrentConfigSMRole.addToPrincipalPolicy(
       new PolicyStatement({
         resources: ["*"],
         actions: ["sso:ListInstances"],
-      })
+      }),
     );
     rsImportCurrentConfigSMRole.addToPrincipalPolicy(
       new PolicyStatement({
         actions: ["states:StartExecution"],
         resources: [rsImportPermissionSetSM.ref],
-      })
+      }),
     );
     rsImportCurrentConfigSMRole.addToPrincipalPolicy(
       new PolicyStatement({
         actions: ["states:DescribeExecution", "states:StopExecution"],
         resources: ["*"],
-      })
+      }),
     );
     rsImportCurrentConfigSMRole.addToPrincipalPolicy(
       new PolicyStatement({
@@ -400,7 +400,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
         resources: [
           `arn:aws:events:${buildConfig.SSOServiceAccountRegion}:${buildConfig.SSOServiceAccountId}:rule/StepFunctionsGetEventsForStepFunctionsExecutionRule`,
         ],
-      })
+      }),
     );
     rsImportCurrentConfigSMRole.addToPrincipalPolicy(
       new PolicyStatement({
@@ -415,7 +415,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
           "logs:DescribeLogGroups",
         ],
         resources: ["*"],
-      })
+      }),
     );
 
     /**
@@ -441,7 +441,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
           includeExecutionData: true,
           level: "ALL",
         },
-      }
+      },
     );
     rsImportCurrentConfigSM.node.addDependency(rsImportCurrentConfigSMRole);
     rsImportCurrentConfigSM.node.addDependency(discoverSMLogGroup);
@@ -463,7 +463,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
           "lambda-functions",
           "region-switch",
           "src",
-          "rs-import-permission-sets.ts"
+          "rs-import-permission-sets.ts",
         ),
         bundling: {
           externalModules: [
@@ -476,7 +476,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
         environment: {
           globalPermissionSetTableName: globalPermissionSetsTable.tableName,
         },
-      }
+      },
     );
 
     /**
@@ -486,7 +486,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
      */
     globalPermissionSetsTable.grantReadWriteData(rsImportPermissionSetsHandler);
     rsImportPermissionSetsHandler.addEventSource(
-      new SnsEventSource(rsPermissionSetImportTopic)
+      new SnsEventSource(rsPermissionSetImportTopic),
     );
 
     /**
@@ -506,7 +506,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
           "lambda-functions",
           "region-switch",
           "src",
-          "rs-import-account-assignments.ts"
+          "rs-import-account-assignments.ts",
         ),
         bundling: {
           externalModules: [
@@ -520,7 +520,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
           globalAccountAssignmentsTableName:
             globalAccountAssignmentsTable.tableName,
         },
-      }
+      },
     );
     /**
      * Add permissions so that the account assignment import handler can
@@ -528,10 +528,10 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
      * event source as the accountt assignment import topic
      */
     globalAccountAssignmentsTable.grantReadWriteData(
-      rsImportAccountAssignmentsHandler
+      rsImportAccountAssignmentsHandler,
     );
     rsImportAccountAssignmentsHandler.addEventSource(
-      new SnsEventSource(rsAccountAssignmentImportTopic)
+      new SnsEventSource(rsAccountAssignmentImportTopic),
     );
 
     /**
@@ -560,7 +560,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
           "lambda-functions",
           "region-switch",
           "src",
-          "update-custom-resource.ts"
+          "update-custom-resource.ts",
         ),
         bundling: {
           externalModules: ["@aws-sdk/client-sfn"],
@@ -570,14 +570,14 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
           ssoAccountId: buildConfig.SSOServiceAccountId,
           ssoRegion: buildConfig.SSOServiceAccountRegion,
         },
-      }
+      },
     );
     if (updateCustomResourceHandler.role) {
       updateCustomResourceHandler.addToRolePolicy(
         new PolicyStatement({
           actions: ["states:DescribeExecution", "states:StopExecution"],
           resources: ["*"],
-        })
+        }),
       );
     }
 
@@ -600,20 +600,20 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
           "lambda-functions",
           "region-switch",
           "src",
-          "trigger-parentSM.ts"
+          "trigger-parentSM.ts",
         ),
         bundling: {
           externalModules: ["@aws-sdk/client-sfn", "uuid"],
           minify: true,
         },
-      }
+      },
     );
     if (parentSMInvokeFunction.role) {
       parentSMInvokeFunction.role.addToPrincipalPolicy(
         new PolicyStatement({
           actions: ["states:StartExecution"],
           resources: [rsImportCurrentConfigSM.ref],
-        })
+        }),
       );
     }
 
@@ -629,7 +629,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
         isCompleteHandler: updateCustomResourceHandler,
         queryInterval: Duration.seconds(5),
         totalTimeout: Duration.minutes(120), // to handle scenarios where organisations have a lot of existing account assignments already
-      }
+      },
     );
 
     /**
@@ -652,7 +652,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
           temporaryPermissionSetTableName: `rs-temp-PermissionSets`,
           ssoRegion: buildConfig.SSOServiceAccountRegion,
         },
-      }
+      },
     );
 
     parentSMResource.node.addDependency(rsImportAccountAssignmentsHandler);

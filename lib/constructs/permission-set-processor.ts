@@ -52,7 +52,7 @@ export class PermissionSetProcessor extends Construct {
     scope: Construct,
     id: string,
     buildConfig: BuildConfig,
-    permissionSetProcessorProps: PermissionSetProcessProps
+    permissionSetProcessorProps: PermissionSetProcessProps,
   ) {
     super(scope, id);
 
@@ -62,7 +62,7 @@ export class PermissionSetProcessor extends Construct {
       {
         displayName: name(buildConfig, "permissionSetSyncTopic"),
         masterKey: permissionSetProcessorProps.snsTopicsKey,
-      }
+      },
     );
 
     this.managedPolicyDLQ = new Queue(
@@ -74,7 +74,7 @@ export class PermissionSetProcessor extends Construct {
         encryptionMasterKey: permissionSetProcessorProps.sqsKey,
         visibilityTimeout: Duration.hours(1),
         queueName: name(buildConfig, "managedPolicyDLQ.fifo"),
-      }
+      },
     );
 
     this.managedPolicyQueue = new Queue(
@@ -92,7 +92,7 @@ export class PermissionSetProcessor extends Construct {
           maxReceiveCount: 2,
         },
         retentionPeriod: Duration.days(1),
-      }
+      },
     );
 
     this.permissionSetTopicProcessor = new NodejsFunction(
@@ -108,7 +108,7 @@ export class PermissionSetProcessor extends Construct {
           "lambda-functions",
           "application-handlers",
           "src",
-          "permissionSetTopicProcessor.ts"
+          "permissionSetTopicProcessor.ts",
         ),
         bundling: {
           externalModules: [
@@ -147,13 +147,13 @@ export class PermissionSetProcessor extends Construct {
           functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
         timeout: Duration.minutes(11), //aggressive timeout to accommodate SSO Admin API's workflow based logic
-      }
+      },
     );
 
     this.permissionSetTopicProcessor.addEventSource(
       new SnsEventSource(
-        permissionSetProcessorProps.permissionSetProcessorTopic
-      )
+        permissionSetProcessorProps.permissionSetProcessorTopic,
+      ),
     );
 
     this.permissionSetSyncHandler = new NodejsFunction(
@@ -169,7 +169,7 @@ export class PermissionSetProcessor extends Construct {
           "lambda-functions",
           "application-handlers",
           "src",
-          "permissionSetSync.ts"
+          "permissionSetSync.ts",
         ),
         bundling: {
           externalModules: [
@@ -205,11 +205,11 @@ export class PermissionSetProcessor extends Construct {
           supportNestedOU: String(buildConfig.Parameters.SupportNestedOU),
           functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
-      }
+      },
     );
 
     this.permissionSetSyncHandler.addEventSource(
-      new SnsEventSource(this.permissionSetSyncTopic)
+      new SnsEventSource(this.permissionSetSyncTopic),
     );
 
     this.managedPolicyQueueProcessor = new NodejsFunction(
@@ -225,7 +225,7 @@ export class PermissionSetProcessor extends Construct {
           "lambda-functions",
           "application-handlers",
           "src",
-          "managedPolicyQueueProcessor.ts"
+          "managedPolicyQueueProcessor.ts",
         ),
         bundling: {
           externalModules: [
@@ -245,14 +245,14 @@ export class PermissionSetProcessor extends Construct {
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
           functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
-      }
+      },
     );
 
     this.managedPolicyQueueProcessor.addEventSource(
       new SqsEventSource(this.managedPolicyQueue, {
         batchSize: 5,
         reportBatchItemFailures: true,
-      })
+      }),
     );
   }
 }

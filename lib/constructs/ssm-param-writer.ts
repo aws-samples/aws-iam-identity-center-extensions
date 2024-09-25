@@ -23,7 +23,7 @@ export class SSMParamWriter extends Construct {
     scope: Construct,
     id: string,
     buildConfig: BuildConfig,
-    ssmParamWriterProps: SSMParamWriterProps
+    ssmParamWriterProps: SSMParamWriterProps,
   ) {
     super(scope, id);
 
@@ -33,7 +33,7 @@ export class SSMParamWriter extends Construct {
       {
         parameterName: name(buildConfig, ssmParamWriterProps.ParamNameKey),
         stringValue: ssmParamWriterProps.ParamValue,
-      }
+      },
     );
 
     this.parameterReaderRole = new Role(
@@ -42,10 +42,10 @@ export class SSMParamWriter extends Construct {
       {
         roleName: name(
           buildConfig,
-          `${ssmParamWriterProps.ParamNameKey}-readerRole`
+          `${ssmParamWriterProps.ParamNameKey}-readerRole`,
         ),
         assumedBy: new AccountPrincipal(ssmParamWriterProps.ReaderAccountId),
-      }
+      },
     );
 
     this.parameter.grantRead(this.parameterReaderRole);

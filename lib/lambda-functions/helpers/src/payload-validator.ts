@@ -8,7 +8,7 @@ export class JSONParserError extends Error {
 
 export const imperativeParseJSON = <T = object>(
   data: object | string | null,
-  validate: ValidateFunction
+  validate: ValidateFunction,
 ): T => {
   if (!data) {
     throw new JSONParserError([{ errorCode: "null_json" }]);
@@ -27,6 +27,6 @@ export const imperativeParseJSON = <T = object>(
     validate.errors!.map(({ instancePath, params }) => ({
       errorCode: `pattern-error`,
       message: `Failure on property ${instancePath} . Schema for property should match pattern ${params.pattern}`,
-    }))
+    })),
   );
 };

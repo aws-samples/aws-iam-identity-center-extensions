@@ -65,7 +65,7 @@ export const handler = async (event: SNSEvent) => {
         status: requestStatus.InProgress,
         statusMessage: `Processing SQS payload post for account assignment operation - ${message.action}`,
       },
-      functionLogMode
+      functionLogMode,
     );
 
     await sqsClientObject.send(
@@ -86,7 +86,7 @@ export const handler = async (event: SNSEvent) => {
           sourceRequestId: message.sourceRequestId,
         }),
         MessageGroupId: targetId.slice(-1),
-      })
+      }),
     );
     logger(
       {
@@ -97,7 +97,7 @@ export const handler = async (event: SNSEvent) => {
         status: requestStatus.InProgress,
         statusMessage: `Posted account assignment operation - ${message.action} for targetId ${targetId} and permissionSetArn ${message.permissionSetArn} and principalId ${message.principalId} and principalType ${message.principalType}`,
       },
-      functionLogMode
+      functionLogMode,
     );
   } catch (err) {
     if (
@@ -113,9 +113,9 @@ export const handler = async (event: SNSEvent) => {
             handlerName,
             err.name,
             err.message,
-            targetIdValue
+            targetIdValue,
           ),
-        })
+        }),
       );
       logger({
         handler: handlerName,
@@ -126,7 +126,7 @@ export const handler = async (event: SNSEvent) => {
           requestIdValue,
           err.name,
           err.message,
-          targetIdValue
+          targetIdValue,
         ),
       });
     } else {
@@ -139,9 +139,9 @@ export const handler = async (event: SNSEvent) => {
             handlerName,
             "Unhandled exception",
             JSON.stringify(err),
-            targetIdValue
+            targetIdValue,
           ),
-        })
+        }),
       );
       logger({
         handler: handlerName,
@@ -152,7 +152,7 @@ export const handler = async (event: SNSEvent) => {
           requestIdValue,
           "Unhandled exception",
           JSON.stringify(err),
-          targetIdValue
+          targetIdValue,
         ),
       });
     }

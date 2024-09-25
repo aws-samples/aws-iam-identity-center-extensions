@@ -53,7 +53,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
           pageSize: 5,
           eventType: event.RequestType,
         }),
-      })
+      }),
     );
     logger({
       handler: "deploySM",
@@ -80,7 +80,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
       relatedData: `${deploySMArn}`,
       status: requestStatus.FailedWithException,
       statusMessage: `Custom resource creation failed with exception: ${JSON.stringify(
-        e
+        e,
       )}`,
     });
     return {

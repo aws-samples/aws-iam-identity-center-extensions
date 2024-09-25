@@ -62,7 +62,7 @@ export const handler = async (event: SNSEvent) => {
         Item: {
           ...linkParams,
         },
-      })
+      }),
     );
     logger({
       handler: "rs-accountAssignmentImporter",
@@ -79,7 +79,7 @@ export const handler = async (event: SNSEvent) => {
       logMode: logModes.Exception,
       status: requestStatus.FailedWithException,
       statusMessage: `Account assignment import operation failed with exception: ${JSON.stringify(
-        err
+        err,
       )} for eventDetail: ${JSON.stringify(event)}`,
     });
   }

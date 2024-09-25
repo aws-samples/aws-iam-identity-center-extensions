@@ -17,7 +17,7 @@ export class SSOApiRoles extends Stack {
     scope: Construct,
     id: string,
     props: StackProps | undefined,
-    buildConfig: BuildConfig
+    buildConfig: BuildConfig,
   ) {
     super(scope, id, props);
 
@@ -36,7 +36,7 @@ export class SSOApiRoles extends Stack {
             "sso:DescribeAccountAssignmentCreationStatus",
           ],
         }),
-      }
+      },
     );
 
     new CrossAccountRole(
@@ -70,7 +70,7 @@ export class SSOApiRoles extends Stack {
             "sso:GetPermissionsBoundaryForPermissionSet",
           ],
         }),
-      }
+      },
     );
 
     new CrossAccountRole(
@@ -93,7 +93,7 @@ export class SSOApiRoles extends Stack {
             "sso:ListInstances",
           ],
         }),
-      }
+      },
     );
 
     new CrossAccountRole(
@@ -107,7 +107,7 @@ export class SSOApiRoles extends Stack {
           resources: ["*"],
           actions: ["sso:ListInstances"],
         }),
-      }
+      },
     );
 
     new CrossAccountRole(
@@ -126,7 +126,7 @@ export class SSOApiRoles extends Stack {
             "identitystore:DescribeUser",
           ],
         }),
-      }
+      },
     );
   }
 }

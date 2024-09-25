@@ -37,7 +37,7 @@ export const handler = async (event: DescribeCmpAndPb) => {
       status: requestStatus.InProgress,
       statusMessage: `AWS IAM Identity Center customer managed policy import started for permissionSetArn ${event.permissionSetArn}`,
     },
-    functionLogMode
+    functionLogMode,
   );
   try {
     if (event.objectToDescribe === "customerManagedPolicy") {
@@ -46,7 +46,7 @@ export const handler = async (event: DescribeCmpAndPb) => {
           InstanceArn: event.instanceArn,
           PermissionSetArn: event.permissionSetArn,
           MaxResults: 10,
-        })
+        }),
       );
       logger({
         handler: handlerName,
@@ -63,7 +63,7 @@ export const handler = async (event: DescribeCmpAndPb) => {
         new GetPermissionsBoundaryForPermissionSetCommand({
           InstanceArn: event.instanceArn,
           PermissionSetArn: event.permissionSetArn,
-        })
+        }),
       );
       logger({
         handler: handlerName,
@@ -116,7 +116,7 @@ export const handler = async (event: DescribeCmpAndPb) => {
             "",
             error.name,
             error.message,
-            permissionSetName
+            permissionSetName,
           ),
         });
         return {
@@ -133,7 +133,7 @@ export const handler = async (event: DescribeCmpAndPb) => {
           "",
           "Unhandled exception",
           JSON.stringify(error),
-          permissionSetName
+          permissionSetName,
         ),
       });
       return {

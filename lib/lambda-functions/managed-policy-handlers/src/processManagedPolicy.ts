@@ -42,7 +42,7 @@ export const handler = async (event: ManagedPolicyObjectOp) => {
       status: requestStatus.InProgress,
       statusMessage: `AWS IAM Identity Center managed policy processing started for operation ${event.operation} and managedPolicyArn ${event.managedPolicyArn} and permissionSetArn ${event.permissionSetArn}`,
     },
-    functionLogMode
+    functionLogMode,
   );
   try {
     managedPolicyArn = event.managedPolicyArn;
@@ -52,7 +52,7 @@ export const handler = async (event: ManagedPolicyObjectOp) => {
           ManagedPolicyArn: event.managedPolicyArn,
           InstanceArn: event.instanceArn,
           PermissionSetArn: event.permissionSetArn,
-        })
+        }),
       );
       logger(
         {
@@ -61,7 +61,7 @@ export const handler = async (event: ManagedPolicyObjectOp) => {
           status: requestStatus.InProgress,
           statusMessage: `Successfully attached AWS IAM Identity Center managed policy ARN ${event.managedPolicyArn} to permissionSetArn ${event.permissionSetArn}`,
         },
-        functionLogMode
+        functionLogMode,
       );
       return {
         status: "true",
@@ -72,7 +72,7 @@ export const handler = async (event: ManagedPolicyObjectOp) => {
           ManagedPolicyArn: event.managedPolicyArn,
           InstanceArn: event.instanceArn,
           PermissionSetArn: event.permissionSetArn,
-        })
+        }),
       );
       logger(
         {
@@ -81,7 +81,7 @@ export const handler = async (event: ManagedPolicyObjectOp) => {
           status: requestStatus.InProgress,
           statusMessage: `Successfully detached AWS IAM Identity Center managed policy arn ${event.managedPolicyArn} to permissionSetArn ${event.permissionSetArn}`,
         },
-        functionLogMode
+        functionLogMode,
       );
       return {
         status: "true",
@@ -91,7 +91,7 @@ export const handler = async (event: ManagedPolicyObjectOp) => {
         new ListManagedPoliciesInPermissionSetCommand({
           InstanceArn: event.instanceArn,
           PermissionSetArn: event.permissionSetArn,
-        })
+        }),
       );
       switch (event.parentOperation) {
         case "attach":
@@ -100,7 +100,7 @@ export const handler = async (event: ManagedPolicyObjectOp) => {
               currentManagedPoliciesList.AttachedManagedPolicies.filter(
                 (managedPolicy) =>
                   managedPolicy.Arn?.toLowerCase() ===
-                  event.managedPolicyArn.toLowerCase()
+                  event.managedPolicyArn.toLowerCase(),
               );
             if (matchedManagedPolicies.length >= 1) {
               logger(
@@ -110,7 +110,7 @@ export const handler = async (event: ManagedPolicyObjectOp) => {
                   status: requestStatus.InProgress,
                   statusMessage: `Successfully validated that AWS IAM Identity Center managed policy arn ${event.managedPolicyArn} is attached to permissionSetArn ${event.permissionSetArn}`,
                 },
-                functionLogMode
+                functionLogMode,
               );
               return {
                 status: "true",
@@ -123,7 +123,7 @@ export const handler = async (event: ManagedPolicyObjectOp) => {
                   status: requestStatus.InProgress,
                   statusMessage: `Can not validate that AWS IAM Identity Center managed policy arn ${event.managedPolicyArn} is attached to permissionSetArn ${event.permissionSetArn}`,
                 },
-                functionLogMode
+                functionLogMode,
               );
               return {
                 status: "false",
@@ -142,7 +142,7 @@ export const handler = async (event: ManagedPolicyObjectOp) => {
               currentManagedPoliciesList.AttachedManagedPolicies.filter(
                 (managedPolicy) =>
                   managedPolicy.Arn?.toLowerCase() ===
-                  event.managedPolicyArn.toLowerCase()
+                  event.managedPolicyArn.toLowerCase(),
               );
             if (matchedManagedPolicies.length === 0) {
               logger(
@@ -152,7 +152,7 @@ export const handler = async (event: ManagedPolicyObjectOp) => {
                   status: requestStatus.InProgress,
                   statusMessage: `Successfully validated that AWS IAM Identity Center managed policy arn ${event.managedPolicyArn} is detached from permissionSetArn ${event.permissionSetArn}`,
                 },
-                functionLogMode
+                functionLogMode,
               );
               return {
                 status: "true",
@@ -165,7 +165,7 @@ export const handler = async (event: ManagedPolicyObjectOp) => {
                   status: requestStatus.InProgress,
                   statusMessage: `Can not validate that AWS IAM Identity Center managed policy arn ${event.managedPolicyArn} is detached from permissionSetArn ${event.permissionSetArn}`,
                 },
-                functionLogMode
+                functionLogMode,
               );
               return {
                 status: "false",
@@ -180,7 +180,7 @@ export const handler = async (event: ManagedPolicyObjectOp) => {
                 status: requestStatus.InProgress,
                 statusMessage: `Successfully validated that AWS IAM Identity Center managed policy arn ${event.managedPolicyArn} is detached from permissionSetArn ${event.permissionSetArn}`,
               },
-              functionLogMode
+              functionLogMode,
             );
             return {
               status: "true",
@@ -200,7 +200,7 @@ export const handler = async (event: ManagedPolicyObjectOp) => {
           status: requestStatus.InProgress,
           statusMessage: `For managed policy arn ${event.managedPolicyArn} , invalid operation type specified - ${event.operation}`,
         },
-        functionLogMode
+        functionLogMode,
       );
       return {
         status: "false",
@@ -218,7 +218,7 @@ export const handler = async (event: ManagedPolicyObjectOp) => {
           "",
           error.name,
           error.message,
-          managedPolicyArn
+          managedPolicyArn,
         ),
       });
       return {
@@ -234,7 +234,7 @@ export const handler = async (event: ManagedPolicyObjectOp) => {
           "",
           "Unhandled exception",
           JSON.stringify(error),
-          managedPolicyArn
+          managedPolicyArn,
         ),
       });
       return {

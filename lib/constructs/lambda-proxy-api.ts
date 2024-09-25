@@ -37,7 +37,7 @@ export class LambdaProxyAPI extends Construct {
     scope: Construct,
     id: string,
     buildConfig: BuildConfig,
-    lambdaProxyAPIProps: LambdaProxyAPIProps
+    lambdaProxyAPIProps: LambdaProxyAPIProps,
   ) {
     super(scope, id);
 
@@ -46,7 +46,7 @@ export class LambdaProxyAPI extends Construct {
       name(buildConfig, `${lambdaProxyAPIProps.apiNameKey}-logGroup`),
       {
         retention: RetentionDays.ONE_MONTH,
-      }
+      },
     );
 
     this.lambdaProxyAPI = new LambdaRestApi(
@@ -58,11 +58,11 @@ export class LambdaProxyAPI extends Construct {
         proxy: false,
         deployOptions: {
           accessLogDestination: new LogGroupLogDestination(
-            this.lambdaProxyAPILogGroup
+            this.lambdaProxyAPILogGroup,
           ),
           accessLogFormat: AccessLogFormat.jsonWithStandardFields(),
         },
-      }
+      },
     );
 
     new CfnOutput(
@@ -71,24 +71,24 @@ export class LambdaProxyAPI extends Construct {
       {
         exportName: name(
           buildConfig,
-          `${lambdaProxyAPIProps.apiNameKey}-endpointURL`
+          `${lambdaProxyAPIProps.apiNameKey}-endpointURL`,
         ),
         value: this.lambdaProxyAPI.url,
-      }
+      },
     );
 
     const lambdaproxyAPIResource = this.lambdaProxyAPI.root.addResource(
-      lambdaProxyAPIProps.apiResourceName
+      lambdaProxyAPIProps.apiResourceName,
     );
 
     this.lambdaProxyAPIRole = Role.fromRoleArn(
       this,
       name(buildConfig, "importedPermissionSetRole"),
-      lambdaProxyAPIProps.apiCallerRoleArn
+      lambdaProxyAPIProps.apiCallerRoleArn,
     );
 
     const lambdaProxyAPIIntegration = new LambdaIntegration(
-      lambdaProxyAPIProps.proxyfunction
+      lambdaProxyAPIProps.proxyfunction,
     );
 
     const lambdaProxyAPIMethod = lambdaproxyAPIResource.addMethod(
@@ -96,7 +96,7 @@ export class LambdaProxyAPI extends Construct {
       lambdaProxyAPIIntegration,
       {
         authorizationType: AuthorizationType.IAM,
-      }
+      },
     );
 
     this.lambdaProxyAPIRole.addToPrincipalPolicy(
@@ -104,7 +104,7 @@ export class LambdaProxyAPI extends Construct {
         actions: ["execute-api:Invoke"],
         effect: Effect.ALLOW,
         resources: [lambdaProxyAPIMethod.methodArn],
-      })
+      }),
     );
   }
 }

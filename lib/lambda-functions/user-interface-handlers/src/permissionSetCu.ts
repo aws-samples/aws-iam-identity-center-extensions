@@ -74,11 +74,11 @@ const createUpdateSchemaDefinition = JSON.parse(
       "/opt",
       "nodejs",
       "payload-schema-definitions",
-      "PermissionSet-createUpdateS3.json"
-    )
+      "PermissionSet-createUpdateS3.json",
+    ),
   )
     .valueOf()
-    .toString()
+    .toString(),
 );
 const createUpdateValidate = ajv.compile(createUpdateSchemaDefinition);
 const handlerName = AWS_LAMBDA_FUNCTION_NAME + "";
@@ -98,14 +98,14 @@ export const handler = async (event: S3Event) => {
           status: requestStatus.InProgress,
           statusMessage: `Permission Set create/update operation started`,
         },
-        functionLogMode
+        functionLogMode,
       );
       try {
         const originalText: GetObjectCommandOutput = await s3clientObject.send(
           new GetObjectCommand({
             Bucket: record.s3.bucket.name,
             Key: record.s3.object.key.replace(/\+/g, " "),
-          })
+          }),
         );
         logger(
           {
@@ -115,11 +115,11 @@ export const handler = async (event: S3Event) => {
             status: requestStatus.InProgress,
             statusMessage: `Fetched S3 file content from permission_sets location - ${record.s3.bucket.name}/${record.s3.object.key}`,
           },
-          functionLogMode
+          functionLogMode,
         );
         permissionSetFileName = record.s3.object.key.replace(/\+/g, " ");
         const jsonData = JSON.parse(
-          await streamToString(originalText.Body as Readable)
+          await streamToString(originalText.Body as Readable),
         );
         logger(
           {
@@ -129,11 +129,11 @@ export const handler = async (event: S3Event) => {
             status: requestStatus.InProgress,
             statusMessage: `Parsed file content successfuly`,
           },
-          functionLogMode
+          functionLogMode,
         );
         const payload: CreateUpdatePermissionSetPayload = imperativeParseJSON(
           jsonData,
-          createUpdateValidate
+          createUpdateValidate,
         );
         logger(
           {
@@ -143,7 +143,7 @@ export const handler = async (event: S3Event) => {
             status: requestStatus.InProgress,
             statusMessage: `Completed imperative parsing to handle any malformed/null JSON values`,
           },
-          functionLogMode
+          functionLogMode,
         );
         const upsertData = removeEmpty(payload);
         logger(
@@ -155,7 +155,7 @@ export const handler = async (event: S3Event) => {
             relatedData: upsertData.permissionSetName,
             statusMessage: `Removed empty values from permission set JSON`,
           },
-          functionLogMode
+          functionLogMode,
         );
 
         /**
@@ -169,7 +169,7 @@ export const handler = async (event: S3Event) => {
               Key: {
                 permissionSetName: upsertData.permissionSetName,
               },
-            })
+            }),
           );
         logger(
           {
@@ -180,7 +180,7 @@ export const handler = async (event: S3Event) => {
             relatedData: upsertData.permissionSetName,
             statusMessage: `Checked if the permission set already exists in the solution to determine create/update operation`,
           },
-          functionLogMode
+          functionLogMode,
         );
         await ddbDocClientObject.send(
           new PutCommand({
@@ -188,7 +188,7 @@ export const handler = async (event: S3Event) => {
             Item: {
               ...upsertData,
             },
-          })
+          }),
         );
         logger(
           {
@@ -199,7 +199,7 @@ export const handler = async (event: S3Event) => {
             relatedData: upsertData.permissionSetName,
             statusMessage: `Processed upsert operation successfully`,
           },
-          functionLogMode
+          functionLogMode,
         );
         if (fetchPermissionSet.Item) {
           await snsClientObject.send(
@@ -211,7 +211,7 @@ export const handler = async (event: S3Event) => {
                 permissionSetName: upsertData.permissionSetName,
                 oldPermissionSetData: fetchPermissionSet.Item,
               }),
-            })
+            }),
           );
           logger(
             {
@@ -222,7 +222,7 @@ export const handler = async (event: S3Event) => {
               relatedData: upsertData.permissionSetName,
               statusMessage: `Determined the operation is update type, posting to permissionSetProcessor topic`,
             },
-            functionLogMode
+            functionLogMode,
           );
         } else {
           await snsClientObject.send(
@@ -233,7 +233,7 @@ export const handler = async (event: S3Event) => {
                 action: "create",
                 permissionSetName: upsertData.permissionSetName,
               }),
-            })
+            }),
           );
           logger(
             {
@@ -244,7 +244,7 @@ export const handler = async (event: S3Event) => {
               relatedData: upsertData.permissionSetName,
               statusMessage: `Determined the operation is create type, posting to permissionSetProcessor topic`,
             },
-            functionLogMode
+            functionLogMode,
           );
         }
       } catch (err) {
@@ -258,9 +258,9 @@ export const handler = async (event: S3Event) => {
                 handlerName,
                 "Schema validation exception",
                 `Provided permission set ${permissionSetFileName} S3 file does not pass the schema validation`,
-                JSON.stringify(err.errors)
+                JSON.stringify(err.errors),
               ),
-            })
+            }),
           );
           logger({
             handler: handlerName,
@@ -271,7 +271,7 @@ export const handler = async (event: S3Event) => {
               requestId,
               "Schema validation exception",
               `Provided permission set ${permissionSetFileName} S3 file does not pass the schema validation`,
-              JSON.stringify(err.errors)
+              JSON.stringify(err.errors),
             ),
           });
         } else if (
@@ -288,9 +288,9 @@ export const handler = async (event: S3Event) => {
                 handlerName,
                 err.name,
                 err.message,
-                permissionSetFileName
+                permissionSetFileName,
               ),
-            })
+            }),
           );
           logger({
             handler: handlerName,
@@ -301,7 +301,7 @@ export const handler = async (event: S3Event) => {
               requestId,
               err.name,
               err.message,
-              permissionSetFileName
+              permissionSetFileName,
             ),
           });
         } else {
@@ -314,9 +314,9 @@ export const handler = async (event: S3Event) => {
                 handlerName,
                 "Unhandled exception",
                 JSON.stringify(err),
-                permissionSetFileName
+                permissionSetFileName,
               ),
-            })
+            }),
           );
           logger({
             handler: handlerName,
@@ -327,11 +327,11 @@ export const handler = async (event: S3Event) => {
               requestId,
               "Unhandled exception",
               JSON.stringify(err),
-              permissionSetFileName
+              permissionSetFileName,
             ),
           });
         }
       }
-    })
+    }),
   );
 };

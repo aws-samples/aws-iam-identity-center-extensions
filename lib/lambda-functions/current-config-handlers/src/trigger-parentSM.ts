@@ -68,7 +68,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
           waitSeconds: 2,
           pageSize: 5,
         }),
-      })
+      }),
     );
     logger({
       handler: "parentInvokeSM",
@@ -95,7 +95,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
           requestId,
           err.name,
           err.message,
-          ""
+          "",
         ),
       });
       return {
@@ -105,7 +105,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
           requestId,
           err.name,
           err.message,
-          ""
+          "",
         ),
       };
     } else {
@@ -118,7 +118,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
           requestId,
           "Unhandled exception",
           JSON.stringify(err),
-          ""
+          "",
         ),
       });
       return {
@@ -128,7 +128,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
           requestId,
           "Unhandled exception",
           JSON.stringify(err),
-          ""
+          "",
         ),
       };
     }

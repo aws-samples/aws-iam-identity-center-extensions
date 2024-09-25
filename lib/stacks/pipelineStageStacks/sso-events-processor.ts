@@ -22,7 +22,7 @@ export class SSOEventsProcessor extends Stack {
     scope: Construct,
     id: string,
     props: StackProps | undefined,
-    buildConfig: BuildConfig
+    buildConfig: BuildConfig,
   ) {
     super(scope, id, props);
 
@@ -32,11 +32,11 @@ export class SSOEventsProcessor extends Stack {
       {
         enableKeyRotation: true,
         alias: name(buildConfig, "ssoArtefactsKey"),
-      }
+      },
     );
 
     ssoArtefactsKey.grantEncryptDecrypt(
-      new ServicePrincipal("events.amazonaws.com")
+      new ServicePrincipal("events.amazonaws.com"),
     );
 
     const ssoGroupEventsNotificationTopic = new Topic(
@@ -45,7 +45,7 @@ export class SSOEventsProcessor extends Stack {
       {
         masterKey: ssoArtefactsKey,
         displayName: name(buildConfig, "ssoGroupEventsNotificationTopic"),
-      }
+      },
     );
 
     ssoGroupEventsNotificationTopic.addToResourcePolicy(
@@ -55,7 +55,7 @@ export class SSOEventsProcessor extends Stack {
         principals: [
           new AccountPrincipal(buildConfig.PipelineSettings.TargetAccountId),
         ],
-      })
+      }),
     );
 
     new SSMParamWriter(
@@ -66,7 +66,7 @@ export class SSOEventsProcessor extends Stack {
         ParamNameKey: "ssoGroupEventsNotificationTopicArn",
         ParamValue: ssoGroupEventsNotificationTopic.topicArn,
         ReaderAccountId: buildConfig.PipelineSettings.TargetAccountId,
-      }
+      },
     );
 
     const ssoGroupHandlerTrigger = new Rule(
@@ -84,13 +84,13 @@ export class SSOEventsProcessor extends Stack {
           },
         },
         ruleName: name(buildConfig, "ssoGroupHandler"),
-      }
+      },
     );
 
     ssoGroupHandlerTrigger.addTarget(
       new SnsTopic(ssoGroupEventsNotificationTopic, {
         message: RuleTargetInput,
-      })
+      }),
     );
 
     const ssoUserEventsNotificationTopic = new Topic(
@@ -99,7 +99,7 @@ export class SSOEventsProcessor extends Stack {
       {
         masterKey: ssoArtefactsKey,
         displayName: name(buildConfig, "ssoUserEventsNotificationTopic"),
-      }
+      },
     );
 
     ssoUserEventsNotificationTopic.addToResourcePolicy(
@@ -109,7 +109,7 @@ export class SSOEventsProcessor extends Stack {
         principals: [
           new AccountPrincipal(buildConfig.PipelineSettings.TargetAccountId),
         ],
-      })
+      }),
     );
 
     new SSMParamWriter(
@@ -120,7 +120,7 @@ export class SSOEventsProcessor extends Stack {
         ParamNameKey: "ssoUserEventsNotificationTopicArn",
         ParamValue: ssoUserEventsNotificationTopic.topicArn,
         ReaderAccountId: buildConfig.PipelineSettings.TargetAccountId,
-      }
+      },
     );
 
     const ssoUserHandlerTrigger = new Rule(
@@ -138,13 +138,13 @@ export class SSOEventsProcessor extends Stack {
           },
         },
         ruleName: name(buildConfig, "ssoUserHandler"),
-      }
+      },
     );
 
     ssoUserHandlerTrigger.addTarget(
       new SnsTopic(ssoUserEventsNotificationTopic, {
         message: RuleTargetInput,
-      })
+      }),
     );
   }
 }

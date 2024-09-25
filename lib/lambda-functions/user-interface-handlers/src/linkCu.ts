@@ -57,10 +57,10 @@ const snsClientObject = new SNSClient({ region: AWS_REGION, maxAttempts: 2 });
 const ajv = new Ajv({ allErrors: true });
 const schemaDefinition = JSON.parse(
   readFileSync(
-    join("/opt", "nodejs", "payload-schema-definitions", "Link-S3.json")
+    join("/opt", "nodejs", "payload-schema-definitions", "Link-S3.json"),
   )
     .valueOf()
-    .toString()
+    .toString(),
 );
 const validate = ajv.compile(schemaDefinition);
 const handlerName = AWS_LAMBDA_FUNCTION_NAME + "";
@@ -80,16 +80,16 @@ export const handler = async (event: S3Event) => {
           status: requestStatus.InProgress,
           statusMessage: `Account assignment create/update operation started`,
         },
-        functionLogMode
+        functionLogMode,
       );
 
       try {
         const fileName = decodeURIComponent(
-          record.s3.object.key.replace(/\+/g, " ").split("/")[1]
+          record.s3.object.key.replace(/\+/g, " ").split("/")[1],
         );
         const payload: LinkS3Payload = imperativeParseJSON(
           { linkData: fileName },
-          validate
+          validate,
         );
         logger(
           {
@@ -99,7 +99,7 @@ export const handler = async (event: S3Event) => {
             status: requestStatus.InProgress,
             statusMessage: `Account assignment payload successfully parsed`,
           },
-          functionLogMode
+          functionLogMode,
         );
         const { linkData } = payload;
         linkDataValue = linkData;
@@ -119,7 +119,7 @@ export const handler = async (event: S3Event) => {
             Item: {
               ...upsertData,
             },
-          })
+          }),
         );
         logger(
           {
@@ -132,7 +132,7 @@ export const handler = async (event: S3Event) => {
             hasRelatedRequests:
               upsertData.awsEntityType === "account" ? false : true,
           },
-          functionLogMode
+          functionLogMode,
         );
         await snsClientObject.send(
           new PublishCommand({
@@ -142,7 +142,7 @@ export const handler = async (event: S3Event) => {
               action: "create",
               requestId: requestId,
             }),
-          })
+          }),
         );
         logger(
           {
@@ -155,7 +155,7 @@ export const handler = async (event: S3Event) => {
             hasRelatedRequests:
               upsertData.awsEntityType === "account" ? false : true,
           },
-          functionLogMode
+          functionLogMode,
         );
       } catch (err) {
         if (err instanceof JSONParserError) {
@@ -168,9 +168,9 @@ export const handler = async (event: S3Event) => {
                 handlerName,
                 "Schema validation exception",
                 `Provided account assignment ${linkDataValue} S3 file does not pass the schema validation`,
-                JSON.stringify(err.errors)
+                JSON.stringify(err.errors),
               ),
-            })
+            }),
           );
           logger({
             handler: handlerName,
@@ -181,7 +181,7 @@ export const handler = async (event: S3Event) => {
               requestId,
               "Schema validation exception",
               `Provided account assignment ${linkDataValue} S3 file does not pass the schema validation`,
-              JSON.stringify(err.errors)
+              JSON.stringify(err.errors),
             ),
           });
         } else if (
@@ -197,9 +197,9 @@ export const handler = async (event: S3Event) => {
                 handlerName,
                 err.name,
                 err.message,
-                linkDataValue
+                linkDataValue,
               ),
-            })
+            }),
           );
           logger({
             handler: handlerName,
@@ -210,7 +210,7 @@ export const handler = async (event: S3Event) => {
               requestId,
               err.name,
               err.message,
-              linkDataValue
+              linkDataValue,
             ),
           });
         } else {
@@ -223,9 +223,9 @@ export const handler = async (event: S3Event) => {
                 handlerName,
                 "Unhandled exception",
                 JSON.stringify(err),
-                linkDataValue
+                linkDataValue,
               ),
-            })
+            }),
           );
           logger({
             handler: handlerName,
@@ -236,11 +236,11 @@ export const handler = async (event: S3Event) => {
               requestId,
               "Unhandled exception",
               JSON.stringify(err),
-              linkDataValue
+              linkDataValue,
             ),
           });
         }
       }
-    })
+    }),
   );
 };

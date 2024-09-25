@@ -126,7 +126,7 @@ export const handler = async (event: SNSEvent) => {
       status: requestStatus.InProgress,
       statusMessage: `Initiating permission set sync check logic`,
     },
-    functionLogMode
+    functionLogMode,
   );
   try {
     const message = JSON.parse(event.Records[0].Sns.Message);
@@ -140,7 +140,7 @@ export const handler = async (event: SNSEvent) => {
         ExpressionAttributeValues: {
           ":permissionSetName": message.permission_set_name,
         },
-      })
+      }),
     );
     logger(
       {
@@ -151,7 +151,7 @@ export const handler = async (event: SNSEvent) => {
         status: requestStatus.InProgress,
         statusMessage: `Validating if there are related account assignment links for this permission set`,
       },
-      functionLogMode
+      functionLogMode,
     );
 
     if (relatedLinks.Items && relatedLinks.Items.length !== 0) {
@@ -164,7 +164,7 @@ export const handler = async (event: SNSEvent) => {
           status: requestStatus.InProgress,
           statusMessage: `Resolved that there are ${relatedLinks.Items.length} no of account assignments for this permission set`,
         },
-        functionLogMode
+        functionLogMode,
       );
       const resolvedInstances: ListInstancesCommandOutput =
         await ssoAdminClientObject.send(new ListInstancesCommand({}));
@@ -180,7 +180,7 @@ export const handler = async (event: SNSEvent) => {
           status: requestStatus.InProgress,
           statusMessage: `Resolved instanceArn as ${instanceArn} and identityStoreId as ${identityStoreId}`,
         },
-        functionLogMode
+        functionLogMode,
       );
 
       await Promise.all(
@@ -198,13 +198,13 @@ export const handler = async (event: SNSEvent) => {
               status: requestStatus.InProgress,
               statusMessage: `Compputed principalName as ${principalNameToLookUp} for looking up in identity store`,
             },
-            functionLogMode
+            functionLogMode,
           );
           const principalId = await resolvePrincipal(
             identityStoreId,
             identityStoreClientObject,
             Item.principalType,
-            principalNameToLookUp
+            principalNameToLookUp,
           );
           const staticSSOPayload: StaticSSOPayload = {
             InstanceArn: instanceArn,
@@ -221,7 +221,7 @@ export const handler = async (event: SNSEvent) => {
                 status: requestStatus.InProgress,
                 statusMessage: `Resolved principalId as ${principalId} for principalName ${principalNameToLookUp}`,
               },
-              functionLogMode
+              functionLogMode,
             );
             if (Item.awsEntityType === "account") {
               await sqsClientObject.send(
@@ -240,7 +240,7 @@ export const handler = async (event: SNSEvent) => {
                     sourceRequestId: requestId,
                   }),
                   MessageGroupId: Item.awsEntityData.slice(-1),
-                })
+                }),
               );
               logger(
                 {
@@ -251,7 +251,7 @@ export const handler = async (event: SNSEvent) => {
                   status: requestStatus.Completed,
                   statusMessage: `Triggered permission set based account assignment create for accountId ${Item.awsEntityData} tagged to principalID ${principalId}`,
                 },
-                functionLogMode
+                functionLogMode,
               );
             } else if (
               Item.awsEntityType === "ou_id" ||
@@ -276,7 +276,7 @@ export const handler = async (event: SNSEvent) => {
                 stateMachinePayload,
                 Item.awsEntityData,
                 processTargetAccountSMArn + "",
-                sfnClientObject
+                sfnClientObject,
               );
               logger(
                 {
@@ -287,7 +287,7 @@ export const handler = async (event: SNSEvent) => {
                   status: requestStatus.Completed,
                   statusMessage: `Triggered state machine for non-account assignment create for entityType  ${Item.awsEntityType} with entityData ${Item.awsEntityData}`,
                 },
-                functionLogMode
+                functionLogMode,
               );
             }
           } else {
@@ -300,10 +300,10 @@ export const handler = async (event: SNSEvent) => {
                 status: requestStatus.Completed,
                 statusMessage: `No related principals found, completing permission set sync operation`,
               },
-              functionLogMode
+              functionLogMode,
             );
           }
-        })
+        }),
       );
     } else {
       logger(
@@ -315,7 +315,7 @@ export const handler = async (event: SNSEvent) => {
           status: requestStatus.Completed,
           statusMessage: `No related account assignments found, completing permission set sync operation`,
         },
-        functionLogMode
+        functionLogMode,
       );
     }
   } catch (err) {
@@ -336,9 +336,9 @@ export const handler = async (event: SNSEvent) => {
             handlerName,
             err.name,
             err.message,
-            permissionSetName
+            permissionSetName,
           ),
-        })
+        }),
       );
       logger({
         handler: handlerName,
@@ -349,7 +349,7 @@ export const handler = async (event: SNSEvent) => {
           requestId,
           err.name,
           err.message,
-          permissionSetName
+          permissionSetName,
         ),
       });
     } else {
@@ -362,9 +362,9 @@ export const handler = async (event: SNSEvent) => {
             handlerName,
             "Unhandled exception",
             JSON.stringify(err),
-            permissionSetName
+            permissionSetName,
           ),
-        })
+        }),
       );
       logger({
         handler: handlerName,
@@ -375,7 +375,7 @@ export const handler = async (event: SNSEvent) => {
           requestId,
           "Unhandled exception",
           JSON.stringify(err),
-          permissionSetName
+          permissionSetName,
         ),
       });
     }

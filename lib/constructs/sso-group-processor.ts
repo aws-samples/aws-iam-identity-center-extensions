@@ -34,7 +34,7 @@ export class SSOGroupProcessor extends Construct {
     scope: Construct,
     id: string,
     buildConfig: BuildConfig,
-    ssoGroupProcessorProps: SSOGroupProcessorProps
+    ssoGroupProcessorProps: SSOGroupProcessorProps,
   ) {
     super(scope, id);
 
@@ -51,7 +51,7 @@ export class SSOGroupProcessor extends Construct {
           "lambda-functions",
           "application-handlers",
           "src",
-          "groupsCud.ts"
+          "groupsCud.ts",
         ),
         bundling: {
           externalModules: [
@@ -83,11 +83,13 @@ export class SSOGroupProcessor extends Construct {
           supportNestedOU: String(buildConfig.Parameters.SupportNestedOU),
           functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
-      }
+      },
     );
 
     this.ssoGroupHandler.addEventSource(
-      new SnsEventSource(ssoGroupProcessorProps.ssoGroupEventNotificationsTopic)
+      new SnsEventSource(
+        ssoGroupProcessorProps.ssoGroupEventNotificationsTopic,
+      ),
     );
 
     this.ssoUserHandler = new NodejsFunction(
@@ -103,7 +105,7 @@ export class SSOGroupProcessor extends Construct {
           "lambda-functions",
           "application-handlers",
           "src",
-          "usersCud.ts"
+          "usersCud.ts",
         ),
         bundling: {
           externalModules: [
@@ -139,11 +141,11 @@ export class SSOGroupProcessor extends Construct {
           supportNestedOU: String(buildConfig.Parameters.SupportNestedOU),
           functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
-      }
+      },
     );
 
     this.ssoUserHandler.addEventSource(
-      new SnsEventSource(ssoGroupProcessorProps.ssoUserEventNotificationsTopic)
+      new SnsEventSource(ssoGroupProcessorProps.ssoUserEventNotificationsTopic),
     );
   }
 }

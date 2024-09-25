@@ -67,7 +67,7 @@ export const handler = async (event: SQSEvent) => {
           status: requestStatus.InProgress,
           statusMessage: `Started processing managed policy queue operation`,
         },
-        functionLogMode
+        functionLogMode,
       );
       try {
         const message: ManagedPolicyQueueObject = JSON.parse(record.body);
@@ -77,7 +77,7 @@ export const handler = async (event: SQSEvent) => {
             new StartExecutionCommand({
               stateMachineArn: message.stateMachineArn,
               input: JSON.stringify(message.managedPolicyObject),
-            })
+            }),
           );
           logger(
             {
@@ -87,7 +87,7 @@ export const handler = async (event: SQSEvent) => {
               status: requestStatus.Completed,
               statusMessage: `Completed posting managed policy queue operation`,
             },
-            functionLogMode
+            functionLogMode,
           );
         } else if (message.managedPolicytype === "customer") {
           /** Customer managed policy operation */
@@ -95,7 +95,7 @@ export const handler = async (event: SQSEvent) => {
             new StartExecutionCommand({
               stateMachineArn: message.stateMachineArn,
               input: JSON.stringify(message.managedPolicyObject),
-            })
+            }),
           );
           logger(
             {
@@ -105,7 +105,7 @@ export const handler = async (event: SQSEvent) => {
               status: requestStatus.Completed,
               statusMessage: `Completed posting managed policy queue operation`,
             },
-            functionLogMode
+            functionLogMode,
           );
         } else {
           logger(
@@ -116,7 +116,7 @@ export const handler = async (event: SQSEvent) => {
               status: requestStatus.FailedWithException,
               statusMessage: `Managed Policy type ${message.managedPolicytype} is incorrect`,
             },
-            functionLogMode
+            functionLogMode,
           );
         }
       } catch (err) {
@@ -133,9 +133,9 @@ export const handler = async (event: SQSEvent) => {
                 handlerName,
                 err.name,
                 err.message,
-                mpName
+                mpName,
               ),
-            })
+            }),
           );
           logger({
             handler: handlerName,
@@ -146,7 +146,7 @@ export const handler = async (event: SQSEvent) => {
               requestId,
               err.name,
               err.message,
-              mpName
+              mpName,
             ),
           });
         } else {
@@ -159,9 +159,9 @@ export const handler = async (event: SQSEvent) => {
                 handlerName,
                 "Unhandled exception",
                 JSON.stringify(err),
-                mpName
+                mpName,
               ),
-            })
+            }),
           );
           logger({
             handler: handlerName,
@@ -172,11 +172,11 @@ export const handler = async (event: SQSEvent) => {
               requestId,
               "Unhandled exception",
               JSON.stringify(err),
-              mpName
+              mpName,
             ),
           });
         }
       }
-    })
+    }),
   );
 };
