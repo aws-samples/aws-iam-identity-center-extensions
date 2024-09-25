@@ -1,30 +1,21 @@
 /**
- * Objective: Implement link changes for link processing functionality Trigger
- * source: links topic notifications
+ * Objective: Implement link changes for link processing functionality
+ * Trigger source: links topic notifications
  *
  * - Assumes role in SSO account for calling SSO admin API - listInstances
- * - For each record in the stream,
- *
- *   - Look up in permissionSetArn ddb table if the permission set referenced in the
- *       record exists
- *
- *       - If the permission set arn exists, then
- *
- *                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     - Look up in AWS IAM Identity Center Identity store if the user/group exists
- *
- *                   - If the user/group exists
- *
- *                                                   - Determine if the operation is create/delete
- *                                                   - Determine if link type is account /ou_id/root/account_tag
- *                                                   - If link type is account , post the link provisioning/deprovisioning operation to the link manager queue
- *                                                   - If link type is ou_id, root,account_tag invoke org entities state machine
- *                   - If the user/group does not exist
- *
- *                                                   - Stop processing as we won't be able to proceed without the principal Arn
- *       - If the permission set does not exist, do nothing as we cannot do link
- *               provisioning if the permission set is not yet provisioned
- * - Catch all failures in a generic exception block and post the error details to
- *   error notifications topics
+ * - For each record in the stream:
+ *   - Look up in permissionSetArn ddb table if the permission set referenced in the record exists
+ *     - If the permission set arn exists, then:
+ *       - Look up in AWS IAM Identity Center Identity store if the user/group exists
+ *         - If the user/group exists:
+ *           - Determine if the operation is create/delete
+ *           - Determine if link type is account /ou_id/root/account_tag
+ *           - If link type is account, post the link provisioning/deprovisioning operation to the link manager queue
+ *           - If link type is ou_id, root, account_tag, invoke org entities state machine
+ *         - If the user/group does not exist:
+ *           - Stop processing as we won't be able to proceed without the principal Arn
+ *     - If the permission set does not exist, do nothing as we cannot do link provisioning if the permission set is not yet provisioned
+ * - Catch all failures in a generic exception block and post the error details to error notifications topics
  */
 
 const {
