@@ -56,7 +56,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       code: Code.fromAsset(
         join(__dirname, "../../", "lambda-layers", "nodejs-layer")
       ),
-      compatibleRuntimes: [Runtime.NODEJS_16_X],
+      compatibleRuntimes: [Runtime.NODEJS_20_X],
       compatibleArchitectures: [Architecture.ARM_64],
     });
 
@@ -454,7 +454,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       this,
       fullname(`rsImportPermissionSetsHandler`),
       {
-        runtime: Runtime.NODEJS_16_X,
+        runtime: Runtime.NODEJS_20_X,
         architecture: Architecture.ARM_64,
         layers: [rsNodeJsLayer],
         entry: join(
@@ -497,7 +497,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       this,
       fullname(`rsImportAccountAssignmentHandler`),
       {
-        runtime: Runtime.NODEJS_16_X,
+        runtime: Runtime.NODEJS_20_X,
         architecture: Architecture.ARM_64,
         layers: [rsNodeJsLayer],
         entry: join(
@@ -551,7 +551,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       this,
       fullname(`updateCustomResourceHandler`),
       {
-        runtime: Runtime.NODEJS_16_X,
+        runtime: Runtime.NODEJS_20_X,
         architecture: Architecture.ARM_64,
         layers: [rsNodeJsLayer],
         entry: join(
@@ -590,7 +590,7 @@ export class AwsSsoExtensionsRegionSwitchDiscover extends Stack {
       this,
       fullname(`parentSMInvokeFunction`),
       {
-        runtime: Runtime.NODEJS_16_X,
+        runtime: Runtime.NODEJS_20_X,
         architecture: Architecture.ARM_64,
         functionName: fullname(`parentSMInvokeFunction`),
         layers: [rsNodeJsLayer],

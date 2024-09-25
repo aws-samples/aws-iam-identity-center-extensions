@@ -100,7 +100,7 @@ export class PermissionSetProcessor extends Construct {
       name(buildConfig, "permissionSetTopicProcessor"),
       {
         functionName: name(buildConfig, "permissionSetTopicProcessor"),
-        runtime: Runtime.NODEJS_16_X,
+        runtime: Runtime.NODEJS_20_X,
         architecture: Architecture.ARM_64,
         entry: join(
           __dirname,
@@ -160,7 +160,7 @@ export class PermissionSetProcessor extends Construct {
       this,
       name(buildConfig, "permissionSetSyncHandler"),
       {
-        runtime: Runtime.NODEJS_16_X,
+        runtime: Runtime.NODEJS_20_X,
         architecture: Architecture.ARM_64,
         functionName: name(buildConfig, "permissionSetSyncHandler"),
         entry: join(
@@ -216,7 +216,7 @@ export class PermissionSetProcessor extends Construct {
       this,
       name(buildConfig, "managedPolicyQueueProcessor"),
       {
-        runtime: Runtime.NODEJS_16_X,
+        runtime: Runtime.NODEJS_20_X,
         architecture: Architecture.ARM_64,
         functionName: name(buildConfig, "managedPolicyQueueProcessor"),
         entry: join(

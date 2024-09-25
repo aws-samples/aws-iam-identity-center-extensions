@@ -138,7 +138,7 @@ export class SSOImportArtefactsPart1 extends Stack {
         code: Code.fromAsset(
           join(__dirname, "../../../", "lib", "lambda-layers", "nodejs-layer")
         ),
-        compatibleRuntimes: [Runtime.NODEJS_16_X],
+        compatibleRuntimes: [Runtime.NODEJS_20_X],
         compatibleArchitectures: [Architecture.ARM_64],
       }
     );
@@ -147,7 +147,7 @@ export class SSOImportArtefactsPart1 extends Stack {
       this,
       name(buildConfig, `importCmpAndPb`),
       {
-        runtime: Runtime.NODEJS_16_X,
+        runtime: Runtime.NODEJS_20_X,
         architecture: Architecture.ARM_64,
         functionName: name(buildConfig, `importCmpAndPbHandler`),
         layers: [layersResource],

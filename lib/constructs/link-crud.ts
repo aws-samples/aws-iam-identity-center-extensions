@@ -136,7 +136,7 @@ export class LinkCRUD extends Construct {
         name(buildConfig, "linkApiHandler"),
         {
           functionName: name(buildConfig, "linkApiHandler"),
-          runtime: Runtime.NODEJS_16_X,
+          runtime: Runtime.NODEJS_20_X,
           entry: join(
             __dirname,
             "../",
@@ -189,7 +189,7 @@ export class LinkCRUD extends Construct {
         name(buildConfig, "linkCuHandler"),
         {
           functionName: name(buildConfig, "linkCuHandler"),
-          runtime: Runtime.NODEJS_16_X,
+          runtime: Runtime.NODEJS_20_X,
           entry: join(
             __dirname,
             "../",
@@ -235,7 +235,7 @@ export class LinkCRUD extends Construct {
         name(buildConfig, "linkDelHandler"),
         {
           functionName: name(buildConfig, "linkDelHandler"),
-          runtime: Runtime.NODEJS_16_X,
+          runtime: Runtime.NODEJS_20_X,
           entry: join(
             __dirname,
             "../",

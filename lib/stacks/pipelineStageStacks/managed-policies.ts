@@ -39,7 +39,7 @@ export class ManagedPolicies extends Stack {
         code: Code.fromAsset(
           join(__dirname, "../../", "lambda-layers", "nodejs-layer")
         ),
-        compatibleRuntimes: [Runtime.NODEJS_16_X],
+        compatibleRuntimes: [Runtime.NODEJS_20_X],
         compatibleArchitectures: [Architecture.ARM_64],
       }
     );
@@ -52,7 +52,7 @@ export class ManagedPolicies extends Stack {
       this,
       name(buildConfig, `describeOpIterator`),
       {
-        runtime: Runtime.NODEJS_16_X,
+        runtime: Runtime.NODEJS_20_X,
         architecture: Architecture.ARM_64,
         functionName: name(buildConfig, `describeOpIterator`),
         entry: join(
@@ -85,7 +85,7 @@ export class ManagedPolicies extends Stack {
       this,
       name(buildConfig, `processCustomerManagedPolicyHandler`),
       {
-        runtime: Runtime.NODEJS_16_X,
+        runtime: Runtime.NODEJS_20_X,
         architecture: Architecture.ARM_64,
         functionName: name(buildConfig, `processCustomerManagedPolicyHandler`),
         layers: [deployLambdaLayer],
@@ -209,7 +209,7 @@ export class ManagedPolicies extends Stack {
       this,
       name(buildConfig, `processManagedPolicyHandler`),
       {
-        runtime: Runtime.NODEJS_16_X,
+        runtime: Runtime.NODEJS_20_X,
         architecture: Architecture.ARM_64,
         functionName: name(buildConfig, `processManagedPolicyHandler`),
         layers: [deployLambdaLayer],
