@@ -107,9 +107,20 @@ function ensureDependentPropIsPresentForSourceRepo(
       default:
         return "";
     }
+  } else if (repoType.toLowerCase() === "s3") {
+    switch (propName.toLowerCase()) {
+      case "sourcebucketname":
+        propValue = ensureString(object, propName);
+        break;
+      case "sourceobjectkey":
+        propValue = ensureString(object, propName);
+        break;
+      default:
+        return "";
+    }
   } else {
     throw new Error(
-      `Repo type ${repoType} is not one of valid values - ["codecommit","codestar"]`
+      `Repo type ${repoType} is not one of valid values - ["codecommit","codestar","s3"]`
     );
   }
   /** Making the linter happy */
@@ -169,6 +180,7 @@ function getConfig() {
       RepoType: ensureValidString(unparsedEnv["PipelineSettings"], "RepoType", [
         "CODECOMMIT",
         "CODESTAR",
+        "S3"
       ]),
       RepoArn: ensureDependentPropIsPresentForSourceRepo(
         unparsedEnv["PipelineSettings"],
@@ -189,6 +201,16 @@ function getConfig() {
         unparsedEnv["PipelineSettings"],
         "RepoType",
         "CodeStarConnectionArn"
+      ),
+      SourceBucketName: ensureDependentPropIsPresentForSourceRepo(
+        unparsedEnv["PipelineSettings"],
+        "RepoType",
+        "SourceBucketName"
+      ),
+      SourceObjectKey: ensureDependentPropIsPresentForSourceRepo(
+        unparsedEnv["PipelineSettings"],
+        "RepoType",
+        "SourceObjectKey"
       ),
       SynthCommand: ensureString(
         unparsedEnv["PipelineSettings"],

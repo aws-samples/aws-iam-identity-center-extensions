@@ -8,6 +8,8 @@ import {
   IFileSetProducer,
   ShellStep,
 } from "aws-cdk-lib/pipelines";
+import { S3Trigger } from "aws-cdk-lib/aws-codepipeline-actions";
+import { Bucket } from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
 import { BuildConfig } from "../../build/buildConfig";
 import {
@@ -55,6 +57,24 @@ export class AwsSsoExtensionsForEnterprise extends Stack {
         }
       );
     }
+      else if (buildConfig.PipelineSettings.RepoType.toLowerCase() === "s3") {
+
+        const sourceBucketName =
+        buildConfig.PipelineSettings.SourceBucketName || "";
+      const sourceBucketKey =
+        buildConfig.PipelineSettings.SourceObjectKey || "";
+
+        const sourceBucket = Bucket.fromBucketName(
+          this,
+          fullname(buildConfig, "importedSourceBucket"),
+          sourceBucketName
+        );
+        inputSource = CodePipelineSource.s3(
+          sourceBucket,
+          sourceBucketKey,
+          { trigger: S3Trigger.NONE },
+        );
+      }
     const pipeline = new CodePipeline(this, fullname(buildConfig, "pipeline"), {
       pipelineName: fullname(buildConfig, "pipeline"),
       crossAccountKeys: true,

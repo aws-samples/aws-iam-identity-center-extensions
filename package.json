@@ -32,7 +32,7 @@
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
-    "aws-cdk": "^2.150.0",
+    "aws-cdk": "^2.160.0",
     "esbuild": "^0.23.0",
     "eslint": "^8.56.0",
     "eslint-plugin-import": "^2.29.1",
@@ -46,7 +46,7 @@
     "uuid": "^10.0.0"
   },
   "dependencies": {
-    "aws-cdk-lib": "^2.150.0",
+    "aws-cdk-lib": "^2.160.0",
     "constructs": "^10.3.0",
     "js-yaml": "^4.1.0",
     "source-map-support": "^0.5.21"
