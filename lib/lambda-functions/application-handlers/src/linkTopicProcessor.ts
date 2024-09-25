@@ -1,3 +1,4 @@
+// prettier-ignore
 /**
  * Objective: Implement link changes for link processing functionality
  * Trigger source: links topic notifications
@@ -17,6 +18,8 @@
  *     - If the permission set does not exist, do nothing as we cannot do link provisioning if the permission set is not yet provisioned
  * - Catch all failures in a generic exception block and post the error details to error notifications topics
  */
+
+// prettier-ignore
 
 const {
   SSOAPIRoleArn,

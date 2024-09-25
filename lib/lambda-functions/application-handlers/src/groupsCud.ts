@@ -1,3 +1,4 @@
+// prettier-ignore
 /**
  * Objective: Implement SSO group events handler for processing groups Trigger
  * source: SSO group changes notification topic which in turn receives event
@@ -23,6 +24,7 @@
  * - Catch all failures in a generic exception block and post the error details to
  *   error notifications topics
  */
+// prettier-ignore
 
 const {
   SSOAPIRoleArn,
