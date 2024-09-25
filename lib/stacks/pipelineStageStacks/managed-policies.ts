@@ -27,7 +27,7 @@ export class ManagedPolicies extends Stack {
     scope: Construct,
     id: string,
     props: StackProps | undefined,
-    buildConfig: BuildConfig
+    buildConfig: BuildConfig,
   ) {
     super(scope, id, props);
 
@@ -37,11 +37,11 @@ export class ManagedPolicies extends Stack {
       name(buildConfig, "nodeJsLayerforManagedPolicies"),
       {
         code: Code.fromAsset(
-          join(__dirname, "../../", "lambda-layers", "nodejs-layer")
+          join(__dirname, "../../", "lambda-layers", "nodejs-layer"),
         ),
         compatibleRuntimes: [Runtime.NODEJS_20_X],
         compatibleArchitectures: [Architecture.ARM_64],
-      }
+      },
     );
 
     /**
@@ -62,12 +62,12 @@ export class ManagedPolicies extends Stack {
           "lambda-functions",
           "managed-policy-handlers",
           "src",
-          "describeOpIterator.ts"
+          "describeOpIterator.ts",
         ),
         bundling: {
           minify: true,
         },
-      }
+      },
     );
 
     /** Export function ARN as cross-account/region parameter */
@@ -96,7 +96,7 @@ export class ManagedPolicies extends Stack {
           "lambda-functions",
           "managed-policy-handlers",
           "src",
-          "processCustomerManagedPolicy.ts"
+          "processCustomerManagedPolicy.ts",
         ),
         bundling: {
           externalModules: ["@aws-sdk/client-sso-admin"],
@@ -105,7 +105,7 @@ export class ManagedPolicies extends Stack {
         environment: {
           functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
-      }
+      },
     );
 
     /**
@@ -121,7 +121,7 @@ export class ManagedPolicies extends Stack {
           "sso:ListCustomerManagedPolicyReferencesInPermissionSet",
         ],
         resources: ["*"],
-      })
+      }),
     );
 
     /** Export function ARN as cross-account/region parameter */
@@ -133,7 +133,7 @@ export class ManagedPolicies extends Stack {
         ParamNameKey: "customerManagedPolicyProcessOpArn",
         ParamValue: processCustomerManagedPolicyHandler.functionArn,
         ReaderAccountId: buildConfig.PipelineSettings.TargetAccountId,
-      }
+      },
     );
 
     /** Cloud watch log group for directing all state machine logging */
@@ -142,7 +142,7 @@ export class ManagedPolicies extends Stack {
       name(buildConfig, "customerManagedPolicySMLogGroup"),
       {
         retention: RetentionDays.ONE_MONTH,
-      }
+      },
     );
 
     /**
@@ -156,12 +156,12 @@ export class ManagedPolicies extends Stack {
       {
         roleName: name(buildConfig, "customerManagedPolicySMRole"),
         assumedBy: new ServicePrincipal("states.amazonaws.com"),
-      }
+      },
     );
 
     /** Grant the IAM role permissions to invoke the lambda functions */
     processCustomerManagedPolicyHandler.grantInvoke(
-      customerManagedPolicySMRole
+      customerManagedPolicySMRole,
     );
     describeOpIterator.grantInvoke(customerManagedPolicySMRole);
     customerManagedPolicySMRole.addToPrincipalPolicy(
@@ -177,7 +177,7 @@ export class ManagedPolicies extends Stack {
           "logs:DescribeLogGroups",
         ],
         resources: ["*"],
-      })
+      }),
     );
 
     /** Define state machine that would handle customer managed policy operations */
@@ -199,7 +199,7 @@ export class ManagedPolicies extends Stack {
           includeExecutionData: true,
           level: "ALL",
         },
-      }
+      },
     );
 
     customerManagedPolicySM.node.addDependency(customerManagedPolicySMRole);
@@ -220,7 +220,7 @@ export class ManagedPolicies extends Stack {
           "lambda-functions",
           "managed-policy-handlers",
           "src",
-          "processManagedPolicy.ts"
+          "processManagedPolicy.ts",
         ),
         bundling: {
           externalModules: ["@aws-sdk/client-sso-admin"],
@@ -229,7 +229,7 @@ export class ManagedPolicies extends Stack {
         environment: {
           functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
-      }
+      },
     );
 
     /** Grant lambda permissions to attach/detach/describe managed policies */
@@ -242,7 +242,7 @@ export class ManagedPolicies extends Stack {
           "sso:ListManagedPoliciesInPermissionSet",
         ],
         resources: ["*"],
-      })
+      }),
     );
 
     /** Export function ARN as cross-account/region parameter */
@@ -254,7 +254,7 @@ export class ManagedPolicies extends Stack {
         ParamNameKey: "managedPolicyProcessOpArn",
         ParamValue: processManagedPolicyHandler.functionArn,
         ReaderAccountId: buildConfig.PipelineSettings.TargetAccountId,
-      }
+      },
     );
 
     /** Cloud watch log group for directing all state machine logging */
@@ -263,7 +263,7 @@ export class ManagedPolicies extends Stack {
       name(buildConfig, "managedPolicySMLogGroup"),
       {
         retention: RetentionDays.ONE_MONTH,
-      }
+      },
     );
 
     /**
@@ -277,7 +277,7 @@ export class ManagedPolicies extends Stack {
       {
         roleName: name(buildConfig, "managedPolicySMRole"),
         assumedBy: new ServicePrincipal("states.amazonaws.com"),
-      }
+      },
     );
 
     /** Grant the IAM role permissions to invoke the lambda functions */
@@ -296,7 +296,7 @@ export class ManagedPolicies extends Stack {
           "logs:DescribeLogGroups",
         ],
         resources: ["*"],
-      })
+      }),
     );
 
     /** Define state machine that would handle managed policy operations */
@@ -318,7 +318,7 @@ export class ManagedPolicies extends Stack {
           includeExecutionData: true,
           level: "ALL",
         },
-      }
+      },
     );
 
     managedPolicySM.node.addDependency(managedPolicySMRole);

@@ -79,7 +79,7 @@ export const handler = async (event: any) => {
         SessionDuration: serializeDurationToISOFormat({
           minutes: parseInt(permissionSetObject.sessionDurationInMinutes + ""),
         }),
-      })
+      }),
     );
     /**
      * Fetch permission set ARN as this is generated run time by the service and
@@ -98,7 +98,7 @@ export const handler = async (event: any) => {
           InstanceArn: instanceArn,
           ResourceArn: permissionSetArn,
           Tags: permissionSetObject.tags,
-        })
+        }),
       );
     }
     if (permissionSetObject.managedPoliciesArnList.length !== 0) {
@@ -113,7 +113,7 @@ export const handler = async (event: any) => {
             InstanceArn: instanceArn,
             PermissionSetArn: permissionSetArn,
             ManagedPolicyArn: managedPolicyArn,
-          })
+          }),
         );
       }
     }
@@ -123,10 +123,10 @@ export const handler = async (event: any) => {
           new PutInlinePolicyToPermissionSetCommand({
             InstanceArn: instanceArn,
             InlinePolicy: JSON.stringify(
-              permissionSetObject.inlinePolicyDocument
+              permissionSetObject.inlinePolicyDocument,
             ),
             PermissionSetArn: permissionSetArn,
-          })
+          }),
         );
       }
     }
@@ -151,7 +151,7 @@ export const handler = async (event: any) => {
       logMode: logModes.Exception,
       status: requestStatus.FailedWithException,
       statusMessage: `Permission set create operation failed with exception: ${JSON.stringify(
-        err
+        err,
       )} for eventDetail: ${JSON.stringify(event)}`,
     });
     /**

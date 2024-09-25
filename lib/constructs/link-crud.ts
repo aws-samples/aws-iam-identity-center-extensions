@@ -47,7 +47,7 @@ export class LinkCRUD extends Construct {
     scope: Construct,
     id: string,
     buildConfig: BuildConfig,
-    linkCRUDProps: LinkCRUDProps
+    linkCRUDProps: LinkCRUDProps,
   ) {
     super(scope, id);
 
@@ -57,7 +57,7 @@ export class LinkCRUD extends Construct {
       {
         displayName: name(buildConfig, "linkProcessingTopic"),
         masterKey: linkCRUDProps.snsTopicsKey,
-      }
+      },
     );
 
     this.provisionedLinksTable = new Table(
@@ -74,7 +74,7 @@ export class LinkCRUD extends Construct {
         encryptionKey: linkCRUDProps.ddbTablesKey,
         pointInTimeRecovery: true,
         removalPolicy: RemovalPolicy.DESTROY,
-      }
+      },
     );
 
     this.provisionedLinksTable.addGlobalSecondaryIndex({
@@ -143,7 +143,7 @@ export class LinkCRUD extends Construct {
             "lambda-functions",
             "user-interface-handlers",
             "src",
-            "linkApi.ts"
+            "linkApi.ts",
           ),
           bundling: {
             externalModules: [
@@ -166,7 +166,7 @@ export class LinkCRUD extends Construct {
             linkProcessingTopicArn: this.linkProcessingTopic.topicArn,
             functionLogMode: buildConfig.Parameters.FunctionLogMode,
           },
-        }
+        },
       );
 
       this.linkAPI = new LambdaProxyAPI(
@@ -181,7 +181,7 @@ export class LinkCRUD extends Construct {
           proxyfunction: this.linkAPIHandler,
           apiEndPointReaderAccountID:
             buildConfig.PipelineSettings.DeploymentAccountId,
-        }
+        },
       ).lambdaProxyAPI;
     } else {
       this.linkCuHandler = new NodejsFunction(
@@ -196,7 +196,7 @@ export class LinkCRUD extends Construct {
             "lambda-functions",
             "user-interface-handlers",
             "src",
-            "linkCu.ts"
+            "linkCu.ts",
           ),
           bundling: {
             externalModules: [
@@ -219,7 +219,7 @@ export class LinkCRUD extends Construct {
             linkProcessingTopicArn: this.linkProcessingTopic.topicArn,
             functionLogMode: buildConfig.Parameters.FunctionLogMode,
           },
-        }
+        },
       );
 
       linkCRUDProps.ssoArtefactsBucket.addEventNotification(
@@ -227,7 +227,7 @@ export class LinkCRUD extends Construct {
         new LambdaDestination(this.linkCuHandler),
         {
           prefix: "links_data/",
-        }
+        },
       );
 
       this.linkDelHandler = new NodejsFunction(
@@ -242,7 +242,7 @@ export class LinkCRUD extends Construct {
             "lambda-functions",
             "user-interface-handlers",
             "src",
-            "linkDel.ts"
+            "linkDel.ts",
           ),
           bundling: {
             externalModules: [
@@ -265,7 +265,7 @@ export class LinkCRUD extends Construct {
             linkProcessingTopicArn: this.linkProcessingTopic.topicArn,
             functionLogMode: buildConfig.Parameters.FunctionLogMode,
           },
-        }
+        },
       );
 
       linkCRUDProps.ssoArtefactsBucket.addEventNotification(
@@ -273,18 +273,18 @@ export class LinkCRUD extends Construct {
         new LambdaDestination(this.linkDelHandler),
         {
           prefix: "links_data/",
-        }
+        },
       );
 
       const linkCallerRole = Role.fromRoleArn(
         this,
         name(buildConfig, "importedLinkCallerRole"),
-        buildConfig.Parameters.LinkCallerRoleArn
+        buildConfig.Parameters.LinkCallerRoleArn,
       );
 
       linkCRUDProps.ssoArtefactsBucket.grantReadWrite(linkCallerRole);
       linkCRUDProps.ssoArtefactsBucket.encryptionKey?.grantEncryptDecrypt(
-        linkCallerRole
+        linkCallerRole,
       );
 
       new CfnOutput(this, name(buildConfig, "links-data-location"), {

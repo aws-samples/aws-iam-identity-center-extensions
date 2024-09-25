@@ -17,16 +17,16 @@
  *       - Determine if permission set referenced in the link is already provisioned by
  *               looking up permissionsetArn ddb table
  *
- *                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         - If permission set is already provisioned, then
+ *                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     - If permission set is already provisioned, then
  *
- *                                           - Determine if the link type is account, ou_id, account_tag or root
- *                                           - If account, post the link operation details to link manager FIFO queue
- *                                           - If ou_id, root, account_tag resolve the actual accounts and post the link
- *                                                                           operation
- *                                                                           details to org
- *                                                                           entities state
- *                                                                           machine in org account
- *                           - If permission set is not provisioned, stop the operation here
+ *                                     - Determine if the link type is account, ou_id, account_tag or root
+ *                                     - If account, post the link operation details to link manager FIFO queue
+ *                                     - If ou_id, root, account_tag resolve the actual accounts and post the link
+ *                                                                     operation
+ *                                                                     details to org
+ *                                                                     entities state
+ *                                                                     machine in org account
+ *                     - If permission set is not provisioned, stop the operation here
  *       - If there are no related links, then stop the operation here
  * - Catch all failures in a generic exception block and post the error details to
  *   error notifications topics
@@ -132,7 +132,7 @@ export const handler = async (event: SNSEvent) => {
       status: requestStatus.InProgress,
       statusMessage: `SSO group event triggered event bridge rule, started processing`,
     },
-    functionLogMode
+    functionLogMode,
   );
   try {
     const message = JSON.parse(event.Records[0].Sns.Message);
@@ -146,7 +146,7 @@ export const handler = async (event: SNSEvent) => {
         status: requestStatus.InProgress,
         statusMessage: `Resolved SSO instance arn`,
       },
-      functionLogMode
+      functionLogMode,
     );
     const instanceArn = resolvedInstances.Instances?.[0].InstanceArn;
     const staticSSOPayload: StaticSSOPayload = {
@@ -167,7 +167,7 @@ export const handler = async (event: SNSEvent) => {
           status: requestStatus.InProgress,
           statusMessage: `Determined event is CreateGroup`,
         },
-        functionLogMode
+        functionLogMode,
       );
       groupId = message.detail.responseElements.group.groupId;
       logger(
@@ -179,7 +179,7 @@ export const handler = async (event: SNSEvent) => {
           relatedData: groupId,
           statusMessage: `Set groupID value as read from the event payload`,
         },
-        functionLogMode
+        functionLogMode,
       );
       /**
        * To handle SSO generating cloudwatch events with different formats
@@ -189,7 +189,7 @@ export const handler = async (event: SNSEvent) => {
       if (
         Object.prototype.hasOwnProperty.call(
           message.detail.responseElements.group,
-          "displayName"
+          "displayName",
         )
       ) {
         groupName = message.detail.responseElements.group.displayName;
@@ -202,12 +202,12 @@ export const handler = async (event: SNSEvent) => {
             relatedData: groupId,
             statusMessage: `Event sent displayName value for groupName, using this value - ${groupName}`,
           },
-          functionLogMode
+          functionLogMode,
         );
       } else if (
         Object.prototype.hasOwnProperty.call(
           message.detail.responseElements.group,
-          "groupName"
+          "groupName",
         )
       ) {
         groupName = message.detail.responseElements.group.groupName;
@@ -220,7 +220,7 @@ export const handler = async (event: SNSEvent) => {
             relatedData: groupId,
             statusMessage: `Event sent groupName value for groupName, using this value - ${groupName}`,
           },
-          functionLogMode
+          functionLogMode,
         );
       }
       groupNameValue = groupName;
@@ -236,7 +236,7 @@ export const handler = async (event: SNSEvent) => {
           KeyConditionExpression: "#principalName = :principalName",
           ExpressionAttributeNames: { "#principalName": "principalName" },
           ExpressionAttributeValues: { ":principalName": groupName },
-        })
+        }),
       );
       logger(
         {
@@ -247,7 +247,7 @@ export const handler = async (event: SNSEvent) => {
           relatedData: groupId,
           statusMessage: `Querying if there are any related account assignments for group ${groupName}`,
         },
-        functionLogMode
+        functionLogMode,
       );
 
       if (relatedLinks.Items && relatedLinks.Items?.length !== 0) {
@@ -260,7 +260,7 @@ export const handler = async (event: SNSEvent) => {
             relatedData: groupId,
             statusMessage: `Determined there are ${relatedLinks.Items.length} no of account assignments for group ${groupName}`,
           },
-          functionLogMode
+          functionLogMode,
         );
         await Promise.all(
           relatedLinks.Items?.map(async (Item) => {
@@ -272,7 +272,7 @@ export const handler = async (event: SNSEvent) => {
                   Key: {
                     permissionSetName: permissionSetName,
                   },
-                })
+                }),
               );
             if (permissionSetFetch.Item) {
               const { permissionSetArn } = permissionSetFetch.Item;
@@ -285,7 +285,7 @@ export const handler = async (event: SNSEvent) => {
                   relatedData: groupId,
                   statusMessage: `Determined permission set ${permissionSetName} for the account assignments is provisioned already with permissionSetArn ${permissionSetArn}`,
                 },
-                functionLogMode
+                functionLogMode,
               );
 
               if (awsEntityType === "account") {
@@ -298,7 +298,7 @@ export const handler = async (event: SNSEvent) => {
                     relatedData: groupId,
                     statusMessage: `Determined entity type is account for this account assignment type`,
                   },
-                  functionLogMode
+                  functionLogMode,
                 );
 
                 await sqsClientObject.send(
@@ -317,7 +317,7 @@ export const handler = async (event: SNSEvent) => {
                       sourceRequestId: requestId,
                     }),
                     MessageGroupId: awsEntityData.slice(-1),
-                  })
+                  }),
                 );
                 logger(
                   {
@@ -328,7 +328,7 @@ export const handler = async (event: SNSEvent) => {
                     relatedData: groupId,
                     statusMessage: `Sent payload to account assignment queue with account ID ${awsEntityData}, for permissionSetArn ${permissionSetArn} and group ${groupName}`,
                   },
-                  functionLogMode
+                  functionLogMode,
                 );
               } else if (
                 awsEntityType === "ou_id" ||
@@ -344,7 +344,7 @@ export const handler = async (event: SNSEvent) => {
                     relatedData: groupId,
                     statusMessage: `Determined entity type is ${awsEntityType} for this account assignment type`,
                   },
-                  functionLogMode
+                  functionLogMode,
                 );
                 const stateMachinePayload: StateMachinePayload = {
                   action: "create",
@@ -364,7 +364,7 @@ export const handler = async (event: SNSEvent) => {
                   stateMachinePayload,
                   awsEntityData,
                   processTargetAccountSMArn + "",
-                  sfnClientObject
+                  sfnClientObject,
                 );
                 logger(
                   {
@@ -375,7 +375,7 @@ export const handler = async (event: SNSEvent) => {
                     relatedData: groupId,
                     statusMessage: `Invoked state machine for procesing group event with entityType ${awsEntityType} for groupID ${groupId} , permissionSetArn ${permissionSetArn} , targetType ${staticSSOPayload.TargetType} and entityData ${awsEntityData} `,
                   },
-                  functionLogMode
+                  functionLogMode,
                 );
               }
             } else {
@@ -389,10 +389,10 @@ export const handler = async (event: SNSEvent) => {
                   relatedData: groupId,
                   statusMessage: `Determined that permissionSet ${permissionSetName} does not yet exist in the solution, so aborting the operation`,
                 },
-                functionLogMode
+                functionLogMode,
               );
             }
-          })
+          }),
         );
       } else {
         /** No related links for the group being processed */
@@ -405,7 +405,7 @@ export const handler = async (event: SNSEvent) => {
             relatedData: groupId,
             statusMessage: `Determined that there are no related account assignments for this group, aborting the operation`,
           },
-          functionLogMode
+          functionLogMode,
         );
       }
     } else if (message.detail.eventName === "DeleteGroup") {
@@ -417,7 +417,7 @@ export const handler = async (event: SNSEvent) => {
           status: requestStatus.Aborted,
           statusMessage: `Determined event is DeleteGroup, no actions being done as the group is deletec directly`,
         },
-        functionLogMode
+        functionLogMode,
       );
     }
   } catch (err) {
@@ -436,9 +436,9 @@ export const handler = async (event: SNSEvent) => {
             handlerName,
             err.name,
             err.message,
-            groupNameValue
+            groupNameValue,
           ),
-        })
+        }),
       );
       logger({
         handler: handlerName,
@@ -449,7 +449,7 @@ export const handler = async (event: SNSEvent) => {
           requestId,
           err.name,
           err.message,
-          groupNameValue
+          groupNameValue,
         ),
       });
     } else {
@@ -462,9 +462,9 @@ export const handler = async (event: SNSEvent) => {
             handlerName,
             "Unhandled exception",
             JSON.stringify(err),
-            groupNameValue
+            groupNameValue,
           ),
-        })
+        }),
       );
       logger({
         handler: handlerName,
@@ -475,7 +475,7 @@ export const handler = async (event: SNSEvent) => {
           requestId,
           "Unhandled exception",
           JSON.stringify(err),
-          groupNameValue
+          groupNameValue,
         ),
       });
     }

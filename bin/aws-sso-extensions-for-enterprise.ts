@@ -15,7 +15,7 @@ const app = new App();
 function ensureString(
   /* eslint-disable  @typescript-eslint/no-explicit-any */
   object: { [name: string]: any },
-  propName: string
+  propName: string,
 ): string {
   if (!object[`${propName}`] || object[`${propName}`].trim().length === 0)
     throw new Error(propName + " does not exist or is empty");
@@ -26,7 +26,7 @@ function ensureValidString(
   /* eslint-disable  @typescript-eslint/no-explicit-any */
   object: { [name: string]: any },
   propName: string,
-  validList: Array<string>
+  validList: Array<string>,
 ): string {
   if (
     !object[`${propName}`] ||
@@ -35,13 +35,13 @@ function ensureValidString(
   )
     throw new Error(
       propName +
-        " does not exist or is empty or is of not the correct data type"
+        " does not exist or is empty or is of not the correct data type",
     );
 
   const value = ("" + object[`${propName}`]).toUpperCase();
   if (!validList.includes(value)) {
     throw new Error(
-      `${propName} is not one of the valid values - ${validList.toString()}`
+      `${propName} is not one of the valid values - ${validList.toString()}`,
     );
   }
 
@@ -51,11 +51,11 @@ function ensureValidString(
 function ensureNumber(
   /* eslint-disable  @typescript-eslint/no-explicit-any */
   object: { [name: string]: any },
-  propName: string
+  propName: string,
 ): number {
   if (!object[`${propName}`] || typeof object[`${propName}`] !== "number")
     throw new Error(
-      propName + " does not exist or is empty or is not a number data type"
+      propName + " does not exist or is empty or is not a number data type",
     );
 
   return object[`${propName}`];
@@ -64,11 +64,11 @@ function ensureNumber(
 function ensureBoolean(
   /* eslint-disable  @typescript-eslint/no-explicit-any */
   object: { [name: string]: any },
-  propName: string
+  propName: string,
 ): boolean {
   if (typeof object[`${propName}`] !== "boolean")
     throw new Error(
-      propName + " does not exist or is of not the correct data type"
+      propName + " does not exist or is of not the correct data type",
     );
 
   return object[`${propName}`];
@@ -78,7 +78,7 @@ function ensureDependentPropIsPresentForSourceRepo(
   /* eslint-disable  @typescript-eslint/no-explicit-any */
   object: { [name: string]: any },
   repoTypePropName: string,
-  propName: string
+  propName: string,
 ): string {
   const repoType = ensureString(object, repoTypePropName);
   let propValue = "";
@@ -120,7 +120,7 @@ function ensureDependentPropIsPresentForSourceRepo(
     }
   } else {
     throw new Error(
-      `Repo type ${repoType} is not one of valid values - ["codecommit","codestar","s3"]`
+      `Repo type ${repoType} is not one of valid values - ["codecommit","codestar","s3"]`,
     );
   }
   /** Making the linter happy */
@@ -131,12 +131,12 @@ function getConfig() {
   const env = app.node.tryGetContext("config");
   if (!env)
     throw new Error(
-      "Context variable missing on CDK command. Pass in as `-c config=XXX`"
+      "Context variable missing on CDK command. Pass in as `-c config=XXX`",
     );
 
   /* eslint-disable  @typescript-eslint/no-explicit-any */
   const unparsedEnv: any = yaml.load(
-    readFileSync(resolve("./config/" + env + ".yaml"), "utf8")
+    readFileSync(resolve("./config/" + env + ".yaml"), "utf8"),
   );
 
   const buildConfig: BuildConfig = {
@@ -147,74 +147,74 @@ function getConfig() {
     PipelineSettings: {
       BootstrapQualifier: ensureString(
         unparsedEnv["PipelineSettings"],
-        "BootstrapQualifier"
+        "BootstrapQualifier",
       ),
       DeploymentAccountId: ensureString(
         unparsedEnv["PipelineSettings"],
-        "DeploymentAccountId"
+        "DeploymentAccountId",
       ),
       DeploymentAccountRegion: ensureString(
         unparsedEnv["PipelineSettings"],
-        "DeploymentAccountRegion"
+        "DeploymentAccountRegion",
       ),
       TargetAccountId: ensureString(
         unparsedEnv["PipelineSettings"],
-        "TargetAccountId"
+        "TargetAccountId",
       ),
       TargetAccountRegion: ensureString(
         unparsedEnv["PipelineSettings"],
-        "TargetAccountRegion"
+        "TargetAccountRegion",
       ),
       SSOServiceAccountId: ensureString(
         unparsedEnv["PipelineSettings"],
-        "SSOServiceAccountId"
+        "SSOServiceAccountId",
       ),
       SSOServiceAccountRegion: ensureString(
         unparsedEnv["PipelineSettings"],
-        "SSOServiceAccountRegion"
+        "SSOServiceAccountRegion",
       ),
       OrgMainAccountId: ensureString(
         unparsedEnv["PipelineSettings"],
-        "OrgMainAccountId"
+        "OrgMainAccountId",
       ),
       RepoType: ensureValidString(unparsedEnv["PipelineSettings"], "RepoType", [
         "CODECOMMIT",
         "CODESTAR",
-        "S3"
+        "S3",
       ]),
       RepoArn: ensureDependentPropIsPresentForSourceRepo(
         unparsedEnv["PipelineSettings"],
         "RepoType",
-        "RepoArn"
+        "RepoArn",
       ),
       RepoBranchName: ensureDependentPropIsPresentForSourceRepo(
         unparsedEnv["PipelineSettings"],
         "RepoType",
-        "RepoBranchName"
+        "RepoBranchName",
       ),
       RepoName: ensureDependentPropIsPresentForSourceRepo(
         unparsedEnv["PipelineSettings"],
         "RepoType",
-        "RepoName"
+        "RepoName",
       ),
       CodeStarConnectionArn: ensureDependentPropIsPresentForSourceRepo(
         unparsedEnv["PipelineSettings"],
         "RepoType",
-        "CodeStarConnectionArn"
+        "CodeStarConnectionArn",
       ),
       SourceBucketName: ensureDependentPropIsPresentForSourceRepo(
         unparsedEnv["PipelineSettings"],
         "RepoType",
-        "SourceBucketName"
+        "SourceBucketName",
       ),
       SourceObjectKey: ensureDependentPropIsPresentForSourceRepo(
         unparsedEnv["PipelineSettings"],
         "RepoType",
-        "SourceObjectKey"
+        "SourceObjectKey",
       ),
       SynthCommand: ensureString(
         unparsedEnv["PipelineSettings"],
-        "SynthCommand"
+        "SynthCommand",
       ),
     },
 
@@ -222,47 +222,47 @@ function getConfig() {
       LinksProvisioningMode: ensureValidString(
         unparsedEnv["Parameters"],
         "LinksProvisioningMode",
-        ["API", "S3"]
+        ["API", "S3"],
       ),
       PermissionSetProvisioningMode: ensureValidString(
         unparsedEnv["Parameters"],
         "PermissionSetProvisioningMode",
-        ["API", "S3"]
+        ["API", "S3"],
       ),
       LinkCallerRoleArn: ensureString(
         unparsedEnv["Parameters"],
-        "LinkCallerRoleArn"
+        "LinkCallerRoleArn",
       ),
       PermissionSetCallerRoleArn: ensureString(
         unparsedEnv["Parameters"],
-        "PermissionSetCallerRoleArn"
+        "PermissionSetCallerRoleArn",
       ),
       NotificationEmail: ensureString(
         unparsedEnv["Parameters"],
-        "NotificationEmail"
+        "NotificationEmail",
       ),
       AccountAssignmentVisibilityTimeoutHours: ensureNumber(
         unparsedEnv["Parameters"],
-        "AccountAssignmentVisibilityTimeoutHours"
+        "AccountAssignmentVisibilityTimeoutHours",
       ),
       IsAdUsed: ensureBoolean(unparsedEnv["Parameters"], "IsAdUsed"),
       DomainName: ensureString(unparsedEnv["Parameters"], "DomainName"),
       ImportCurrentSSOConfiguration: ensureBoolean(
         unparsedEnv["Parameters"],
-        "ImportCurrentSSOConfiguration"
+        "ImportCurrentSSOConfiguration",
       ),
       UpgradeFromVersionLessThanV303: ensureBoolean(
         unparsedEnv["Parameters"],
-        "UpgradeFromVersionLessThanV303"
+        "UpgradeFromVersionLessThanV303",
       ),
       SupportNestedOU: ensureBoolean(
         unparsedEnv["Parameters"],
-        "SupportNestedOU"
+        "SupportNestedOU",
       ),
       FunctionLogMode: ensureValidString(
         unparsedEnv["Parameters"],
         "FunctionLogMode",
-        ["INFO", "WARN", "DEBUG", "EXCEPTION"]
+        ["INFO", "WARN", "DEBUG", "EXCEPTION"],
       ),
     },
   };
@@ -273,7 +273,7 @@ function getConfig() {
 function getRegionSwitchConfig() {
   /* eslint-disable  @typescript-eslint/no-explicit-any */
   const unparsedEnv: any = yaml.load(
-    readFileSync(resolve("./config/" + "region-switch" + ".yaml"), "utf8")
+    readFileSync(resolve("./config/" + "region-switch" + ".yaml"), "utf8"),
   );
 
   const buildConfig: RegionSwitchBuildConfig = {
@@ -281,11 +281,11 @@ function getRegionSwitchConfig() {
     BootstrapQualifier: ensureString(unparsedEnv, "BootstrapQualifier"),
     SSOServiceAccountRegion: ensureString(
       unparsedEnv,
-      "SSOServiceAccountRegion"
+      "SSOServiceAccountRegion",
     ),
     SSOServiceTargetAccountRegion: ensureString(
       unparsedEnv,
-      "SSOServiceTargetAccountRegion"
+      "SSOServiceTargetAccountRegion",
     ),
   };
 
@@ -296,7 +296,7 @@ async function DeploySSOForEnterprise() {
   const env: string = app.node.tryGetContext("config");
   if (!env)
     throw new Error(
-      "Context variable missing on CDK command. Pass in as `-c config=XXX`"
+      "Context variable missing on CDK command. Pass in as `-c config=XXX`",
     );
 
   if (env.toUpperCase() === "REGION-SWITCH-DISCOVER") {
@@ -314,7 +314,7 @@ async function DeploySSOForEnterprise() {
           qualifier: buildConfig.BootstrapQualifier,
         }),
       },
-      buildConfig
+      buildConfig,
     );
   } else if (env.toUpperCase() === "REGION-SWITCH-DEPLOY") {
     const buildConfig: RegionSwitchBuildConfig = getRegionSwitchConfig();
@@ -331,7 +331,7 @@ async function DeploySSOForEnterprise() {
           qualifier: buildConfig.BootstrapQualifier,
         }),
       },
-      buildConfig
+      buildConfig,
     );
   } else {
     const buildConfig: BuildConfig = getConfig();
@@ -351,13 +351,13 @@ async function DeploySSOForEnterprise() {
             qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
           }),
         },
-        buildConfig
+        buildConfig,
       );
 
     Tags.of(AwsSsoExtensionsForEnterpriseStack).add("App", buildConfig.App);
     Tags.of(AwsSsoExtensionsForEnterpriseStack).add(
       "Environment",
-      buildConfig.Environment
+      buildConfig.Environment,
     );
   }
 }

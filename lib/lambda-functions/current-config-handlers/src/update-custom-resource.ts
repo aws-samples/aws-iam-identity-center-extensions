@@ -43,7 +43,7 @@ export const handler = async (event: any) => {
     const stateMachineExecutionResult = await sfnClientObject.send(
       new DescribeExecutionCommand({
         executionArn: stateMachineExecutionArn,
-      })
+      }),
     );
 
     switch (stateMachineExecutionResult.status) {
@@ -125,7 +125,7 @@ export const handler = async (event: any) => {
           requestId,
           err.name,
           err.message,
-          ""
+          "",
         ),
       });
       throw err;
@@ -139,7 +139,7 @@ export const handler = async (event: any) => {
           requestId,
           "Unhandled exception",
           JSON.stringify(err),
-          ""
+          "",
         ),
       });
       throw err;

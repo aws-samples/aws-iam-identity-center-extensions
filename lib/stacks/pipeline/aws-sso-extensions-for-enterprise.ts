@@ -27,7 +27,7 @@ export class AwsSsoExtensionsForEnterprise extends Stack {
     scope: Construct,
     id: string,
     props: StackProps | undefined,
-    buildConfig: BuildConfig
+    buildConfig: BuildConfig,
   ) {
     super(scope, id, props);
 
@@ -42,9 +42,9 @@ export class AwsSsoExtensionsForEnterprise extends Stack {
         Repository.fromRepositoryArn(
           this,
           fullname(buildConfig, "importedCodeCommitRepo"),
-          buildConfig.PipelineSettings.RepoArn
+          buildConfig.PipelineSettings.RepoArn,
         ),
-        buildConfig.PipelineSettings.RepoBranchName
+        buildConfig.PipelineSettings.RepoBranchName,
       );
     } else if (
       buildConfig.PipelineSettings.RepoType.toLowerCase() === "codestar"
@@ -54,27 +54,23 @@ export class AwsSsoExtensionsForEnterprise extends Stack {
         buildConfig.PipelineSettings.RepoBranchName,
         {
           connectionArn: buildConfig.PipelineSettings.CodeStarConnectionArn,
-        }
+        },
       );
-    }
-      else if (buildConfig.PipelineSettings.RepoType.toLowerCase() === "s3") {
-
-        const sourceBucketName =
+    } else if (buildConfig.PipelineSettings.RepoType.toLowerCase() === "s3") {
+      const sourceBucketName =
         buildConfig.PipelineSettings.SourceBucketName || "";
       const sourceBucketKey =
         buildConfig.PipelineSettings.SourceObjectKey || "";
 
-        const sourceBucket = Bucket.fromBucketName(
-          this,
-          fullname(buildConfig, "importedSourceBucket"),
-          sourceBucketName
-        );
-        inputSource = CodePipelineSource.s3(
-          sourceBucket,
-          sourceBucketKey,
-          { trigger: S3Trigger.NONE },
-        );
-      }
+      const sourceBucket = Bucket.fromBucketName(
+        this,
+        fullname(buildConfig, "importedSourceBucket"),
+        sourceBucketName,
+      );
+      inputSource = CodePipelineSource.s3(sourceBucket, sourceBucketKey, {
+        trigger: S3Trigger.NONE,
+      });
+    }
     const pipeline = new CodePipeline(this, fullname(buildConfig, "pipeline"), {
       pipelineName: fullname(buildConfig, "pipeline"),
       crossAccountKeys: true,
@@ -103,7 +99,7 @@ export class AwsSsoExtensionsForEnterprise extends Stack {
           region: "us-east-1",
         },
       },
-      buildConfig
+      buildConfig,
     );
 
     Tags.of(deployOrgArtefacts).add("App", buildConfig.App);
@@ -120,7 +116,7 @@ export class AwsSsoExtensionsForEnterprise extends Stack {
           region: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         },
       },
-      buildConfig
+      buildConfig,
     );
 
     Tags.of(deploySSOArtefacts).add("App", buildConfig.App);
@@ -137,13 +133,13 @@ export class AwsSsoExtensionsForEnterprise extends Stack {
           region: buildConfig.PipelineSettings.TargetAccountRegion,
         },
       },
-      buildConfig
+      buildConfig,
     );
 
     Tags.of(deploySolutionArtefacts).add("App", buildConfig.App);
     Tags.of(deploySolutionArtefacts).add(
       "Environment",
-      buildConfig.Environment
+      buildConfig.Environment,
     );
 
     pipeline.addStage(deploySolutionArtefacts);

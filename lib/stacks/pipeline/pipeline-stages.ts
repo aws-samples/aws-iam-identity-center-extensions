@@ -22,7 +22,7 @@ export class OrgArtefactsDeploymentStage extends Stage {
     scope: Construct,
     id: string,
     props: StageProps | undefined,
-    buildConfig: BuildConfig
+    buildConfig: BuildConfig,
   ) {
     super(scope, id, props);
 
@@ -35,7 +35,7 @@ export class OrgArtefactsDeploymentStage extends Stage {
           qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
         }),
       },
-      buildConfig
+      buildConfig,
     );
   }
 }
@@ -45,7 +45,7 @@ export class SSOArtefactsDeploymentStage extends Stage {
     scope: Construct,
     id: string,
     props: StageProps | undefined,
-    buildConfig: BuildConfig
+    buildConfig: BuildConfig,
   ) {
     super(scope, id, props);
 
@@ -58,7 +58,7 @@ export class SSOArtefactsDeploymentStage extends Stage {
           qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
         }),
       },
-      buildConfig
+      buildConfig,
     );
 
     new SSOApiRoles(
@@ -70,7 +70,7 @@ export class SSOArtefactsDeploymentStage extends Stage {
           qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
         }),
       },
-      buildConfig
+      buildConfig,
     );
 
     new ManagedPolicies(
@@ -82,7 +82,7 @@ export class SSOArtefactsDeploymentStage extends Stage {
           qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
         }),
       },
-      buildConfig
+      buildConfig,
     );
 
     if (buildConfig.Parameters.ImportCurrentSSOConfiguration) {
@@ -95,7 +95,7 @@ export class SSOArtefactsDeploymentStage extends Stage {
             qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
           }),
         },
-        buildConfig
+        buildConfig,
       );
     }
   }
@@ -106,7 +106,7 @@ export class SolutionArtefactsDeploymentStage extends Stage {
     scope: Construct,
     id: string,
     props: StageProps | undefined,
-    buildConfig: BuildConfig
+    buildConfig: BuildConfig,
   ) {
     super(scope, id, props);
 
@@ -119,7 +119,7 @@ export class SolutionArtefactsDeploymentStage extends Stage {
           qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
         }),
       },
-      buildConfig
+      buildConfig,
     );
 
     const solutionartefactsStack = new SolutionArtefacts(
@@ -131,7 +131,7 @@ export class SolutionArtefactsDeploymentStage extends Stage {
           qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
         }),
       },
-      buildConfig
+      buildConfig,
     );
 
     solutionartefactsStack.node.addDependency(preSolutionArtefactsStack);
@@ -146,7 +146,7 @@ export class SolutionArtefactsDeploymentStage extends Stage {
             qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
           }),
         },
-        buildConfig
+        buildConfig,
       );
 
       ssoImportArtefactsPart2Stack.node.addDependency(solutionartefactsStack);
@@ -162,7 +162,7 @@ export class SolutionArtefactsDeploymentStage extends Stage {
             qualifier: buildConfig.PipelineSettings.BootstrapQualifier,
           }),
         },
-        buildConfig
+        buildConfig,
       );
       upgradeToV303Stack.node.addDependency(solutionartefactsStack);
     }

@@ -47,7 +47,7 @@ export class PermissionSetCRUD extends Construct {
     scope: Construct,
     id: string,
     buildConfig: BuildConfig,
-    PermissionSetCRUDProps: PermissionSetCRUDProps
+    PermissionSetCRUDProps: PermissionSetCRUDProps,
   ) {
     super(scope, id);
 
@@ -57,7 +57,7 @@ export class PermissionSetCRUD extends Construct {
       {
         displayName: name(buildConfig, "permissionSetProcessingTopic"),
         masterKey: PermissionSetCRUDProps.snsTopicsKey,
-      }
+      },
     );
 
     this.permissionSetTable = new Table(
@@ -74,7 +74,7 @@ export class PermissionSetCRUD extends Construct {
         encryptionKey: PermissionSetCRUDProps.ddbTablesKey,
         pointInTimeRecovery: true,
         removalPolicy: RemovalPolicy.DESTROY,
-      }
+      },
     );
 
     this.permissionSetArnTable = new Table(
@@ -91,7 +91,7 @@ export class PermissionSetCRUD extends Construct {
         encryptionKey: PermissionSetCRUDProps.ddbTablesKey,
         pointInTimeRecovery: true,
         removalPolicy: RemovalPolicy.DESTROY,
-      }
+      },
     );
 
     if (
@@ -111,7 +111,7 @@ export class PermissionSetCRUD extends Construct {
             "lambda-functions",
             "user-interface-handlers",
             "src",
-            "permissionSetApi.ts"
+            "permissionSetApi.ts",
           ),
           bundling: {
             minify: true,
@@ -137,7 +137,7 @@ export class PermissionSetCRUD extends Construct {
               this.permissionSetProcessingTopic.topicArn,
             functionLogMode: buildConfig.Parameters.FunctionLogMode,
           },
-        }
+        },
       );
 
       this.permissionSetAPI = new LambdaProxyAPI(
@@ -152,7 +152,7 @@ export class PermissionSetCRUD extends Construct {
           proxyfunction: this.permissionSetAPIHandler,
           apiEndPointReaderAccountID:
             buildConfig.PipelineSettings.DeploymentAccountId,
-        }
+        },
       ).lambdaProxyAPI;
     } else {
       this.permissionSetCuHandler = new NodejsFunction(
@@ -168,7 +168,7 @@ export class PermissionSetCRUD extends Construct {
             "lambda-functions",
             "user-interface-handlers",
             "src",
-            "permissionSetCu.ts"
+            "permissionSetCu.ts",
           ),
           bundling: {
             minify: true,
@@ -193,7 +193,7 @@ export class PermissionSetCRUD extends Construct {
               this.permissionSetProcessingTopic.topicArn,
             functionLogMode: buildConfig.Parameters.FunctionLogMode,
           },
-        }
+        },
       );
 
       PermissionSetCRUDProps.ssoArtefactsBucket.addEventNotification(
@@ -202,21 +202,21 @@ export class PermissionSetCRUD extends Construct {
         {
           prefix: "permission_sets/",
           suffix: ".json",
-        }
+        },
       );
 
       const permissionSetCallerRole = Role.fromRoleArn(
         this,
         name(buildConfig, "importedLinkCallerRole"),
-        buildConfig.Parameters.PermissionSetCallerRoleArn
+        buildConfig.Parameters.PermissionSetCallerRoleArn,
       );
 
       PermissionSetCRUDProps.ssoArtefactsBucket.grantReadWrite(
-        permissionSetCallerRole
+        permissionSetCallerRole,
       );
 
       PermissionSetCRUDProps.ssoArtefactsBucket.encryptionKey?.grantEncryptDecrypt(
-        permissionSetCallerRole
+        permissionSetCallerRole,
       );
 
       this.permissionSetDelHandler = new NodejsFunction(
@@ -232,7 +232,7 @@ export class PermissionSetCRUD extends Construct {
             "lambda-functions",
             "user-interface-handlers",
             "src",
-            "permissionSetDel.ts"
+            "permissionSetDel.ts",
           ),
           bundling: {
             minify: true,
@@ -254,7 +254,7 @@ export class PermissionSetCRUD extends Construct {
               this.permissionSetProcessingTopic.topicArn,
             functionLogMode: buildConfig.Parameters.FunctionLogMode,
           },
-        }
+        },
       );
 
       PermissionSetCRUDProps.ssoArtefactsBucket.addEventNotification(
@@ -263,7 +263,7 @@ export class PermissionSetCRUD extends Construct {
         {
           prefix: "permission_sets/",
           suffix: ".json",
-        }
+        },
       );
 
       new CfnOutput(this, name(buildConfig, "permission-sets-location"), {
@@ -283,7 +283,7 @@ export class PermissionSetCRUD extends Construct {
       {
         parameterName: name(buildConfig, "permissionSetTableStreamArn"),
         stringValue: this.permissionSetTable.tableStreamArn?.toString() + "",
-      }
+      },
     );
 
     new StringParameter(this, name(buildConfig, "permissionSetArnTableArn"), {
@@ -297,7 +297,7 @@ export class PermissionSetCRUD extends Construct {
       {
         parameterName: name(buildConfig, "permissionSetProcessorTopicArn"),
         stringValue: this.permissionSetProcessingTopic.topicArn,
-      }
+      },
     );
   }
 }

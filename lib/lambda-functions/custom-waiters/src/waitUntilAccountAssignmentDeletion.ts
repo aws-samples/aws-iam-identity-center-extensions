@@ -19,13 +19,13 @@ import { logger } from "../../helpers/src/utilities";
 
 const checkState = async (
   client: SSOAdminClient,
-  input: DescribeAccountAssignmentDeletionStatusCommandInput
+  input: DescribeAccountAssignmentDeletionStatusCommandInput,
 ): Promise<WaiterResult> => {
   let reason;
   try {
     const result: DescribeAccountAssignmentDeletionStatusCommandOutput =
       await client.send(
-        new DescribeAccountAssignmentDeletionStatusCommand(input)
+        new DescribeAccountAssignmentDeletionStatusCommand(input),
       );
     reason = result;
     if (
@@ -50,7 +50,7 @@ export const waitUntilAccountAssignmentDeletion = async (
   params: WaiterConfiguration<SSOAdminClient>,
   input: DescribeAccountAssignmentDeletionStatusCommandInput,
   requestId: string,
-  functionLogMode: string
+  functionLogMode: string,
 ): Promise<WaiterResult> => {
   logger(
     {
@@ -61,7 +61,7 @@ export const waitUntilAccountAssignmentDeletion = async (
       status: requestStatus.InProgress,
       statusMessage: `Setting service defaults`,
     },
-    functionLogMode
+    functionLogMode,
   );
   const serviceDefaults = { minDelay: 60, maxDelay: 120 };
   logger(
@@ -73,12 +73,12 @@ export const waitUntilAccountAssignmentDeletion = async (
       status: requestStatus.InProgress,
       statusMessage: `Invoking waiter for deleteAccountAssignment operation`,
     },
-    functionLogMode
+    functionLogMode,
   );
   const result = await createWaiter(
     { ...serviceDefaults, ...params },
     input,
-    checkState
+    checkState,
   );
   logger(
     {
@@ -89,7 +89,7 @@ export const waitUntilAccountAssignmentDeletion = async (
       status: requestStatus.InProgress,
       statusMessage: `Waiter completed with result: ${JSON.stringify(result)}`,
     },
-    functionLogMode
+    functionLogMode,
   );
   return checkExceptions(result);
 };

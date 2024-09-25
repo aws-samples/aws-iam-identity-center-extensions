@@ -132,7 +132,7 @@ export const handler = async (event: SNSEvent) => {
         status: requestStatus.InProgress,
         statusMessage: `Processing user CRUD triggered operaiton ${eventDetailValue}`,
       },
-      functionLogMode
+      functionLogMode,
     );
 
     const resolvedInstances: ListInstancesCommandOutput =
@@ -148,7 +148,7 @@ export const handler = async (event: SNSEvent) => {
         status: requestStatus.InProgress,
         statusMessage: `Resolved instanceArn as ${instanceArn} and identityStoreId as ${identityStoreId}`,
       },
-      functionLogMode
+      functionLogMode,
     );
 
     const staticSSOPayload: StaticSSOPayload = {
@@ -175,7 +175,7 @@ export const handler = async (event: SNSEvent) => {
         status: requestStatus.InProgress,
         statusMessage: `Determined ${message.detail.eventName} operation is triggered for user ${userId}`,
       },
-      functionLogMode
+      functionLogMode,
     );
 
     const describeUserResult: DescribeUserCommandOutput =
@@ -183,7 +183,7 @@ export const handler = async (event: SNSEvent) => {
         new DescribeUserCommand({
           IdentityStoreId: identityStoreId,
           UserId: userId,
-        })
+        }),
       );
     if (describeUserResult) {
       userName = describeUserResult.UserName + "";
@@ -196,7 +196,7 @@ export const handler = async (event: SNSEvent) => {
           status: requestStatus.InProgress,
           statusMessage: `Determined ${message.detail.eventName} operation is triggered for user ${userId} with userName ${userName}`,
         },
-        functionLogMode
+        functionLogMode,
       );
     }
 
@@ -211,7 +211,7 @@ export const handler = async (event: SNSEvent) => {
           status: requestStatus.InProgress,
           statusMessage: `Triggering logic for ${message.detail.eventName} operation with user ${userId} and user name ${userName}`,
         },
-        functionLogMode
+        functionLogMode,
       );
 
       const relatedLinks: QueryCommandOutput = await ddbDocClientObject.send(
@@ -223,7 +223,7 @@ export const handler = async (event: SNSEvent) => {
           KeyConditionExpression: "#principalName = :principalName",
           ExpressionAttributeNames: { "#principalName": "principalName" },
           ExpressionAttributeValues: { ":principalName": userName },
-        })
+        }),
       );
 
       if (relatedLinks.Items && relatedLinks.Items?.length !== 0) {
@@ -236,7 +236,7 @@ export const handler = async (event: SNSEvent) => {
             status: requestStatus.InProgress,
             statusMessage: `Determined there are ${relatedLinks.Items.length} no of related links that are associated with this eventDetailValue`,
           },
-          functionLogMode
+          functionLogMode,
         );
         await Promise.all(
           relatedLinks.Items?.map(async (Item) => {
@@ -248,7 +248,7 @@ export const handler = async (event: SNSEvent) => {
                   Key: {
                     permissionSetName: permissionSetName,
                   },
-                })
+                }),
               );
             if (permissionSetFetch.Item) {
               const { permissionSetArn } = permissionSetFetch.Item;
@@ -269,7 +269,7 @@ export const handler = async (event: SNSEvent) => {
                       sourceRequestId: requestId,
                     }),
                     MessageGroupId: awsEntityData.slice(-1),
-                  })
+                  }),
                 );
                 logger(
                   {
@@ -280,7 +280,7 @@ export const handler = async (event: SNSEvent) => {
                     status: requestStatus.Completed,
                     statusMessage: `Sent create type payload to account assignment processing queue`,
                   },
-                  functionLogMode
+                  functionLogMode,
                 );
               } else if (
                 awsEntityType === "ou_id" ||
@@ -305,7 +305,7 @@ export const handler = async (event: SNSEvent) => {
                   stateMachinePayload,
                   awsEntityData,
                   processTargetAccountSMArn + "",
-                  sfnClientObject
+                  sfnClientObject,
                 );
                 logger(
                   {
@@ -316,7 +316,7 @@ export const handler = async (event: SNSEvent) => {
                     status: requestStatus.Completed,
                     statusMessage: `Sent create type payload to targetAccount state machine for resolving target account assignments`,
                   },
-                  functionLogMode
+                  functionLogMode,
                 );
               }
             } else {
@@ -330,10 +330,10 @@ export const handler = async (event: SNSEvent) => {
                   status: requestStatus.Completed,
                   statusMessage: `Permission set ${permissionSetName} referenced in the assoicated link does not exist, so completing the operation`,
                 },
-                functionLogMode
+                functionLogMode,
               );
             }
-          })
+          }),
         );
       } else {
         // No related links for the user being processed
@@ -346,7 +346,7 @@ export const handler = async (event: SNSEvent) => {
             status: requestStatus.Completed,
             statusMessage: `No related links found, so completing the operation`,
           },
-          functionLogMode
+          functionLogMode,
         );
       }
     } else if (message.detail.eventName === "DeleteUser") {
@@ -359,7 +359,7 @@ export const handler = async (event: SNSEvent) => {
           status: requestStatus.Completed,
           statusMessage: `DeleteUser operation - no actions being done as the user is deleted directly`,
         },
-        functionLogMode
+        functionLogMode,
       );
     }
   } catch (err) {
@@ -380,9 +380,9 @@ export const handler = async (event: SNSEvent) => {
             handlerName,
             err.name,
             err.message,
-            eventDetailValue
+            eventDetailValue,
           ),
-        })
+        }),
       );
       logger({
         handler: handlerName,
@@ -393,7 +393,7 @@ export const handler = async (event: SNSEvent) => {
           requestId,
           err.name,
           err.message,
-          eventDetailValue
+          eventDetailValue,
         ),
       });
     } else {
@@ -406,9 +406,9 @@ export const handler = async (event: SNSEvent) => {
             handlerName,
             "Unhandled exception",
             JSON.stringify(err),
-            eventDetailValue
+            eventDetailValue,
           ),
-        })
+        }),
       );
       logger({
         handler: handlerName,
@@ -419,7 +419,7 @@ export const handler = async (event: SNSEvent) => {
           requestId,
           "Unhandled exception",
           JSON.stringify(err),
-          eventDetailValue
+          eventDetailValue,
         ),
       });
     }

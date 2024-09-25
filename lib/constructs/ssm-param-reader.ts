@@ -29,7 +29,7 @@ export class SSMParamReader extends Construct {
     scope: Construct,
     id: string,
     buildConfig: BuildConfig,
-    ssmParamReaderprops: SSMParamReaderProps
+    ssmParamReaderprops: SSMParamReaderProps,
   ) {
     super(scope, id);
 
@@ -56,7 +56,7 @@ export class SSMParamReader extends Construct {
           assumedRoleArn: paramReaderRole,
         },
         policy: AwsCustomResourcePolicy.fromStatements([assumeRolePolicy]),
-      }
+      },
     );
 
     this.paramValue = paramReadResource

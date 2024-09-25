@@ -58,7 +58,7 @@ export const handler = async (event: SNSEvent) => {
     if (
       Object.prototype.hasOwnProperty.call(
         message.describePermissionSet.PermissionSet,
-        "RelayState"
+        "RelayState",
       )
     ) {
       computedRelayState =
@@ -67,11 +67,11 @@ export const handler = async (event: SNSEvent) => {
     if (
       Object.prototype.hasOwnProperty.call(
         message.describePermissionSet.PermissionSet,
-        "SessionDuration"
+        "SessionDuration",
       )
     ) {
       computedSessionDurationInMinutes = getMinutesFromISODurationString(
-        message.describePermissionSet.PermissionSet.SessionDuration
+        message.describePermissionSet.PermissionSet.SessionDuration,
       );
     }
     if (
@@ -82,13 +82,13 @@ export const handler = async (event: SNSEvent) => {
         message.listManagedPoliciesInPermissionSet.AttachedManagedPolicies.map(
           async (managedPolicy: Record<string, string>) => {
             computedManagedPoliciesArnList.push(managedPolicy.Arn);
-          }
-        )
+          },
+        ),
       );
     }
     if (message.getInlinePolicyForPermissionSet.InlinePolicy.length > 0) {
       computedInlinePolicy = JSON.parse(
-        message.getInlinePolicyForPermissionSet.InlinePolicy
+        message.getInlinePolicyForPermissionSet.InlinePolicy,
       );
     }
     /**
@@ -112,7 +112,7 @@ export const handler = async (event: SNSEvent) => {
         Item: {
           ...permissionSetObject,
         },
-      })
+      }),
     );
 
     logger({
@@ -130,7 +130,7 @@ export const handler = async (event: SNSEvent) => {
       logMode: logModes.Exception,
       status: requestStatus.FailedWithException,
       statusMessage: `Permission set import operation failed with exception: ${JSON.stringify(
-        err
+        err,
       )} for eventDetail: ${JSON.stringify(event)}`,
     });
   }

@@ -60,7 +60,7 @@ export const handler = async (event: SNSEvent) => {
       status: requestStatus.InProgress,
       statusMessage: `Started processing account assignment import operation`,
     },
-    functionLogMode
+    functionLogMode,
   );
 
   try {
@@ -82,7 +82,7 @@ export const handler = async (event: SNSEvent) => {
         status: requestStatus.InProgress,
         statusMessage: `Parsed SNS payload `,
       },
-      functionLogMode
+      functionLogMode,
     );
     if (message.triggerSource === "CloudFormation") {
       logger(
@@ -95,7 +95,7 @@ export const handler = async (event: SNSEvent) => {
           sourceRequestId: sourceRequestIdValue,
           statusMessage: `Determined operation is for config import`,
         },
-        functionLogMode
+        functionLogMode,
       );
       const provisionedLinks: GetCommandOutput = await ddbDocClientObject.send(
         new GetCommand({
@@ -103,7 +103,7 @@ export const handler = async (event: SNSEvent) => {
           Key: {
             parentLink: provisionedLinksKey,
           },
-        })
+        }),
       );
       if (provisionedLinks.Item) {
         logger(
@@ -116,7 +116,7 @@ export const handler = async (event: SNSEvent) => {
             status: requestStatus.Completed,
             statusMessage: `Account assignment already exists, not importing again`,
           },
-          functionLogMode
+          functionLogMode,
         );
       } else {
         logger(
@@ -129,7 +129,7 @@ export const handler = async (event: SNSEvent) => {
             status: requestStatus.InProgress,
             statusMessage: `Determined that the account assignment does not exist yet, updating the solution persistence`,
           },
-          functionLogMode
+          functionLogMode,
         );
         const linkParams: LinkData = {
           awsEntityId: `account%${message.linkPayload.awsEntityData}%${message.linkPayload.permissionSetName}%${message.entityName}%${message.entityType}%ssofile`,
@@ -144,7 +144,7 @@ export const handler = async (event: SNSEvent) => {
             Bucket: artefactsBucketName,
             Key: `links_data/${linkParams.awsEntityId}`,
             ServerSideEncryption: "AES256",
-          })
+          }),
         );
         await ddbDocClientObject.send(
           new PutCommand({
@@ -152,7 +152,7 @@ export const handler = async (event: SNSEvent) => {
             Item: {
               ...linkParams,
             },
-          })
+          }),
         );
         await ddbClientObject.send(
           new PutCommand({
@@ -162,7 +162,7 @@ export const handler = async (event: SNSEvent) => {
               tagKeyLookUp: "none",
               principalType: message.entityType,
             },
-          })
+          }),
         );
         logger(
           {
@@ -174,7 +174,7 @@ export const handler = async (event: SNSEvent) => {
             status: requestStatus.Completed,
             statusMessage: `Account assignment did not exist, so updated S3 and both provisioned links and links tables in DDB`,
           },
-          functionLogMode
+          functionLogMode,
         );
       }
     } else {
@@ -188,7 +188,7 @@ export const handler = async (event: SNSEvent) => {
           status: requestStatus.Aborted,
           statusMessage: `Account assignment operation aborted as the operation type is unknown`,
         },
-        functionLogMode
+        functionLogMode,
       );
     }
   } catch (err) {
@@ -205,7 +205,7 @@ export const handler = async (event: SNSEvent) => {
           requestId,
           err.name,
           err.message,
-          linkKeyValue
+          linkKeyValue,
         ),
       });
     } else {
@@ -218,7 +218,7 @@ export const handler = async (event: SNSEvent) => {
           requestId,
           "Unhandled exception",
           JSON.stringify(err),
-          linkKeyValue
+          linkKeyValue,
         ),
       });
     }

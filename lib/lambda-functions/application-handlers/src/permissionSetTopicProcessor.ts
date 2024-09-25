@@ -150,7 +150,7 @@ export const handler = async (event: SNSEvent) => {
         status: requestStatus.InProgress,
         statusMessage: `Initiating permission set CRUD logic`,
       },
-      functionLogMode
+      functionLogMode,
     );
     const resolvedInstances: ListInstancesCommandOutput =
       await ssoAdminClientObject.send(new ListInstancesCommand({}));
@@ -164,7 +164,7 @@ export const handler = async (event: SNSEvent) => {
         status: requestStatus.InProgress,
         statusMessage: `Resolved instanceArn as ${instanceArn}`,
       },
-      functionLogMode
+      functionLogMode,
     );
     let permissionSetArn = "";
     let syncPermissionSet = false;
@@ -186,7 +186,7 @@ export const handler = async (event: SNSEvent) => {
         status: requestStatus.InProgress,
         statusMessage: `Determined permission set operation is of type ${message.action}`,
       },
-      functionLogMode
+      functionLogMode,
     );
 
     const fetchPermissionSet: GetCommandOutput = await ddbDocClientObject.send(
@@ -195,7 +195,7 @@ export const handler = async (event: SNSEvent) => {
         Key: {
           permissionSetName,
         },
-      })
+      }),
     );
     if (fetchPermissionSet.Item) {
       logger(
@@ -207,7 +207,7 @@ export const handler = async (event: SNSEvent) => {
           status: requestStatus.InProgress,
           statusMessage: `Determined that permission set exists`,
         },
-        functionLogMode
+        functionLogMode,
       );
       const currentItem = fetchPermissionSet.Item;
       if (message.action === "create") {
@@ -218,7 +218,7 @@ export const handler = async (event: SNSEvent) => {
             Description: currentItem.description
               ? currentItem.description
               : permissionSetName,
-          })
+          }),
         );
         logger(
           {
@@ -229,7 +229,7 @@ export const handler = async (event: SNSEvent) => {
             status: requestStatus.InProgress,
             statusMessage: `Triggered create operation for permissionSet in AWS IAM Identity Center`,
           },
-          functionLogMode
+          functionLogMode,
         );
 
         permissionSetArn =
@@ -243,7 +243,7 @@ export const handler = async (event: SNSEvent) => {
             status: requestStatus.InProgress,
             statusMessage: `createPermissionSet operation returned permissionSetArn as ${permissionSetArn}`,
           },
-          functionLogMode
+          functionLogMode,
         );
         /**
          * Update relayState and sessionDuration if they match length greater
@@ -269,7 +269,7 @@ export const handler = async (event: SNSEvent) => {
                 SessionDuration: serializeDurationToISOFormat({
                   minutes: parseInt(currentItem.sessionDurationInMinutes),
                 }),
-              })
+              }),
             );
             logger(
               {
@@ -280,7 +280,7 @@ export const handler = async (event: SNSEvent) => {
                 status: requestStatus.InProgress,
                 statusMessage: `Updated relayState and sessionDuration for permissionSet create operation`,
               },
-              functionLogMode
+              functionLogMode,
             );
           } else if (
             currentItem.relayState &&
@@ -291,7 +291,7 @@ export const handler = async (event: SNSEvent) => {
                 InstanceArn: instanceArn,
                 PermissionSetArn: permissionSetArn,
                 RelayState: currentItem.relayState,
-              })
+              }),
             );
             logger(
               {
@@ -302,7 +302,7 @@ export const handler = async (event: SNSEvent) => {
                 status: requestStatus.InProgress,
                 statusMessage: `Updated relayState for permissionSet create operation`,
               },
-              functionLogMode
+              functionLogMode,
             );
           } else if (
             currentItem.sessionDurationInMinutes &&
@@ -315,7 +315,7 @@ export const handler = async (event: SNSEvent) => {
                 SessionDuration: serializeDurationToISOFormat({
                   minutes: parseInt(currentItem.sessionDurationInMinutes),
                 }),
-              })
+              }),
             );
             logger(
               {
@@ -326,7 +326,7 @@ export const handler = async (event: SNSEvent) => {
                 status: requestStatus.InProgress,
                 statusMessage: `Updated sessionDuration for permissionSet create operation`,
               },
-              functionLogMode
+              functionLogMode,
             );
           }
         }
@@ -341,7 +341,7 @@ export const handler = async (event: SNSEvent) => {
             ExpressionAttributeValues: {
               ":arnvalue": createOp.PermissionSet?.PermissionSetArn?.toString(),
             },
-          })
+          }),
         );
         logger(
           {
@@ -352,7 +352,7 @@ export const handler = async (event: SNSEvent) => {
             status: requestStatus.InProgress,
             statusMessage: `Updated solution persistence with arn value for permission set create operation`,
           },
-          functionLogMode
+          functionLogMode,
         );
         if (currentItem.tags.length !== 0) {
           await ssoAdminClientObject.send(
@@ -360,7 +360,7 @@ export const handler = async (event: SNSEvent) => {
               InstanceArn: instanceArn,
               ResourceArn: createOp.PermissionSet?.PermissionSetArn?.toString(),
               Tags: currentItem.tags,
-            })
+            }),
           );
           logger(
             {
@@ -371,7 +371,7 @@ export const handler = async (event: SNSEvent) => {
               status: requestStatus.InProgress,
               statusMessage: `Updated tags for permissionSet create operation`,
             },
-            functionLogMode
+            functionLogMode,
           );
         }
         if (
@@ -397,7 +397,7 @@ export const handler = async (event: SNSEvent) => {
               QueueUrl: managedPolicyQueueUrl,
               MessageBody: JSON.stringify(managedPolicyPayload),
               MessageGroupId: `${permissionSetName}-aws`,
-            })
+            }),
           );
 
           logger(
@@ -409,7 +409,7 @@ export const handler = async (event: SNSEvent) => {
               status: requestStatus.InProgress,
               statusMessage: `Managed policies attached for permissionSet create operation`,
             },
-            functionLogMode
+            functionLogMode,
           );
         }
         if (
@@ -436,7 +436,7 @@ export const handler = async (event: SNSEvent) => {
               QueueUrl: managedPolicyQueueUrl,
               MessageBody: JSON.stringify(customerManagedPolicyPayload),
               MessageGroupId: `${permissionSetName}-customer`,
-            })
+            }),
           );
 
           logger(
@@ -448,7 +448,7 @@ export const handler = async (event: SNSEvent) => {
               status: requestStatus.InProgress,
               statusMessage: `Customer managed policies attached for permissionSet create operation`,
             },
-            functionLogMode
+            functionLogMode,
           );
         }
 
@@ -460,7 +460,7 @@ export const handler = async (event: SNSEvent) => {
                 InlinePolicy: JSON.stringify(currentItem.inlinePolicyDocument),
                 PermissionSetArn:
                   createOp.PermissionSet?.PermissionSetArn?.toString(),
-              })
+              }),
             );
             logger(
               {
@@ -471,7 +471,7 @@ export const handler = async (event: SNSEvent) => {
                 status: requestStatus.InProgress,
                 statusMessage: `Inline policy created for permission set create operation`,
               },
-              functionLogMode
+              functionLogMode,
             );
           }
         }
@@ -484,7 +484,7 @@ export const handler = async (event: SNSEvent) => {
                 PermissionSetArn:
                   createOp.PermissionSet?.PermissionSetArn?.toString(),
                 PermissionsBoundary: { ...currentItem.permissionsBoundary },
-              })
+              }),
             );
             logger(
               {
@@ -495,7 +495,7 @@ export const handler = async (event: SNSEvent) => {
                 status: requestStatus.InProgress,
                 statusMessage: `Permissions Boundary attached for permission set create operation`,
               },
-              functionLogMode
+              functionLogMode,
             );
           }
         }
@@ -510,7 +510,7 @@ export const handler = async (event: SNSEvent) => {
             status: requestStatus.Completed,
             statusMessage: `permissionSet create operation completed`,
           },
-          functionLogMode
+          functionLogMode,
         );
       } else if (message.action === "update") {
         const oldItem = message.oldPermissionSetData;
@@ -553,7 +553,7 @@ export const handler = async (event: SNSEvent) => {
             status: requestStatus.InProgress,
             statusMessage: `calculating delta for permissionSet update operation`,
           },
-          functionLogMode
+          functionLogMode,
         );
 
         const diffCalculated = diff(oldItem, currentItem);
@@ -568,7 +568,7 @@ export const handler = async (event: SNSEvent) => {
               status: requestStatus.Completed,
               statusMessage: `No delta determined for permissionSet update operation, completing update operation`,
             },
-            functionLogMode
+            functionLogMode,
           );
         } else {
           const fetchArn: GetCommandOutput = await ddbDocClientObject.send(
@@ -577,7 +577,7 @@ export const handler = async (event: SNSEvent) => {
               Key: {
                 permissionSetName,
               },
-            })
+            }),
           );
           if (fetchArn.Item) {
             logger(
@@ -589,7 +589,7 @@ export const handler = async (event: SNSEvent) => {
                 status: requestStatus.InProgress,
                 statusMessage: `objectArn found, progressing with delta for permission Set update operation`,
               },
-              functionLogMode
+              functionLogMode,
             );
             if (
               currentItem.sessionDurationInMinutes &&
@@ -639,7 +639,7 @@ export const handler = async (event: SNSEvent) => {
                   status: requestStatus.InProgress,
                   statusMessage: `Determining delta for switchKey ${switchKey} as part of permissionSet update operation`,
                 },
-                functionLogMode
+                functionLogMode,
               );
 
               switch (switchKey) {
@@ -664,7 +664,7 @@ export const handler = async (event: SNSEvent) => {
                       QueueUrl: managedPolicyQueueUrl,
                       MessageBody: JSON.stringify(managedPolicyPayload),
                       MessageGroupId: `${permissionSetName}-aws`,
-                    })
+                    }),
                   );
                   reProvision = true;
                   logger(
@@ -676,7 +676,7 @@ export const handler = async (event: SNSEvent) => {
                       status: requestStatus.InProgress,
                       statusMessage: `added managed policies for permission Set update operation`,
                     },
-                    functionLogMode
+                    functionLogMode,
                   );
 
                   break;
@@ -702,7 +702,7 @@ export const handler = async (event: SNSEvent) => {
                       QueueUrl: managedPolicyQueueUrl,
                       MessageBody: JSON.stringify(managedPolicyPayload),
                       MessageGroupId: `${permissionSetName}-aws`,
-                    })
+                    }),
                   );
                   reProvision = true;
                   logger(
@@ -714,7 +714,7 @@ export const handler = async (event: SNSEvent) => {
                       status: requestStatus.InProgress,
                       statusMessage: `removed managed policies for permission Set update operation`,
                     },
-                    functionLogMode
+                    functionLogMode,
                   );
 
                   break;
@@ -740,14 +740,14 @@ export const handler = async (event: SNSEvent) => {
                     changeArray.map(async (changeItem) => {
                       if (changeItem.toString().split(",")[0] === "+") {
                         changeSettoAdd.push(
-                          changeItem.toString().split(",")[1]
+                          changeItem.toString().split(",")[1],
                         );
                       } else if (changeItem.toString().split(",")[0] === "-") {
                         changeSettoRemove.push(
-                          changeItem.toString().split(",")[1]
+                          changeItem.toString().split(",")[1],
                         );
                       }
-                    })
+                    }),
                   );
                   if (changeSettoRemove.length > 0) {
                     const managedPolicyPayload: ManagedPolicyQueueObject = {
@@ -768,7 +768,7 @@ export const handler = async (event: SNSEvent) => {
                         QueueUrl: managedPolicyQueueUrl,
                         MessageBody: JSON.stringify(managedPolicyPayload),
                         MessageGroupId: `${permissionSetName}-aws`,
-                      })
+                      }),
                     );
 
                     reProvision = true;
@@ -781,7 +781,7 @@ export const handler = async (event: SNSEvent) => {
                         status: requestStatus.InProgress,
                         statusMessage: `removed managed policies from changeSet calculated for permission Set update operation`,
                       },
-                      functionLogMode
+                      functionLogMode,
                     );
                   }
                   if (changeSettoAdd.length > 0) {
@@ -803,7 +803,7 @@ export const handler = async (event: SNSEvent) => {
                         QueueUrl: managedPolicyQueueUrl,
                         MessageBody: JSON.stringify(managedPolicyPayload),
                         MessageGroupId: `${permissionSetName}-aws`,
-                      })
+                      }),
                     );
                     logger(
                       {
@@ -814,7 +814,7 @@ export const handler = async (event: SNSEvent) => {
                         status: requestStatus.InProgress,
                         statusMessage: `added managed policies from changeSet calculated for permission Set update operation`,
                       },
-                      functionLogMode
+                      functionLogMode,
                     );
 
                     reProvision = true;
@@ -842,10 +842,10 @@ export const handler = async (event: SNSEvent) => {
                       new SendMessageCommand({
                         QueueUrl: managedPolicyQueueUrl,
                         MessageBody: JSON.stringify(
-                          customerManagedPolicyPayload
+                          customerManagedPolicyPayload,
                         ),
                         MessageGroupId: `${permissionSetName}-customer`,
-                      })
+                      }),
                     );
                     logger(
                       {
@@ -856,7 +856,7 @@ export const handler = async (event: SNSEvent) => {
                         status: requestStatus.InProgress,
                         statusMessage: `added customer managed policies from changeSet calculated for permission Set update operation`,
                       },
-                      functionLogMode
+                      functionLogMode,
                     );
 
                     reProvision = true;
@@ -874,15 +874,19 @@ export const handler = async (event: SNSEvent) => {
                     oldCustomerManagedPolicies.filter((cmp1) =>
                       newCustomerManagedPolicies.every(
                         (cmp2) =>
-                          !(cmp2.Name.toLowerCase() === cmp1.Name.toLowerCase())
-                      )
+                          !(
+                            cmp2.Name.toLowerCase() === cmp1.Name.toLowerCase()
+                          ),
+                      ),
                     );
                   const changeSettoAdd: Array<CustomerManagedPolicyObject> =
                     newCustomerManagedPolicies.filter((cmp1) =>
                       oldCustomerManagedPolicies.every(
                         (cmp2) =>
-                          !(cmp2.Name.toLowerCase() === cmp1.Name.toLowerCase())
-                      )
+                          !(
+                            cmp2.Name.toLowerCase() === cmp1.Name.toLowerCase()
+                          ),
+                      ),
                     );
                   if (changeSettoRemove.length > 0) {
                     const customerManagedPolicyPayload: ManagedPolicyQueueObject =
@@ -903,10 +907,10 @@ export const handler = async (event: SNSEvent) => {
                       new SendMessageCommand({
                         QueueUrl: managedPolicyQueueUrl,
                         MessageBody: JSON.stringify(
-                          customerManagedPolicyPayload
+                          customerManagedPolicyPayload,
                         ),
                         MessageGroupId: `${permissionSetName}-customer`,
-                      })
+                      }),
                     );
                     logger(
                       {
@@ -917,7 +921,7 @@ export const handler = async (event: SNSEvent) => {
                         status: requestStatus.InProgress,
                         statusMessage: `removed old customer managed policies from changeSet calculated for permission Set update operation`,
                       },
-                      functionLogMode
+                      functionLogMode,
                     );
                     reProvision = true;
                   }
@@ -941,10 +945,10 @@ export const handler = async (event: SNSEvent) => {
                       new SendMessageCommand({
                         QueueUrl: managedPolicyQueueUrl,
                         MessageBody: JSON.stringify(
-                          customerManagedPolicyPayload
+                          customerManagedPolicyPayload,
                         ),
                         MessageGroupId: `${permissionSetName}-customer`,
-                      })
+                      }),
                     );
                     logger(
                       {
@@ -955,7 +959,7 @@ export const handler = async (event: SNSEvent) => {
                         status: requestStatus.InProgress,
                         statusMessage: `added customer managed policies from changeSet calculated for permission Set update operation`,
                       },
-                      functionLogMode
+                      functionLogMode,
                     );
                     reProvision = true;
                   }
@@ -983,10 +987,10 @@ export const handler = async (event: SNSEvent) => {
                       new SendMessageCommand({
                         QueueUrl: managedPolicyQueueUrl,
                         MessageBody: JSON.stringify(
-                          customerManagedPolicyPayload
+                          customerManagedPolicyPayload,
                         ),
                         MessageGroupId: `${permissionSetName}-customer`,
-                      })
+                      }),
                     );
                     logger(
                       {
@@ -997,7 +1001,7 @@ export const handler = async (event: SNSEvent) => {
                         status: requestStatus.InProgress,
                         statusMessage: `removed old customer managed policies from changeSet calculated for permission Set update operation`,
                       },
-                      functionLogMode
+                      functionLogMode,
                     );
                     reProvision = true;
                   }
@@ -1015,7 +1019,7 @@ export const handler = async (event: SNSEvent) => {
                         PermissionsBoundary: {
                           ...currentItem.permissionsBoundary,
                         },
-                      })
+                      }),
                     );
                     logger(
                       {
@@ -1026,7 +1030,7 @@ export const handler = async (event: SNSEvent) => {
                         status: requestStatus.InProgress,
                         statusMessage: `created/updated permission set boundary for permission Set update operation`,
                       },
-                      functionLogMode
+                      functionLogMode,
                     );
                     reProvision = true;
                   }
@@ -1037,7 +1041,7 @@ export const handler = async (event: SNSEvent) => {
                     new DeletePermissionsBoundaryFromPermissionSetCommand({
                       InstanceArn: instanceArn,
                       PermissionSetArn: permissionSetArn,
-                    })
+                    }),
                   );
                   logger(
                     {
@@ -1048,7 +1052,7 @@ export const handler = async (event: SNSEvent) => {
                       status: requestStatus.InProgress,
                       statusMessage: `removed permission set boundary for permission Set update operation`,
                     },
-                    functionLogMode
+                    functionLogMode,
                   );
                   reProvision = true;
                   break;
@@ -1063,9 +1067,9 @@ export const handler = async (event: SNSEvent) => {
                         InstanceArn: instanceArn,
                         PermissionSetArn: permissionSetArn,
                         InlinePolicy: JSON.stringify(
-                          currentItem.inlinePolicyDocument
+                          currentItem.inlinePolicyDocument,
                         ),
-                      })
+                      }),
                     );
                     logger(
                       {
@@ -1076,7 +1080,7 @@ export const handler = async (event: SNSEvent) => {
                         status: requestStatus.InProgress,
                         statusMessage: `created/updated inline policy document for permission Set update operation`,
                       },
-                      functionLogMode
+                      functionLogMode,
                     );
 
                     reProvision = true;
@@ -1088,7 +1092,7 @@ export const handler = async (event: SNSEvent) => {
                     new DeleteInlinePolicyFromPermissionSetCommand({
                       InstanceArn: instanceArn,
                       PermissionSetArn: permissionSetArn,
-                    })
+                    }),
                   );
                   logger(
                     {
@@ -1099,7 +1103,7 @@ export const handler = async (event: SNSEvent) => {
                       status: requestStatus.InProgress,
                       statusMessage: `removed inlinePolicy document for permission Set update operation`,
                     },
-                    functionLogMode
+                    functionLogMode,
                   );
 
                   reProvision = true;
@@ -1125,7 +1129,7 @@ export const handler = async (event: SNSEvent) => {
                       status: requestStatus.InProgress,
                       statusMessage: `set flag for updating permission set attributes as part of permission Set update operation`,
                     },
-                    functionLogMode
+                    functionLogMode,
                   );
 
                   break;
@@ -1136,7 +1140,7 @@ export const handler = async (event: SNSEvent) => {
                       InstanceArn: instanceArn,
                       ResourceArn: permissionSetArn,
                       Tags: currentItem.tags,
-                    })
+                    }),
                   );
                   logger(
                     {
@@ -1147,7 +1151,7 @@ export const handler = async (event: SNSEvent) => {
                       status: requestStatus.InProgress,
                       statusMessage: `added tags for permission Set update operation`,
                     },
-                    functionLogMode
+                    functionLogMode,
                   );
 
                   break;
@@ -1164,14 +1168,14 @@ export const handler = async (event: SNSEvent) => {
                     await Promise.all(
                       oldItem.tags.map(async (tag: Tag) => {
                         tagKeysToRemove.push(tag.Key?.toString() + "");
-                      })
+                      }),
                     );
                     await ssoAdminClientObject.send(
                       new UntagResourceCommand({
                         InstanceArn: instanceArn,
                         ResourceArn: permissionSetArn,
                         TagKeys: tagKeysToRemove,
-                      })
+                      }),
                     );
                     logger(
                       {
@@ -1182,7 +1186,7 @@ export const handler = async (event: SNSEvent) => {
                         status: requestStatus.InProgress,
                         statusMessage: `removed old tags for permission Set update operation`,
                       },
-                      functionLogMode
+                      functionLogMode,
                     );
                   }
                   if (switchKey === "tags-update" && currentItem.tags) {
@@ -1191,7 +1195,7 @@ export const handler = async (event: SNSEvent) => {
                         InstanceArn: instanceArn,
                         ResourceArn: permissionSetArn,
                         Tags: currentItem.tags,
-                      })
+                      }),
                     );
                     logger(
                       {
@@ -1202,7 +1206,7 @@ export const handler = async (event: SNSEvent) => {
                         status: requestStatus.InProgress,
                         statusMessage: `added new tags for permission Set update operation`,
                       },
-                      functionLogMode
+                      functionLogMode,
                     );
                   }
                   break;
@@ -1217,7 +1221,7 @@ export const handler = async (event: SNSEvent) => {
                       status: requestStatus.FailedWithException,
                       statusMessage: `unknown switch key found for permissionSet update operation ${switchKey}`,
                     },
-                    functionLogMode
+                    functionLogMode,
                   );
                 }
               }
@@ -1230,7 +1234,7 @@ export const handler = async (event: SNSEvent) => {
                   PermissionSetArn: permissionSetArn,
                   InstanceArn: instanceArn,
                   Description: currentPermissionSetDescription,
-                })
+                }),
               );
               logger(
                 {
@@ -1241,7 +1245,7 @@ export const handler = async (event: SNSEvent) => {
                   status: requestStatus.InProgress,
                   statusMessage: `updated permission set attributes for permission Set update operation`,
                 },
-                functionLogMode
+                functionLogMode,
               );
 
               /**
@@ -1263,7 +1267,7 @@ export const handler = async (event: SNSEvent) => {
                     SessionDuration: serializeDurationToISOFormat({
                       minutes: parseInt(currentSessionDuration),
                     }),
-                  })
+                  }),
                 );
                 logger(
                   {
@@ -1274,7 +1278,7 @@ export const handler = async (event: SNSEvent) => {
                     status: requestStatus.InProgress,
                     statusMessage: `updated relayState and currentSessionDuration for permission Set update operation`,
                   },
-                  functionLogMode
+                  functionLogMode,
                 );
               } else if (relayStatePresent) {
                 await ssoAdminClientObject.send(
@@ -1282,7 +1286,7 @@ export const handler = async (event: SNSEvent) => {
                     PermissionSetArn: permissionSetArn,
                     InstanceArn: instanceArn,
                     RelayState: currentRelayState,
-                  })
+                  }),
                 );
                 logger(
                   {
@@ -1293,7 +1297,7 @@ export const handler = async (event: SNSEvent) => {
                     status: requestStatus.InProgress,
                     statusMessage: `updated relayState for permission Set update operation`,
                   },
-                  functionLogMode
+                  functionLogMode,
                 );
               } else if (sessionDurationPresent) {
                 await ssoAdminClientObject.send(
@@ -1303,7 +1307,7 @@ export const handler = async (event: SNSEvent) => {
                     SessionDuration: serializeDurationToISOFormat({
                       minutes: parseInt(currentSessionDuration),
                     }),
-                  })
+                  }),
                 );
                 logger(
                   {
@@ -1314,7 +1318,7 @@ export const handler = async (event: SNSEvent) => {
                     status: requestStatus.InProgress,
                     statusMessage: `updated sessionDuration for permission Set update operation`,
                   },
-                  functionLogMode
+                  functionLogMode,
                 );
               }
             }
@@ -1332,7 +1336,7 @@ export const handler = async (event: SNSEvent) => {
                 new ListAccountsForProvisionedPermissionSetCommand({
                   InstanceArn: instanceArn,
                   PermissionSetArn: permissionSetArn,
-                })
+                }),
               );
               if (fetchAccountsList.AccountIds?.length !== 0) {
                 const reProvisionOp = await ssoAdminClientObject.send(
@@ -1340,7 +1344,7 @@ export const handler = async (event: SNSEvent) => {
                     InstanceArn: instanceArn,
                     PermissionSetArn: permissionSetArn,
                     TargetType: "ALL_PROVISIONED_ACCOUNTS",
-                  })
+                  }),
                 );
                 logger(
                   {
@@ -1351,7 +1355,7 @@ export const handler = async (event: SNSEvent) => {
                     status: requestStatus.InProgress,
                     statusMessage: `triggered re-provisioning for permission Set update operation`,
                   },
-                  functionLogMode
+                  functionLogMode,
                 );
 
                 await waitUntilPermissionSetProvisioned(
@@ -1364,7 +1368,7 @@ export const handler = async (event: SNSEvent) => {
                     ProvisionPermissionSetRequestId:
                       reProvisionOp.PermissionSetProvisioningStatus?.RequestId,
                   },
-                  permissionSetName
+                  permissionSetName,
                 );
                 logger(
                   {
@@ -1375,7 +1379,7 @@ export const handler = async (event: SNSEvent) => {
                     status: requestStatus.InProgress,
                     statusMessage: `re-provisioning operation completed for permission Set update operation`,
                   },
-                  functionLogMode
+                  functionLogMode,
                 );
               }
             }
@@ -1393,7 +1397,7 @@ export const handler = async (event: SNSEvent) => {
               status: requestStatus.Completed,
               statusMessage: `permission Set update operation completed`,
             },
-            functionLogMode
+            functionLogMode,
           );
         }
       } else if (message.action === "delete") {
@@ -1406,7 +1410,7 @@ export const handler = async (event: SNSEvent) => {
             status: requestStatus.InProgress,
             statusMessage: `permission Set delete operation started`,
           },
-          functionLogMode
+          functionLogMode,
         );
         const fetchArn = await ddbDocClientObject.send(
           new GetCommand({
@@ -1414,7 +1418,7 @@ export const handler = async (event: SNSEvent) => {
             Key: {
               permissionSetName,
             },
-          })
+          }),
         );
         if (fetchArn.Item) {
           permissionSetArn = fetchArn.Item.permissionSetArn;
@@ -1422,7 +1426,7 @@ export const handler = async (event: SNSEvent) => {
             new DeletePermissionSetCommand({
               InstanceArn: instanceArn,
               PermissionSetArn: permissionSetArn,
-            })
+            }),
           );
           await ddbDocClientObject.send(
             new DeleteCommand({
@@ -1430,7 +1434,7 @@ export const handler = async (event: SNSEvent) => {
               Key: {
                 permissionSetName,
               },
-            })
+            }),
           );
           await ddbDocClientObject.send(
             new DeleteCommand({
@@ -1438,7 +1442,7 @@ export const handler = async (event: SNSEvent) => {
               Key: {
                 permissionSetName,
               },
-            })
+            }),
           );
           logger(
             {
@@ -1449,7 +1453,7 @@ export const handler = async (event: SNSEvent) => {
               status: requestStatus.Completed,
               statusMessage: `permission Set delete operation completed`,
             },
-            functionLogMode
+            functionLogMode,
           );
         }
         logger(
@@ -1461,7 +1465,7 @@ export const handler = async (event: SNSEvent) => {
             status: requestStatus.Aborted,
             statusMessage: `permission Set delete operation ignored as no reference found`,
           },
-          functionLogMode
+          functionLogMode,
         );
       }
 
@@ -1473,7 +1477,7 @@ export const handler = async (event: SNSEvent) => {
               permission_set_name: permissionSetName,
               permission_set_arn: permissionSetArn,
             }),
-          })
+          }),
         );
       }
     } else {
@@ -1486,7 +1490,7 @@ export const handler = async (event: SNSEvent) => {
           status: requestStatus.Completed,
           statusMessage: `permission Set ${message.action} operation completed - no reference found for current Item`,
         },
-        functionLogMode
+        functionLogMode,
       );
     }
   } catch (err) {
@@ -1504,9 +1508,9 @@ export const handler = async (event: SNSEvent) => {
             handlerName,
             err.name,
             err.message,
-            permissionSetNameValue
+            permissionSetNameValue,
           ),
-        })
+        }),
       );
       logger({
         handler: handlerName,
@@ -1517,7 +1521,7 @@ export const handler = async (event: SNSEvent) => {
           requestIdValue,
           err.name,
           err.message,
-          permissionSetNameValue
+          permissionSetNameValue,
         ),
       });
     } else {
@@ -1530,9 +1534,9 @@ export const handler = async (event: SNSEvent) => {
             handlerName,
             "Unhandled exception",
             JSON.stringify(err),
-            permissionSetNameValue
+            permissionSetNameValue,
           ),
-        })
+        }),
       );
       logger({
         handler: handlerName,
@@ -1543,7 +1547,7 @@ export const handler = async (event: SNSEvent) => {
           requestIdValue,
           "Unhandled exception",
           JSON.stringify(err),
-          permissionSetNameValue
+          permissionSetNameValue,
         ),
       });
     }

@@ -20,13 +20,13 @@ import { logger } from "../../helpers/src/utilities";
 
 const checkState = async (
   client: SSOAdminClient,
-  input: DescribeAccountAssignmentCreationStatusCommandInput
+  input: DescribeAccountAssignmentCreationStatusCommandInput,
 ): Promise<WaiterResult> => {
   let reason;
   try {
     const result: DescribeAccountAssignmentCreationStatusCommandOutput =
       await client.send(
-        new DescribeAccountAssignmentCreationStatusCommand(input)
+        new DescribeAccountAssignmentCreationStatusCommand(input),
       );
     reason = result;
     if (
@@ -51,7 +51,7 @@ export const waitUntilAccountAssignmentCreation = async (
   params: WaiterConfiguration<SSOAdminClient>,
   input: DescribeAccountAssignmentCreationStatusCommandInput,
   requestId: string,
-  functionLogMode: string
+  functionLogMode: string,
 ): Promise<WaiterResult> => {
   logger(
     {
@@ -62,7 +62,7 @@ export const waitUntilAccountAssignmentCreation = async (
       status: requestStatus.InProgress,
       statusMessage: `Setting service defaults`,
     },
-    functionLogMode
+    functionLogMode,
   );
   const serviceDefaults = { minDelay: 60, maxDelay: 120 };
   logger(
@@ -74,12 +74,12 @@ export const waitUntilAccountAssignmentCreation = async (
       status: requestStatus.InProgress,
       statusMessage: `Invoking waiter for createAccountAssignment operation`,
     },
-    functionLogMode
+    functionLogMode,
   );
   const result = await createWaiter(
     { ...serviceDefaults, ...params },
     input,
-    checkState
+    checkState,
   );
   logger(
     {
@@ -90,7 +90,7 @@ export const waitUntilAccountAssignmentCreation = async (
       status: requestStatus.InProgress,
       statusMessage: `Waiter completed with result: ${JSON.stringify(result)}`,
     },
-    functionLogMode
+    functionLogMode,
   );
   return checkExceptions(result);
 };

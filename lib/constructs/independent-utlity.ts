@@ -74,7 +74,7 @@ export class IndependentUtility extends Construct {
       {
         displayName: name(buildConfig, "errorNotificationsTopic"),
         masterKey: this.snsTopicsKey,
-      }
+      },
     );
 
     const logsBucket = new Bucket(
@@ -84,7 +84,7 @@ export class IndependentUtility extends Construct {
         encryption: BucketEncryption.KMS,
         encryptionKey: this.logsKey,
         blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
-      }
+      },
     );
 
     this.ssoArtefactsBucket = new Bucket(
@@ -98,13 +98,13 @@ export class IndependentUtility extends Construct {
         serverAccessLogsBucket: logsBucket,
         serverAccessLogsPrefix: name(
           buildConfig,
-          "aws-sso-extensions-for-enterprise"
+          "aws-sso-extensions-for-enterprise",
         ),
-      }
+      },
     );
 
     this.errorNotificationsTopic.addSubscription(
-      new EmailSubscription(buildConfig.Parameters.NotificationEmail)
+      new EmailSubscription(buildConfig.Parameters.NotificationEmail),
     );
 
     this.waiterHandlerSSOAPIRoleArn = new SSMParamReader(
@@ -115,7 +115,7 @@ export class IndependentUtility extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "waiterHandler-ssoapi-roleArn",
-      }
+      },
     ).paramValue;
 
     this.linkManagerDLQ = new Queue(this, name(buildConfig, "linkManagerDLQ"), {
@@ -134,7 +134,7 @@ export class IndependentUtility extends Construct {
         encryption: QueueEncryption.KMS,
         encryptionMasterKey: this.queuesKey,
         visibilityTimeout: Duration.hours(
-          buildConfig.Parameters.AccountAssignmentVisibilityTimeoutHours
+          buildConfig.Parameters.AccountAssignmentVisibilityTimeoutHours,
         ),
         contentBasedDeduplication: true,
         queueName: name(buildConfig, "linkManagerQueue.fifo"),
@@ -143,7 +143,7 @@ export class IndependentUtility extends Construct {
           maxReceiveCount: 2,
         },
         retentionPeriod: Duration.days(1),
-      }
+      },
     );
 
     new StringParameter(this, name(buildConfig, "errorNotificationsTopicArn"), {

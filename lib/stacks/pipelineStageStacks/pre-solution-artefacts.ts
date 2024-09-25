@@ -26,20 +26,20 @@ export class PreSolutionArtefacts extends Stack {
     scope: Construct,
     id: string,
     props: StackProps | undefined,
-    buildConfig: BuildConfig
+    buildConfig: BuildConfig,
   ) {
     super(scope, id, props);
 
     this.deployLambdaLayers = new LambdaLayers(
       this,
       name(buildConfig, "lambdaLayers"),
-      buildConfig
+      buildConfig,
     );
 
     this.deployIndependentUtility = new IndependentUtility(
       this,
       name(buildConfig, "independentUtility"),
-      buildConfig
+      buildConfig,
     );
 
     this.deployLinkCRUD = new LinkCRUD(
@@ -54,13 +54,13 @@ export class PreSolutionArtefacts extends Stack {
         ddbTablesKey: this.deployIndependentUtility.ddbTablesKey,
         logsKey: this.deployIndependentUtility.logsKey,
         snsTopicsKey: this.deployIndependentUtility.snsTopicsKey,
-      }
+      },
     );
 
     this.deployUtility = new Utility(
       this,
       name(buildConfig, "utility"),
-      buildConfig
+      buildConfig,
     );
 
     this.deployPermissionSetCRUD = new PermissionSetCRUD(
@@ -76,7 +76,7 @@ export class PreSolutionArtefacts extends Stack {
         ddbTablesKey: this.deployIndependentUtility.ddbTablesKey,
         logsKey: this.deployIndependentUtility.logsKey,
         snsTopicsKey: this.deployIndependentUtility.snsTopicsKey,
-      }
+      },
     );
 
     new PreSolutionAccessManager(
@@ -88,7 +88,7 @@ export class PreSolutionArtefacts extends Stack {
         LinkCRUD: this.deployLinkCRUD,
         PermissionSetCRUD: this.deployPermissionSetCRUD,
         Utility: this.deployUtility,
-      }
+      },
     );
   }
 }

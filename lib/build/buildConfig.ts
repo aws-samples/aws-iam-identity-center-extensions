@@ -33,8 +33,8 @@ export interface PipelineSettings {
    */
   readonly RepoName: string /** AWS CodeStar repo name - only checked when RepoType is set to codestar */;
   readonly CodeStarConnectionArn: string /** AWS CodeStar connection ARN - only checked when RepoType is set to codestar */;
-  readonly SourceBucketName: string; /** S3 bucket name - only checked when RepoType is set to s3 */
-  readonly SourceObjectKey: string; /** S3 object key - only checked when RepoType is set to s3 */
+  readonly SourceBucketName: string /** S3 bucket name - only checked when RepoType is set to s3 */;
+  readonly SourceObjectKey: string /** S3 object key - only checked when RepoType is set to s3 */;
   readonly SynthCommand: string /** CDK synthesise command */;
 }
 

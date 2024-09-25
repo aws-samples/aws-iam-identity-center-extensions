@@ -3,10 +3,7 @@ module.exports = {
     node: true,
   },
   ignorePatterns: ["**/*.js", "cdk.out"],
-  extends: [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended"
-  ],
+  extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
   parser: "@typescript-eslint/parser",
   parserOptions: {
     ecmaVersion: 12,

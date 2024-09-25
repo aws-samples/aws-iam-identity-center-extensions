@@ -31,7 +31,7 @@ export class UpgradeToV303 extends Stack {
     scope: Construct,
     id: string,
     props: StackProps | undefined,
-    buildConfig: BuildConfig
+    buildConfig: BuildConfig,
   ) {
     super(scope, id, props);
 
@@ -40,8 +40,8 @@ export class UpgradeToV303 extends Stack {
       name(buildConfig, "artefactsBucket"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "ssoArtefactsBucketName")
-      )
+        name(buildConfig, "ssoArtefactsBucketName"),
+      ),
     );
 
     const tablesKey = Key.fromKeyArn(
@@ -49,8 +49,8 @@ export class UpgradeToV303 extends Stack {
       name(buildConfig, "tablesKey"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "ddbTablesKeyArn")
-      )
+        name(buildConfig, "ddbTablesKeyArn"),
+      ),
     );
 
     const bucketKey = Key.fromKeyArn(
@@ -58,8 +58,8 @@ export class UpgradeToV303 extends Stack {
       name(buildConfig, "bucketKey"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "ssoArtefactsBucketKeyArn")
-      )
+        name(buildConfig, "ssoArtefactsBucketKeyArn"),
+      ),
     );
 
     const nodeJsLayer = LayerVersion.fromLayerVersionArn(
@@ -67,8 +67,8 @@ export class UpgradeToV303 extends Stack {
       name(buildConfig, "NodeJsLayerVersion"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "nodeJsLayerVersionArn")
-      ).toString()
+        name(buildConfig, "nodeJsLayerVersionArn"),
+      ).toString(),
     );
 
     const linksTable = Table.fromTableAttributes(
@@ -77,7 +77,7 @@ export class UpgradeToV303 extends Stack {
       {
         tableArn: StringParameter.valueForStringParameter(
           this,
-          name(buildConfig, "linksTableArn")
+          name(buildConfig, "linksTableArn"),
         ),
         globalIndexes: [
           "awsEntityData",
@@ -85,7 +85,7 @@ export class UpgradeToV303 extends Stack {
           "permissionSetName",
           "principalType",
         ],
-      }
+      },
     );
 
     const processLinkData = new NodejsFunction(
@@ -101,12 +101,12 @@ export class UpgradeToV303 extends Stack {
           "lambda-functions",
           "upgrade-to-v303",
           "src",
-          "processLinkData.ts"
+          "processLinkData.ts",
         ),
         bundling: {
           minify: true,
         },
-      }
+      },
     );
 
     /** Log group to attach to upgrade state machine for capturing logs */
@@ -115,7 +115,7 @@ export class UpgradeToV303 extends Stack {
       name(buildConfig, "upgradeSMLogGroup"),
       {
         retention: RetentionDays.ONE_MONTH,
-      }
+      },
     );
 
     const upgradeSMRole = new Role(this, name(buildConfig, "upgradeSMRole"), {
@@ -134,7 +134,7 @@ export class UpgradeToV303 extends Stack {
           "logs:DescribeLogGroups",
         ],
         resources: ["*"],
-      })
+      }),
     );
 
     tablesKey.grantEncryptDecrypt(upgradeSMRole);
@@ -161,7 +161,7 @@ export class UpgradeToV303 extends Stack {
           includeExecutionData: true,
           level: "ALL",
         },
-      }
+      },
     );
 
     upgradeV303SM.node.addDependency(upgradeSMRole);
@@ -181,7 +181,7 @@ export class UpgradeToV303 extends Stack {
           "lambda-functions",
           "upgrade-to-v303",
           "src",
-          "triggerV303SM.ts"
+          "triggerV303SM.ts",
         ),
         bundling: {
           externalModules: ["@aws-sdk/client-sfn", "uuid"],
@@ -190,14 +190,14 @@ export class UpgradeToV303 extends Stack {
         environment: {
           functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
-      }
+      },
     );
 
     triggerUpgradeSM.addToRolePolicy(
       new PolicyStatement({
         resources: [upgradeV303SM.ref],
         actions: ["states:StartExecution"],
-      })
+      }),
     );
 
     const updateCustomResource = new NodejsFunction(
@@ -215,7 +215,7 @@ export class UpgradeToV303 extends Stack {
           "lambda-functions",
           "upgrade-to-v303",
           "src",
-          "update-custom-resource.ts"
+          "update-custom-resource.ts",
         ),
         bundling: {
           externalModules: ["@aws-sdk/client-sfn", "uuid"],
@@ -224,14 +224,14 @@ export class UpgradeToV303 extends Stack {
         environment: {
           functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
-      }
+      },
     );
 
     updateCustomResource.addToRolePolicy(
       new PolicyStatement({
         resources: ["*"],
         actions: ["states:DescribeExecution"],
-      })
+      }),
     );
 
     const upgradeV303Provider = new Provider(
@@ -242,7 +242,7 @@ export class UpgradeToV303 extends Stack {
         isCompleteHandler: updateCustomResource,
         queryInterval: Duration.seconds(5),
         totalTimeout: Duration.minutes(120),
-      }
+      },
     );
 
     const upgradeV303Resource = new CustomResource(
@@ -257,7 +257,7 @@ export class UpgradeToV303 extends Stack {
           artefactsBucketName: artefactsBucket.bucketName,
           linksTableName: linksTable.tableName,
         },
-      }
+      },
     );
 
     upgradeV303Resource.node.addDependency(triggerUpgradeSM);

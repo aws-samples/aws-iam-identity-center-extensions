@@ -59,7 +59,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
           waitSeconds: 2,
           pageSize: 5,
         }),
-      })
+      }),
     );
     logger({
       handler: "parentInvokeSM",
@@ -86,7 +86,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
       relatedData: `${importCurrentConfigSMArn}`,
       status: requestStatus.FailedWithException,
       statusMessage: `Custom resource creation failed with exception: ${JSON.stringify(
-        e
+        e,
       )}`,
     });
     return {

@@ -120,7 +120,7 @@ export const handler = async (event: SQSEvent) => {
           status: requestStatus.InProgress,
           statusMessage: `Started processing account assignment queue operation`,
         },
-        functionLogMode
+        functionLogMode,
       );
       try {
         const message = JSON.parse(record.body);
@@ -141,7 +141,7 @@ export const handler = async (event: SQSEvent) => {
             status: requestStatus.InProgress,
             statusMessage: `SSO group event triggered event bridge rule, started processing`,
           },
-          functionLogMode
+          functionLogMode,
         );
         if (ssoParams.TargetId !== payerAccount) {
           logger(
@@ -154,7 +154,7 @@ export const handler = async (event: SQSEvent) => {
               status: requestStatus.InProgress,
               statusMessage: `Determined that account ID ${ssoParams.TargetId} is not payerAccount`,
             },
-            functionLogMode
+            functionLogMode,
           );
           const resolvedInstances: ListInstancesCommandOutput =
             await ssoAdminClientObject.send(new ListInstancesCommand({}));
@@ -169,7 +169,7 @@ export const handler = async (event: SQSEvent) => {
               status: requestStatus.InProgress,
               statusMessage: `Resolve SSO instanceArn: ${instanceArn}`,
             },
-            functionLogMode
+            functionLogMode,
           );
 
           if (message.actionType === "create") {
@@ -183,7 +183,7 @@ export const handler = async (event: SQSEvent) => {
                 status: requestStatus.InProgress,
                 statusMessage: `Processing create account assignment operation`,
               },
-              functionLogMode
+              functionLogMode,
             );
 
             const provisionedLinks: GetCommandOutput =
@@ -193,7 +193,7 @@ export const handler = async (event: SQSEvent) => {
                   Key: {
                     parentLink: provisionedLinksKey,
                   },
-                })
+                }),
               );
             if (provisionedLinks.Item) {
               logger(
@@ -206,14 +206,14 @@ export const handler = async (event: SQSEvent) => {
                   status: requestStatus.Completed,
                   statusMessage: `Provisioned link already exists, not provisioning again`,
                 },
-                functionLogMode
+                functionLogMode,
               );
             } else {
               const ssoAssignmentOp: CreateAccountAssignmentCommandOutput =
                 await ssoAdminClientObject.send(
                   new CreateAccountAssignmentCommand({
                     ...ssoParams,
-                  })
+                  }),
                 );
               logger(
                 {
@@ -225,7 +225,7 @@ export const handler = async (event: SQSEvent) => {
                   status: requestStatus.InProgress,
                   statusMessage: `Triggered createAccountAssignment operation, requestID from service ${ssoAssignmentOp.AccountAssignmentCreationStatus?.RequestId}`,
                 },
-                functionLogMode
+                functionLogMode,
               );
               logger(
                 {
@@ -237,7 +237,7 @@ export const handler = async (event: SQSEvent) => {
                   status: requestStatus.InProgress,
                   statusMessage: `Triggering pre-emptive delay`,
                 },
-                functionLogMode
+                functionLogMode,
               );
 
               /** Pre-emptively delay to avoid waitPenalty on waiter */
@@ -252,7 +252,7 @@ export const handler = async (event: SQSEvent) => {
                   status: requestStatus.InProgress,
                   statusMessage: `Pre-emptive delay cycle complete, triggering createAccountAssignment waiter`,
                 },
-                functionLogMode
+                functionLogMode,
               );
               await waitUntilAccountAssignmentCreation(
                 {
@@ -265,7 +265,7 @@ export const handler = async (event: SQSEvent) => {
                     ssoAssignmentOp.AccountAssignmentCreationStatus?.RequestId,
                 },
                 requestId,
-                functionLogMode + ""
+                functionLogMode + "",
               );
               logger(
                 {
@@ -277,7 +277,7 @@ export const handler = async (event: SQSEvent) => {
                   status: requestStatus.InProgress,
                   statusMessage: `createAccountAssignment waiter returned`,
                 },
-                functionLogMode
+                functionLogMode,
               );
               await ddbClientObject.send(
                 new PutCommand({
@@ -287,7 +287,7 @@ export const handler = async (event: SQSEvent) => {
                     tagKeyLookUp: message.tagKeyLookUp,
                     principalType: ssoParams.PrincipalType,
                   },
-                })
+                }),
               );
               logger(
                 {
@@ -299,7 +299,7 @@ export const handler = async (event: SQSEvent) => {
                   status: requestStatus.Completed,
                   statusMessage: `createAccountAssignment operation completed`,
                 },
-                functionLogMode
+                functionLogMode,
               );
             }
           } else if (message.actionType === "delete") {
@@ -313,7 +313,7 @@ export const handler = async (event: SQSEvent) => {
                 status: requestStatus.InProgress,
                 statusMessage: `Processing delete account assignment operation`,
               },
-              functionLogMode
+              functionLogMode,
             );
 
             const provisionedLinks: GetCommandOutput =
@@ -323,7 +323,7 @@ export const handler = async (event: SQSEvent) => {
                   Key: {
                     parentLink: provisionedLinksKey,
                   },
-                })
+                }),
               );
             if (provisionedLinks.Item) {
               logger(
@@ -336,14 +336,14 @@ export const handler = async (event: SQSEvent) => {
                   status: requestStatus.InProgress,
                   statusMessage: `Link currently provisioned, triggering delete account assignment operation`,
                 },
-                functionLogMode
+                functionLogMode,
               );
 
               const ssoAssignmentOp: DeleteAccountAssignmentCommandOutput =
                 await ssoAdminClientObject.send(
                   new DeleteAccountAssignmentCommand({
                     ...ssoParams,
-                  })
+                  }),
                 );
               logger(
                 {
@@ -355,7 +355,7 @@ export const handler = async (event: SQSEvent) => {
                   status: requestStatus.InProgress,
                   statusMessage: `Triggered deleteAccountAssignment operation, requestID from service ${ssoAssignmentOp.AccountAssignmentDeletionStatus?.RequestId}`,
                 },
-                functionLogMode
+                functionLogMode,
               );
               logger(
                 {
@@ -367,7 +367,7 @@ export const handler = async (event: SQSEvent) => {
                   status: requestStatus.InProgress,
                   statusMessage: `Triggering pre-emptive delay`,
                 },
-                functionLogMode
+                functionLogMode,
               );
               /** Pre-emptively delay to avoid waitPenalty on waiter */
               await delay(15000);
@@ -381,7 +381,7 @@ export const handler = async (event: SQSEvent) => {
                   status: requestStatus.InProgress,
                   statusMessage: `Pre-emptive delay cycle complete, triggering deleteAccountAssignment waiter`,
                 },
-                functionLogMode
+                functionLogMode,
               );
               await waitUntilAccountAssignmentDeletion(
                 {
@@ -394,7 +394,7 @@ export const handler = async (event: SQSEvent) => {
                     ssoAssignmentOp.AccountAssignmentDeletionStatus?.RequestId,
                 },
                 requestId,
-                functionLogMode + ""
+                functionLogMode + "",
               );
               logger(
                 {
@@ -406,7 +406,7 @@ export const handler = async (event: SQSEvent) => {
                   status: requestStatus.InProgress,
                   statusMessage: `deleteAccountAssignment waiter returned`,
                 },
-                functionLogMode
+                functionLogMode,
               );
               await ddbClientObject.send(
                 new DeleteCommand({
@@ -414,7 +414,7 @@ export const handler = async (event: SQSEvent) => {
                   Key: {
                     parentLink: provisionedLinksKey,
                   },
-                })
+                }),
               );
               logger(
                 {
@@ -426,7 +426,7 @@ export const handler = async (event: SQSEvent) => {
                   status: requestStatus.Completed,
                   statusMessage: `deleteAccountAssignment operation completed`,
                 },
-                functionLogMode
+                functionLogMode,
               );
             } else {
               logger({
@@ -451,7 +451,7 @@ export const handler = async (event: SQSEvent) => {
               status: requestStatus.Completed,
               statusMessage: `Provisioned link does not exist, not triggering a delete`,
             },
-            functionLogMode
+            functionLogMode,
           );
         }
       } catch (err) {
@@ -469,9 +469,9 @@ export const handler = async (event: SQSEvent) => {
                 handlerName,
                 err.name,
                 err.message,
-                linksKeyValue
+                linksKeyValue,
               ),
-            })
+            }),
           );
           logger({
             handler: handlerName,
@@ -482,7 +482,7 @@ export const handler = async (event: SQSEvent) => {
               requestId,
               err.name,
               err.message,
-              linksKeyValue
+              linksKeyValue,
             ),
           });
         } else {
@@ -495,9 +495,9 @@ export const handler = async (event: SQSEvent) => {
                 handlerName,
                 "Unhandled exception",
                 JSON.stringify(err),
-                linksKeyValue
+                linksKeyValue,
               ),
-            })
+            }),
           );
           logger({
             handler: handlerName,
@@ -508,11 +508,11 @@ export const handler = async (event: SQSEvent) => {
               requestId,
               "Unhandled exception",
               JSON.stringify(err),
-              linksKeyValue
+              linksKeyValue,
             ),
           });
         }
       }
-    })
+    }),
   );
 };

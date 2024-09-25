@@ -41,8 +41,8 @@ export class ImportArtefacts extends Construct {
       name(buildConfig, "importedNodeJsLayerVersion"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "nodeJsLayerVersionArn")
-      ).toString()
+        name(buildConfig, "nodeJsLayerVersionArn"),
+      ).toString(),
     );
 
     this.importedddbTablesKey = Key.fromKeyArn(
@@ -50,8 +50,8 @@ export class ImportArtefacts extends Construct {
       name(buildConfig, "importedDdbTablesKey"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "ddbTablesKeyArn")
-      )
+        name(buildConfig, "ddbTablesKeyArn"),
+      ),
     );
 
     this.currentConfigSMInvokeRoleArn = new SSMParamReader(
@@ -62,7 +62,7 @@ export class ImportArtefacts extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "ssoList-ssoapi-roleArn",
-      }
+      },
     ).paramValue;
 
     this.currentConfigSMDescribeRoleArn = new SSMParamReader(
@@ -73,7 +73,7 @@ export class ImportArtefacts extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "smDescribe-ssoapi-roleArn",
-      }
+      },
     ).paramValue;
 
     this.importedPermissionSetHandlerSSOAPIRoleArn = new SSMParamReader(
@@ -84,7 +84,7 @@ export class ImportArtefacts extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "permissionSetHandler-ssoapi-roleArn",
-      }
+      },
     ).paramValue;
 
     this.importCmpAndPbFunctionArn = new SSMParamReader(
@@ -95,7 +95,7 @@ export class ImportArtefacts extends Construct {
         ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
         ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
         ParamNameKey: "importCmpAndPbArn",
-      }
+      },
     ).paramValue;
 
     this.accountAssignmentImportTopic = Topic.fromTopicArn(
@@ -109,8 +109,8 @@ export class ImportArtefacts extends Construct {
           ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
           ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
           ParamNameKey: "accountAssignmentImportTopicArn",
-        }
-      ).paramValue
+        },
+      ).paramValue,
     );
 
     this.permissionSetImportTopic = Topic.fromTopicArn(
@@ -124,8 +124,8 @@ export class ImportArtefacts extends Construct {
           ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
           ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
           ParamNameKey: "permissionSetImportTopicArn",
-        }
-      ).paramValue
+        },
+      ).paramValue,
     );
 
     this.importedSsoArtefactsBucket = Bucket.fromBucketName(
@@ -133,8 +133,8 @@ export class ImportArtefacts extends Construct {
       name(buildConfig, "importedSsoArtefactsBucket"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "ssoArtefactsBucketName")
-      )
+        name(buildConfig, "ssoArtefactsBucketName"),
+      ),
     );
 
     this.importedPsTable = Table.fromTableAttributes(
@@ -143,17 +143,17 @@ export class ImportArtefacts extends Construct {
       {
         tableArn: StringParameter.valueForStringParameter(
           this,
-          name(buildConfig, "permissionSetTableArn")
+          name(buildConfig, "permissionSetTableArn"),
         ),
-      }
+      },
     );
     this.importedPsArnTable = Table.fromTableArn(
       this,
       name(buildConfig, "importedPsArnTable"),
       StringParameter.valueForStringParameter(
         this,
-        name(buildConfig, "permissionSetArnTableArn")
-      )
+        name(buildConfig, "permissionSetArnTableArn"),
+      ),
     );
     this.importedLinksTable = Table.fromTableAttributes(
       this,
@@ -161,7 +161,7 @@ export class ImportArtefacts extends Construct {
       {
         tableArn: StringParameter.valueForStringParameter(
           this,
-          name(buildConfig, "linksTableArn")
+          name(buildConfig, "linksTableArn"),
         ),
         globalIndexes: [
           "awsEntityData",
@@ -169,7 +169,7 @@ export class ImportArtefacts extends Construct {
           "permissionSetName",
           "principalType",
         ],
-      }
+      },
     );
     this.importedProvisionedLinksTable = Table.fromTableAttributes(
       this,
@@ -177,10 +177,10 @@ export class ImportArtefacts extends Construct {
       {
         tableArn: StringParameter.valueForStringParameter(
           this,
-          name(buildConfig, "provisionedLinksTableArn")
+          name(buildConfig, "provisionedLinksTableArn"),
         ),
         globalIndexes: ["tagKeyLookUp"],
-      }
+      },
     );
   }
 }

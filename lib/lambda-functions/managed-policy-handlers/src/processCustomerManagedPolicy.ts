@@ -42,7 +42,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
       status: requestStatus.InProgress,
       statusMessage: `AWS IAM Identity Center customer managed policy processing started for operation ${event.operation} and customerManagedPolicyName ${event.customerManagedPolicy.Name} and permissionSetArn ${event.permissionSetArn}`,
     },
-    functionLogMode
+    functionLogMode,
   );
   try {
     customerManagedPolicyName = event.customerManagedPolicy.Name;
@@ -52,7 +52,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
           CustomerManagedPolicyReference: event.customerManagedPolicy,
           InstanceArn: event.instanceArn,
           PermissionSetArn: event.permissionSetArn,
-        })
+        }),
       );
       logger(
         {
@@ -61,7 +61,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
           status: requestStatus.InProgress,
           statusMessage: `Successfully attached AWS IAM Identity Center customer managed policy ${event.customerManagedPolicy.Name} to permissionSetArn ${event.permissionSetArn}`,
         },
-        functionLogMode
+        functionLogMode,
       );
       return {
         status: "true",
@@ -72,7 +72,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
           CustomerManagedPolicyReference: event.customerManagedPolicy,
           InstanceArn: event.instanceArn,
           PermissionSetArn: event.permissionSetArn,
-        })
+        }),
       );
       logger(
         {
@@ -81,7 +81,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
           status: requestStatus.InProgress,
           statusMessage: `Successfully detached AWS IAM Identity Center customer managed policy ${event.customerManagedPolicy.Name} to permissionSetArn ${event.permissionSetArn}`,
         },
-        functionLogMode
+        functionLogMode,
       );
       return {
         status: "true",
@@ -92,7 +92,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
           new ListCustomerManagedPolicyReferencesInPermissionSetCommand({
             InstanceArn: event.instanceArn,
             PermissionSetArn: event.permissionSetArn,
-          })
+          }),
         );
       switch (event.parentOperation) {
         case "attach":
@@ -103,7 +103,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
               currentCustomerManagedPoliciesList.CustomerManagedPolicyReferences.filter(
                 (customerManagedPolicy) =>
                   customerManagedPolicy.Name?.toLowerCase() ===
-                  event.customerManagedPolicy.Name.toLowerCase()
+                  event.customerManagedPolicy.Name.toLowerCase(),
               );
             if (matchedCustomerManagedPolicies.length >= 1) {
               logger(
@@ -113,7 +113,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
                   status: requestStatus.InProgress,
                   statusMessage: `Successfully validated that AWS IAM Identity Center customer managed policy ${event.customerManagedPolicy.Name} is attached to permissionSetArn ${event.permissionSetArn}`,
                 },
-                functionLogMode
+                functionLogMode,
               );
               return {
                 status: "true",
@@ -126,7 +126,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
                   status: requestStatus.InProgress,
                   statusMessage: `Can not validate that AWS IAM Identity Center customer managed policy ${event.customerManagedPolicy.Name} is attached to permissionSetArn ${event.permissionSetArn}`,
                 },
-                functionLogMode
+                functionLogMode,
               );
               return {
                 status: "false",
@@ -147,7 +147,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
               currentCustomerManagedPoliciesList.CustomerManagedPolicyReferences.filter(
                 (customerManagedPolicy) =>
                   customerManagedPolicy.Name?.toLowerCase() ===
-                  event.customerManagedPolicy.Name.toLowerCase()
+                  event.customerManagedPolicy.Name.toLowerCase(),
               );
             if (matchedCustomerManagedPolicies.length === 0) {
               logger(
@@ -157,7 +157,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
                   status: requestStatus.InProgress,
                   statusMessage: `Successfully validated that AWS IAM Identity Center customer managed policy ${event.customerManagedPolicy.Name} is detached from permissionSetArn ${event.permissionSetArn}`,
                 },
-                functionLogMode
+                functionLogMode,
               );
               return {
                 status: "true",
@@ -170,7 +170,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
                   status: requestStatus.InProgress,
                   statusMessage: `Can not validate that AWS IAM Identity Center customer managed policy ${event.customerManagedPolicy.Name} is detached from permissionSetArn ${event.permissionSetArn}`,
                 },
-                functionLogMode
+                functionLogMode,
               );
               return {
                 status: "false",
@@ -185,7 +185,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
                 status: requestStatus.InProgress,
                 statusMessage: `Successfully validated that AWS IAM Identity Center customer managed policy ${event.customerManagedPolicy.Name} is detached from permissionSetArn ${event.permissionSetArn}`,
               },
-              functionLogMode
+              functionLogMode,
             );
             return {
               status: "true",
@@ -205,7 +205,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
           status: requestStatus.InProgress,
           statusMessage: `For customer managed policy ${event.customerManagedPolicy.Name} , invalid operation type specified - ${event.operation}`,
         },
-        functionLogMode
+        functionLogMode,
       );
       return {
         status: "false",
@@ -223,7 +223,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
           "",
           error.name,
           error.message,
-          customerManagedPolicyName
+          customerManagedPolicyName,
         ),
       });
       return {
@@ -239,7 +239,7 @@ export const handler = async (event: CustomerManagedPolicyObjectOp) => {
           "",
           "Unhandled exception",
           JSON.stringify(error),
-          customerManagedPolicyName
+          customerManagedPolicyName,
         ),
       });
       return {

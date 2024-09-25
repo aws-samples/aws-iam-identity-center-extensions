@@ -66,17 +66,17 @@ const snsClientObject = new SNSClient({ region: AWS_REGION, maxAttempts: 2 });
 const ajv = new Ajv({ allErrors: true });
 const schemaDefinition = JSON.parse(
   readFileSync(
-    join("/opt", "nodejs", "payload-schema-definitions", "Link-API.json")
+    join("/opt", "nodejs", "payload-schema-definitions", "Link-API.json"),
   )
     .valueOf()
-    .toString()
+    .toString(),
 );
 const validate = ajv.compile(schemaDefinition);
 
 const handlerName = AWS_LAMBDA_FUNCTION_NAME + "";
 let linkDataValue = "";
 export const handler = async (
-  event: APIGatewayProxyEventV2
+  event: APIGatewayProxyEventV2,
 ): Promise<APIGatewayProxyResultV2> => {
   const requestId = uuidv4().toString();
   logger(
@@ -87,7 +87,7 @@ export const handler = async (
       status: requestStatus.InProgress,
       statusMessage: `Account assignment create/delete operation started`,
     },
-    functionLogMode
+    functionLogMode,
   );
 
   if (event.body !== null && event.body !== undefined) {
@@ -101,7 +101,7 @@ export const handler = async (
           status: requestStatus.InProgress,
           statusMessage: `Account assignment payload successfully parsed`,
         },
-        functionLogMode
+        functionLogMode,
       );
       const delimeter = "%";
       const { linkData } = payload;
@@ -116,7 +116,7 @@ export const handler = async (
             statusMessage: `Account assignment operation is set as create`,
             relatedData: linkDataValue,
           },
-          functionLogMode
+          functionLogMode,
         );
 
         const keyValue = linkData.split(delimeter);
@@ -141,7 +141,7 @@ export const handler = async (
             hasRelatedRequests:
               linkParams.awsEntityType === "account" ? false : true,
           },
-          functionLogMode
+          functionLogMode,
         );
 
         await s3clientObject.send(
@@ -149,7 +149,7 @@ export const handler = async (
             Bucket: artefactsBucketName,
             Key: `links_data/${linkData}`,
             ServerSideEncryption: "AES256",
-          })
+          }),
         );
         logger(
           {
@@ -162,7 +162,7 @@ export const handler = async (
             hasRelatedRequests:
               linkParams.awsEntityType === "account" ? false : true,
           },
-          functionLogMode
+          functionLogMode,
         );
 
         await ddbDocClientObject.send(
@@ -171,7 +171,7 @@ export const handler = async (
             Item: {
               ...linkParams,
             },
-          })
+          }),
         );
         logger(
           {
@@ -184,7 +184,7 @@ export const handler = async (
             hasRelatedRequests:
               linkParams.awsEntityType === "account" ? false : true,
           },
-          functionLogMode
+          functionLogMode,
         );
         await snsClientObject.send(
           new PublishCommand({
@@ -194,7 +194,7 @@ export const handler = async (
               action: "create",
               requestId: requestId,
             }),
-          })
+          }),
         );
         logger(
           {
@@ -207,7 +207,7 @@ export const handler = async (
             hasRelatedRequests:
               linkParams.awsEntityType === "account" ? false : true,
           },
-          functionLogMode
+          functionLogMode,
         );
         return {
           statusCode: 200,
@@ -228,13 +228,13 @@ export const handler = async (
             hasRelatedRequests:
               linkData.split(delimeter)[0] === "account" ? false : true,
           },
-          functionLogMode
+          functionLogMode,
         );
         await s3clientObject.send(
           new DeleteObjectCommand({
             Bucket: artefactsBucketName,
             Key: `links_data/${linkData}`,
-          })
+          }),
         );
         logger(
           {
@@ -247,7 +247,7 @@ export const handler = async (
             hasRelatedRequests:
               linkData.split(delimeter)[0] === "account" ? false : true,
           },
-          functionLogMode
+          functionLogMode,
         );
         await ddbDocClientObject.send(
           new DeleteCommand({
@@ -255,7 +255,7 @@ export const handler = async (
             Key: {
               awsEntityId: linkData,
             },
-          })
+          }),
         );
         logger(
           {
@@ -268,7 +268,7 @@ export const handler = async (
             hasRelatedRequests:
               linkData.split(delimeter)[0] === "account" ? false : true,
           },
-          functionLogMode
+          functionLogMode,
         );
         await snsClientObject.send(
           new PublishCommand({
@@ -278,7 +278,7 @@ export const handler = async (
               action: "delete",
               requestId: requestId,
             }),
-          })
+          }),
         );
         logger(
           {
@@ -291,7 +291,7 @@ export const handler = async (
             hasRelatedRequests:
               linkData.split(delimeter)[0] === "account" ? false : true,
           },
-          functionLogMode
+          functionLogMode,
         );
         return {
           statusCode: 200,
@@ -312,7 +312,7 @@ export const handler = async (
             hasRelatedRequests:
               linkData.split(delimeter)[0] === "account" ? false : true,
           },
-          functionLogMode
+          functionLogMode,
         );
         return {
           statusCode: 400,
@@ -332,7 +332,7 @@ export const handler = async (
             requestId,
             "Schema validation exception",
             `Provided account does not pass the schema validation`,
-            JSON.stringify(err.errors)
+            JSON.stringify(err.errors),
           ),
         });
         return {
@@ -342,7 +342,7 @@ export const handler = async (
               requestId,
               "Schema validation exception",
               `Provided account does not pass the schema validation`,
-              JSON.stringify(err.errors)
+              JSON.stringify(err.errors),
             ),
             requestId: requestId,
           }),
@@ -361,7 +361,7 @@ export const handler = async (
             requestId,
             err.name,
             err.message,
-            linkDataValue
+            linkDataValue,
           ),
         });
         return {
@@ -371,7 +371,7 @@ export const handler = async (
               requestId,
               err.name,
               err.message,
-              linkDataValue
+              linkDataValue,
             ),
             requestId: requestId,
           }),
@@ -386,7 +386,7 @@ export const handler = async (
             requestId,
             "Unhandled exception",
             JSON.stringify(err),
-            linkDataValue
+            linkDataValue,
           ),
         });
         return {
@@ -396,7 +396,7 @@ export const handler = async (
               requestId,
               "Unhandled exception",
               JSON.stringify(err),
-              linkDataValue
+              linkDataValue,
             ),
             requestId: requestId,
           }),
@@ -413,7 +413,7 @@ export const handler = async (
         requestId,
         "Invalid message body exception",
         "Message body provided is invalid",
-        linkDataValue
+        linkDataValue,
       ),
     });
     return {
@@ -423,7 +423,7 @@ export const handler = async (
           requestId,
           "Invalid message body exception",
           "Message body provided is invalid",
-          linkDataValue
+          linkDataValue,
         ),
         requestId: requestId,
       }),

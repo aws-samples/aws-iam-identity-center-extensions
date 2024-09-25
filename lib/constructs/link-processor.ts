@@ -43,7 +43,7 @@ export class LinkProcessor extends Construct {
     scope: Construct,
     id: string,
     buildConfig: BuildConfig,
-    linkprocessProps: LinkProcessProps
+    linkprocessProps: LinkProcessProps,
   ) {
     super(scope, id);
 
@@ -60,7 +60,7 @@ export class LinkProcessor extends Construct {
           "lambda-functions",
           "application-handlers",
           "src",
-          "linkManager.ts"
+          "linkManager.ts",
         ),
         bundling: {
           externalModules: [
@@ -88,7 +88,7 @@ export class LinkProcessor extends Construct {
           functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
         timeout: Duration.minutes(5), //aggressive timeout to accommodate SSO Admin API's workflow based logic,
-      }
+      },
     );
 
     this.linkManagerHandler.addEventSource(
@@ -100,7 +100,7 @@ export class LinkProcessor extends Construct {
          */
         batchSize: 1,
         reportBatchItemFailures: true,
-      })
+      }),
     );
 
     this.processTargetAccountSMListenerHandler = new NodejsFunction(
@@ -110,7 +110,7 @@ export class LinkProcessor extends Construct {
         runtime: Runtime.NODEJS_20_X,
         functionName: name(
           buildConfig,
-          "processTargetAccountSMListenerHandler"
+          "processTargetAccountSMListenerHandler",
         ),
         entry: join(
           __dirname,
@@ -118,7 +118,7 @@ export class LinkProcessor extends Construct {
           "lambda-functions",
           "application-handlers",
           "src",
-          "processTargetAccountSMListener.ts"
+          "processTargetAccountSMListener.ts",
         ),
         bundling: {
           externalModules: ["@aws-sdk/client-sns", "@aws-sdk/client-sqs"],
@@ -131,11 +131,11 @@ export class LinkProcessor extends Construct {
             linkprocessProps.errorNotificationsTopic.topicArn,
           functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
-      }
+      },
     );
 
     this.processTargetAccountSMListenerHandler.addEventSource(
-      new SnsEventSource(linkprocessProps.processTargetAccountSMTopic)
+      new SnsEventSource(linkprocessProps.processTargetAccountSMTopic),
     );
 
     this.linkTopicProcessor = new NodejsFunction(
@@ -150,7 +150,7 @@ export class LinkProcessor extends Construct {
           "lambda-functions",
           "application-handlers",
           "src",
-          "linkTopicProcessor.ts"
+          "linkTopicProcessor.ts",
         ),
         bundling: {
           externalModules: [
@@ -183,11 +183,11 @@ export class LinkProcessor extends Construct {
           supportNestedOU: String(buildConfig.Parameters.SupportNestedOU),
           functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
-      }
+      },
     );
 
     this.linkTopicProcessor.addEventSource(
-      new SnsEventSource(linkprocessProps.linkProcessorTopic)
+      new SnsEventSource(linkprocessProps.linkProcessorTopic),
     );
   }
 }

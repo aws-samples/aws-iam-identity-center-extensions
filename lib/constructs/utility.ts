@@ -27,8 +27,8 @@ export class Utility extends Construct {
           ParamAccountId: buildConfig.PipelineSettings.OrgMainAccountId,
           ParamRegion: "us-east-1",
           ParamNameKey: "orgEventsNotificationsTopicArn",
-        }
-      ).paramValue
+        },
+      ).paramValue,
     );
 
     this.ssoGroupEventsNotificationsTopic = Topic.fromTopicArn(
@@ -42,8 +42,8 @@ export class Utility extends Construct {
           ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
           ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
           ParamNameKey: "ssoGroupEventsNotificationTopicArn",
-        }
-      ).paramValue
+        },
+      ).paramValue,
     );
 
     this.ssoUserEventsNotificationsTopic = Topic.fromTopicArn(
@@ -57,8 +57,8 @@ export class Utility extends Construct {
           ParamAccountId: buildConfig.PipelineSettings.SSOServiceAccountId,
           ParamRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
           ParamNameKey: "ssoUserEventsNotificationTopicArn",
-        }
-      ).paramValue
+        },
+      ).paramValue,
     );
 
     this.processTargetAccountSMTopic = Topic.fromTopicArn(
@@ -72,8 +72,8 @@ export class Utility extends Construct {
           ParamAccountId: buildConfig.PipelineSettings.OrgMainAccountId,
           ParamRegion: "us-east-1",
           ParamNameKey: "processTargetAccountSMTopicArn",
-        }
-      ).paramValue
+        },
+      ).paramValue,
     );
 
     new StringParameter(
@@ -82,10 +82,10 @@ export class Utility extends Construct {
       {
         parameterName: name(
           buildConfig,
-          "importedProcessTargetAccountSMTopicArn"
+          "importedProcessTargetAccountSMTopicArn",
         ),
         stringValue: this.processTargetAccountSMTopic.topicArn,
-      }
+      },
     );
 
     new StringParameter(
@@ -94,7 +94,7 @@ export class Utility extends Construct {
       {
         parameterName: name(buildConfig, "ssoGroupEventNotificationsTopicArn"),
         stringValue: this.ssoGroupEventsNotificationsTopic.topicArn,
-      }
+      },
     );
 
     new StringParameter(
@@ -103,7 +103,7 @@ export class Utility extends Construct {
       {
         parameterName: name(buildConfig, "ssoUserEventsNotificationsTopicArn"),
         stringValue: this.ssoUserEventsNotificationsTopic.topicArn,
-      }
+      },
     );
 
     new StringParameter(
@@ -112,10 +112,10 @@ export class Utility extends Construct {
       {
         parameterName: name(
           buildConfig,
-          "importedOrgEventsNotificationsTopicArn"
+          "importedOrgEventsNotificationsTopicArn",
         ),
         stringValue: this.orgEventsNotificationsTopic.topicArn,
-      }
+      },
     );
   }
 }

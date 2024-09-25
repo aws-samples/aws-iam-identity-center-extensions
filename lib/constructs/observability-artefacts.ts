@@ -58,7 +58,7 @@ export class ObservabilityArtefacts extends Construct {
         queryString:
           "filter requestId like '' | fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc",
         logGroupNames: accountAssignmentAPILogGroupNames,
-      }
+      },
     );
 
     //Get Related RequestDetails for accountAssignmentAPI flows
@@ -68,12 +68,12 @@ export class ObservabilityArtefacts extends Construct {
       {
         name: name(
           buildConfig,
-          "accountAssignmentAPIFlows-getRelateedRequestDetails"
+          "accountAssignmentAPIFlows-getRelateedRequestDetails",
         ),
         queryString:
           "filter sourceRequestId like '' | fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc",
         logGroupNames: accountAssignmentAPILogGroupNames,
-      }
+      },
     );
 
     //Get RequestDetails for permissionSetAPI flows
@@ -85,7 +85,7 @@ export class ObservabilityArtefacts extends Construct {
         queryString:
           "filter requestId like '' | fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc",
         logGroupNames: permissionSetAPILogGroupNames,
-      }
+      },
     );
 
     //Get Related RequestDetails for permissionSetAPI flows
@@ -95,12 +95,12 @@ export class ObservabilityArtefacts extends Construct {
       {
         name: name(
           buildConfig,
-          "permissionSetAPIFlows-getRelateedRequestDetails"
+          "permissionSetAPIFlows-getRelateedRequestDetails",
         ),
         queryString:
           "filter sourceRequestId like '' | fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc",
         logGroupNames: permissionSetAPILogGroupNames,
-      }
+      },
     );
 
     //Get RequestDetails for SSO group trigger flows
@@ -112,7 +112,7 @@ export class ObservabilityArtefacts extends Construct {
         queryString:
           "fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp desc | limit 100 | filter ispresent(requestId)",
         logGroupNames: ssoGroupLogGroupNames,
-      }
+      },
     );
 
     //Get Related RequestDetails for SSO group trigger flows
@@ -122,12 +122,12 @@ export class ObservabilityArtefacts extends Construct {
       {
         name: name(
           buildConfig,
-          "ssoGroupTriggerFlows-getRelateedRequestDetails"
+          "ssoGroupTriggerFlows-getRelateedRequestDetails",
         ),
         queryString:
           "filter sourceRequestId like '' | fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc",
         logGroupNames: ssoGroupLogGroupNames,
-      }
+      },
     );
 
     //Get RequestDetails for SSO user trigger flows
@@ -139,7 +139,7 @@ export class ObservabilityArtefacts extends Construct {
         queryString:
           "fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp desc | limit 100 | filter ispresent(requestId)",
         logGroupNames: ssoUserLogGroupNames,
-      }
+      },
     );
 
     //Get Related RequestDetails for SSO user trigger flows
@@ -149,12 +149,12 @@ export class ObservabilityArtefacts extends Construct {
       {
         name: name(
           buildConfig,
-          "ssoUserTriggerFlows-getRelateedRequestDetails"
+          "ssoUserTriggerFlows-getRelateedRequestDetails",
         ),
         queryString:
           "filter sourceRequestId like '' | fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc",
         logGroupNames: ssoUserLogGroupNames,
-      }
+      },
     );
 
     //Get RequestDetails for permission set sync trigger flow
@@ -164,12 +164,12 @@ export class ObservabilityArtefacts extends Construct {
       {
         name: name(
           buildConfig,
-          "permissionSetSyncTriggerFlows-getRequestDetails"
+          "permissionSetSyncTriggerFlows-getRequestDetails",
         ),
         queryString:
           "fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp desc | limit 100  | filter ispresent(requestId)",
         logGroupNames: permissionSetSyncLogGroupNames,
-      }
+      },
     );
 
     //Get Related RequestDetails for permission set sync trigger flows
@@ -177,17 +177,17 @@ export class ObservabilityArtefacts extends Construct {
       this,
       name(
         buildConfig,
-        "permissionSetSyncTriggerFlows-getRelateedRequestDetails"
+        "permissionSetSyncTriggerFlows-getRelateedRequestDetails",
       ),
       {
         name: name(
           buildConfig,
-          "permissionSetSyncTriggerFlows-getRelateedRequestDetails"
+          "permissionSetSyncTriggerFlows-getRelateedRequestDetails",
         ),
         queryString:
           "filter sourceRequestId like '' | fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc",
         logGroupNames: permissionSetSyncLogGroupNames,
-      }
+      },
     );
 
     //Get RequestDetails for org events trigger flow
@@ -199,7 +199,7 @@ export class ObservabilityArtefacts extends Construct {
         queryString:
           "fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp desc | limit 100 | filter ispresent(requestId)",
         logGroupNames: orgEventsLogGroupNames,
-      }
+      },
     );
 
     //Get Related RequestDetails for org events trigger flows
@@ -209,12 +209,12 @@ export class ObservabilityArtefacts extends Construct {
       {
         name: name(
           buildConfig,
-          "orgEventsTriggerFlows-getRelateedRequestDetails"
+          "orgEventsTriggerFlows-getRelateedRequestDetails",
         ),
         queryString:
           "filter sourceRequestId like '' | fields requestId, handler, relatedData, status, statusMessage, relatedData, hasRelatedRequests, sourceRequestId | sort @timestamp asc",
         logGroupNames: orgEventsLogGroupNames,
-      }
+      },
     );
   }
 }

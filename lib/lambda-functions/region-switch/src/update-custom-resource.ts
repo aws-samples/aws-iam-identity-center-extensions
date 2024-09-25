@@ -38,7 +38,7 @@ export const handler = async (event: any) => {
     const stateMachineExecutionResult = await sfnClientObject.send(
       new DescribeExecutionCommand({
         executionArn: stateMachineExecutionArn,
-      })
+      }),
     );
     /**
      * Handle the update back to the custom resource framework based on the
@@ -122,13 +122,13 @@ export const handler = async (event: any) => {
         relatedData: `${stateMachineExecutionArn}`,
         status: requestStatus.FailedWithException,
         statusMessage: `Custom resource update - stateMachine with execution arn: ${stateMachineExecutionArn} failed with exception: ${JSON.stringify(
-          e
+          e,
         )}`,
       });
       throw new Error(
         `Custom resource update - stateMachine with execution arn: ${stateMachineExecutionArn} failed with exception: ${JSON.stringify(
-          e
-        )}`
+          e,
+        )}`,
       );
     }
   }

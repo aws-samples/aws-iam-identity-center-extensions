@@ -22,7 +22,7 @@ export class SolutionArtefacts extends Stack {
     scope: Construct,
     id: string,
     props: StackProps | undefined,
-    buildConfig: BuildConfig
+    buildConfig: BuildConfig,
   ) {
     super(scope, id, props);
 
@@ -31,7 +31,7 @@ export class SolutionArtefacts extends Stack {
     const deployFetchCrossStackValues = new FetchCrossStackValues(
       this,
       name(buildConfig, "fetchCrossStackValues"),
-      buildConfig
+      buildConfig,
     );
 
     const deployLinkProcessor = new LinkProcessor(
@@ -60,7 +60,7 @@ export class SolutionArtefacts extends Stack {
         linkManagerQueue: deployFetchCrossStackValues.linkManagerQueue,
         waiterHandlerSSOAPIRoleArn:
           deployFetchCrossStackValues.waiterHandlerSSOAPIRoleArn,
-      }
+      },
     );
 
     const deploySSOGroupProcessor = new SSOGroupProcessor(
@@ -86,7 +86,7 @@ export class SolutionArtefacts extends Stack {
         orgListSMRoleArn: deployFetchCrossStackValues.orgListSMRoleArn,
         processTargetAccountSMTopic:
           deployFetchCrossStackValues.processTargetAccountSMTopic,
-      }
+      },
     );
 
     const deployPermissionSetProcessor = new PermissionSetProcessor(
@@ -123,7 +123,7 @@ export class SolutionArtefacts extends Stack {
           deployFetchCrossStackValues.managedPolicyProcessOpArn,
         iteratorArn: deployFetchCrossStackValues.iteratorArn,
         ssoMPRoleArn: deployFetchCrossStackValues.ssoMpRoleArn,
-      }
+      },
     );
 
     const deployOrgEvents = new OrgEvents(
@@ -148,7 +148,7 @@ export class SolutionArtefacts extends Stack {
           deployFetchCrossStackValues.provisionedLinksTable.tableName,
         orgListParentsRoleArn:
           deployFetchCrossStackValues.orgListParentsRoleArn,
-      }
+      },
     );
 
     new AccessManager(this, name(buildConfig, "accessManager"), {
@@ -162,7 +162,7 @@ export class SolutionArtefacts extends Stack {
     new ObservabilityArtefacts(
       this,
       name(buildConfig, "observabilityArtefacts"),
-      buildConfig
+      buildConfig,
     );
   }
 }

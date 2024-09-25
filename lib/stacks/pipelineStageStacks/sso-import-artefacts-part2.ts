@@ -24,14 +24,14 @@ export class SSOImportArtefactsPart2 extends Stack {
     scope: Construct,
     id: string,
     props: StackProps | undefined,
-    buildConfig: BuildConfig
+    buildConfig: BuildConfig,
   ) {
     super(scope, id, props);
 
     const deployImportArtefacts = new ImportArtefacts(
       this,
       name(buildConfig, "deployImportArtefacts"),
-      buildConfig
+      buildConfig,
     );
 
     const importAccountAssignmentHandler = new NodejsFunction(
@@ -49,7 +49,7 @@ export class SSOImportArtefactsPart2 extends Stack {
           "lambda-functions",
           "current-config-handlers",
           "src",
-          "import-account-assignments.ts"
+          "import-account-assignments.ts",
         ),
         bundling: {
           externalModules: [
@@ -68,26 +68,26 @@ export class SSOImportArtefactsPart2 extends Stack {
             deployImportArtefacts.importedSsoArtefactsBucket.bucketName,
           functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
-      }
+      },
     );
 
     deployImportArtefacts.importedddbTablesKey.grantEncryptDecrypt(
-      importAccountAssignmentHandler
+      importAccountAssignmentHandler,
     );
 
     deployImportArtefacts.importedLinksTable.grantReadWriteData(
-      importAccountAssignmentHandler
+      importAccountAssignmentHandler,
     );
     deployImportArtefacts.importedProvisionedLinksTable.grantReadWriteData(
-      importAccountAssignmentHandler
+      importAccountAssignmentHandler,
     );
 
     deployImportArtefacts.importedSsoArtefactsBucket.grantReadWrite(
-      importAccountAssignmentHandler
+      importAccountAssignmentHandler,
     );
 
     importAccountAssignmentHandler.addEventSource(
-      new SnsEventSource(deployImportArtefacts.accountAssignmentImportTopic)
+      new SnsEventSource(deployImportArtefacts.accountAssignmentImportTopic),
     );
 
     const importPermissionSetHandler = new NodejsFunction(
@@ -105,7 +105,7 @@ export class SSOImportArtefactsPart2 extends Stack {
           "lambda-functions",
           "current-config-handlers",
           "src",
-          "import-permission-sets.ts"
+          "import-permission-sets.ts",
         ),
         bundling: {
           externalModules: [
@@ -131,26 +131,26 @@ export class SSOImportArtefactsPart2 extends Stack {
             deployImportArtefacts.importedSsoArtefactsBucket.bucketName,
           functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
-      }
+      },
     );
 
     deployImportArtefacts.importedddbTablesKey.grantEncryptDecrypt(
-      importPermissionSetHandler
+      importPermissionSetHandler,
     );
 
     deployImportArtefacts.importedPsTable.grantReadWriteData(
-      importPermissionSetHandler
+      importPermissionSetHandler,
     );
     deployImportArtefacts.importedPsArnTable.grantReadWriteData(
-      importPermissionSetHandler
+      importPermissionSetHandler,
     );
 
     deployImportArtefacts.importedSsoArtefactsBucket.grantReadWrite(
-      importPermissionSetHandler
+      importPermissionSetHandler,
     );
 
     importPermissionSetHandler.addEventSource(
-      new SnsEventSource(deployImportArtefacts.permissionSetImportTopic)
+      new SnsEventSource(deployImportArtefacts.permissionSetImportTopic),
     );
 
     if (importPermissionSetHandler.role) {
@@ -160,7 +160,7 @@ export class SSOImportArtefactsPart2 extends Stack {
             deployImportArtefacts.importedPermissionSetHandlerSSOAPIRoleArn,
           ],
           actions: ["sts:AssumeRole"],
-        })
+        }),
       );
     }
 
@@ -179,7 +179,7 @@ export class SSOImportArtefactsPart2 extends Stack {
           "lambda-functions",
           "current-config-handlers",
           "src",
-          "update-custom-resource.ts"
+          "update-custom-resource.ts",
         ),
         bundling: {
           externalModules: [
@@ -195,7 +195,7 @@ export class SSOImportArtefactsPart2 extends Stack {
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
           functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
-      }
+      },
     );
 
     if (updateCustomResourceHandler.role) {
@@ -203,7 +203,7 @@ export class SSOImportArtefactsPart2 extends Stack {
         new PolicyStatement({
           resources: [deployImportArtefacts.currentConfigSMDescribeRoleArn],
           actions: ["sts:AssumeRole"],
-        })
+        }),
       );
     }
 
@@ -227,7 +227,7 @@ export class SSOImportArtefactsPart2 extends Stack {
           "lambda-functions",
           "current-config-handlers",
           "src",
-          "trigger-parentSM.ts"
+          "trigger-parentSM.ts",
         ),
         bundling: {
           externalModules: [
@@ -240,7 +240,7 @@ export class SSOImportArtefactsPart2 extends Stack {
             functionLogMode: buildConfig.Parameters.FunctionLogMode,
           },
         },
-      }
+      },
     );
 
     if (parentSMInvokeFunction.role) {
@@ -255,7 +255,7 @@ export class SSOImportArtefactsPart2 extends Stack {
         isCompleteHandler: updateCustomResourceHandler,
         queryInterval: Duration.seconds(5),
         totalTimeout: Duration.minutes(120), // to handle scenarios where organisations have a lot of existing account assignments already
-      }
+      },
     );
 
     const parentSMResource = new CustomResource(
@@ -277,7 +277,7 @@ export class SSOImportArtefactsPart2 extends Stack {
           ssoRegion: buildConfig.PipelineSettings.SSOServiceAccountRegion,
           functionLogMode: buildConfig.Parameters.FunctionLogMode,
         },
-      }
+      },
     );
 
     parentSMResource.node.addDependency(importAccountAssignmentHandler);

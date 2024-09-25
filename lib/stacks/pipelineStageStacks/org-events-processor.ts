@@ -26,7 +26,7 @@ export class OrgEventsProcessor extends Stack {
     scope: Construct,
     id: string,
     props: StackProps | undefined,
-    buildConfig: BuildConfig
+    buildConfig: BuildConfig,
   ) {
     super(scope, id, props);
 
@@ -36,11 +36,11 @@ export class OrgEventsProcessor extends Stack {
       {
         enableKeyRotation: true,
         alias: name(buildConfig, "orgArtefactsKey"),
-      }
+      },
     );
 
     orgArtefactsKey.grantEncryptDecrypt(
-      new ServicePrincipal("events.amazonaws.com")
+      new ServicePrincipal("events.amazonaws.com"),
     );
 
     const orgEventsnotificationsTopic = new Topic(
@@ -49,7 +49,7 @@ export class OrgEventsProcessor extends Stack {
       {
         masterKey: orgArtefactsKey,
         displayName: name(buildConfig, "orgEventsnotificationsTopic"),
-      }
+      },
     );
 
     orgEventsnotificationsTopic.addToResourcePolicy(
@@ -59,7 +59,7 @@ export class OrgEventsProcessor extends Stack {
         ],
         actions: ["SNS:Subscribe", "SNS:Receive"],
         resources: [orgEventsnotificationsTopic.topicArn],
-      })
+      }),
     );
 
     new SSMParamWriter(
@@ -70,7 +70,7 @@ export class OrgEventsProcessor extends Stack {
         ParamNameKey: "orgEventsNotificationsTopicArn",
         ParamValue: orgEventsnotificationsTopic.topicArn,
         ReaderAccountId: buildConfig.PipelineSettings.TargetAccountId,
-      }
+      },
     );
 
     const processTargetAccountSMTopic = new Topic(
@@ -79,7 +79,7 @@ export class OrgEventsProcessor extends Stack {
       {
         masterKey: orgArtefactsKey,
         displayName: name(buildConfig, "processTargetAccountSMTopic"),
-      }
+      },
     );
 
     processTargetAccountSMTopic.addToResourcePolicy(
@@ -89,7 +89,7 @@ export class OrgEventsProcessor extends Stack {
         ],
         actions: ["SNS:Subscribe", "SNS:Receive"],
         resources: [processTargetAccountSMTopic.topicArn],
-      })
+      }),
     );
 
     new SSMParamWriter(
@@ -100,7 +100,7 @@ export class OrgEventsProcessor extends Stack {
         ParamNameKey: "processTargetAccountSMTopicArn",
         ParamValue: processTargetAccountSMTopic.topicArn,
         ReaderAccountId: buildConfig.PipelineSettings.TargetAccountId,
-      }
+      },
     );
 
     const createAccountTrigger = new Rule(
@@ -122,12 +122,12 @@ export class OrgEventsProcessor extends Stack {
           },
         },
         ruleName: name(buildConfig, "createAccountTrigger"),
-      }
+      },
     );
     createAccountTrigger.addTarget(
       new SnsTopic(orgEventsnotificationsTopic, {
         message: RuleTargetInput,
-      })
+      }),
     );
     const moveAccountTrigger = new Rule(
       this,
@@ -144,12 +144,12 @@ export class OrgEventsProcessor extends Stack {
           },
         },
         ruleName: name(buildConfig, "moveAccountTrigger"),
-      }
+      },
     );
     moveAccountTrigger.addTarget(
       new SnsTopic(orgEventsnotificationsTopic, {
         message: RuleTargetInput,
-      })
+      }),
     );
 
     const accountTagChangeTrigger = new Rule(
@@ -169,12 +169,12 @@ export class OrgEventsProcessor extends Stack {
           },
         },
         ruleName: name(buildConfig, "accountTagChangeTrigger"),
-      }
+      },
     );
     accountTagChangeTrigger.addTarget(
       new SnsTopic(orgEventsnotificationsTopic, {
         message: RuleTargetInput,
-      })
+      }),
     );
 
     const processTargetAccountSMRole = new Role(
@@ -183,28 +183,28 @@ export class OrgEventsProcessor extends Stack {
       {
         roleName: name(buildConfig, "processTargetAccountSMRole"),
         assumedBy: new ServicePrincipal("states.amazonaws.com"),
-      }
+      },
     );
 
     processTargetAccountSMRole.addToPrincipalPolicy(
       new PolicyStatement({
         actions: ["tag:GetResources", "tag:GetTagValues", "tag:GetTagKeys"],
         resources: ["*"],
-      })
+      }),
     );
 
     processTargetAccountSMRole.addToPrincipalPolicy(
       new PolicyStatement({
         actions: ["organizations:Describe*", "organizations:List*"],
         resources: ["*"],
-      })
+      }),
     );
 
     processTargetAccountSMRole.addToPrincipalPolicy(
       new PolicyStatement({
         actions: ["sns:Publish"],
         resources: [processTargetAccountSMTopic.topicArn],
-      })
+      }),
     );
 
     /**
@@ -217,14 +217,14 @@ export class OrgEventsProcessor extends Stack {
         resources: [
           `arn:aws:states:us-east-1:${buildConfig.PipelineSettings.OrgMainAccountId}:stateMachine:${buildConfig.Environment}-processTargetAccountSM`,
         ],
-      })
+      }),
     );
 
     processTargetAccountSMRole.addToPrincipalPolicy(
       new PolicyStatement({
         actions: ["states:DescribeExecution", "states:StopExecution"],
         resources: ["*"],
-      })
+      }),
     );
     processTargetAccountSMRole.addToPrincipalPolicy(
       new PolicyStatement({
@@ -232,7 +232,7 @@ export class OrgEventsProcessor extends Stack {
         resources: [
           `arn:aws:events:us-east-1:${buildConfig.PipelineSettings.OrgMainAccountId}:rule/StepFunctionsGetEventsForStepFunctionsExecutionRule`,
         ],
-      })
+      }),
     );
 
     orgArtefactsKey.grantEncryptDecrypt(processTargetAccountSMRole);
@@ -244,7 +244,7 @@ export class OrgEventsProcessor extends Stack {
         roleArn: processTargetAccountSMRole.roleArn,
         definitionString: JSON.stringify(processTargetAccountSMJSON),
         stateMachineName: name(buildConfig, "processTargetAccountSM"),
-      }
+      },
     );
 
     /**
@@ -264,7 +264,7 @@ export class OrgEventsProcessor extends Stack {
           resources: [processTargetAccountSM.ref],
           actions: ["states:StartExecution"],
         }),
-      }
+      },
     );
 
     new CrossAccountRole(
@@ -278,7 +278,7 @@ export class OrgEventsProcessor extends Stack {
           resources: ["*"],
           actions: ["organizations:ListParents"],
         }),
-      }
+      },
     );
   }
 }

@@ -87,7 +87,7 @@ export const handler = async (event: SNSEvent) => {
         status: requestStatus.InProgress,
         statusMessage: `Permission set import operation in progress`,
       },
-      functionLogMode
+      functionLogMode,
     );
     /** Construct permission set object from the SNS message payload */
     const permissionSetObject = {};
@@ -114,7 +114,7 @@ export const handler = async (event: SNSEvent) => {
     if (
       Object.prototype.hasOwnProperty.call(
         message.describePermissionSet.PermissionSet,
-        "RelayState"
+        "RelayState",
       )
     ) {
       Object.assign(permissionSetObject, {
@@ -130,7 +130,7 @@ export const handler = async (event: SNSEvent) => {
           status: requestStatus.InProgress,
           statusMessage: `Determined that the imported permission set has relayState set as ${message.describePermissionSet.PermissionSet.RelayState}`,
         },
-        functionLogMode
+        functionLogMode,
       );
     }
 
@@ -138,12 +138,12 @@ export const handler = async (event: SNSEvent) => {
     if (
       Object.prototype.hasOwnProperty.call(
         message.describePermissionSet.PermissionSet,
-        "SessionDuration"
+        "SessionDuration",
       )
     ) {
       Object.assign(permissionSetObject, {
         sessionDurationInMinutes: getMinutesFromISODurationString(
-          message.describePermissionSet.PermissionSet.SessionDuration
+          message.describePermissionSet.PermissionSet.SessionDuration,
         ),
       });
       logger(
@@ -155,10 +155,10 @@ export const handler = async (event: SNSEvent) => {
           relatedData: permissionSetNameValue,
           status: requestStatus.InProgress,
           statusMessage: `Determined that the imported permission set has sessionDuration set as ${getMinutesFromISODurationString(
-            message.describePermissionSet.PermissionSet.SessionDuration
+            message.describePermissionSet.PermissionSet.SessionDuration,
           )} minutes`,
         },
-        functionLogMode
+        functionLogMode,
       );
     }
     // Managed policies is an optional attribute
@@ -172,8 +172,8 @@ export const handler = async (event: SNSEvent) => {
         message.listManagedPoliciesInPermissionSet.AttachedManagedPolicies.map(
           async (managedPolicy: Record<string, string>) => {
             computedManagedPoliciesArnList.push(managedPolicy.Arn);
-          }
-        )
+          },
+        ),
       );
       Object.assign(permissionSetObject, {
         managedPoliciesArnList: [...computedManagedPoliciesArnList].sort(),
@@ -188,14 +188,14 @@ export const handler = async (event: SNSEvent) => {
           status: requestStatus.InProgress,
           statusMessage: `Determined that the imported permission set has managed policies set`,
         },
-        functionLogMode
+        functionLogMode,
       );
     }
     // Inline policy is an optional attribute
     if (message.getInlinePolicyForPermissionSet.InlinePolicy.length > 0) {
       Object.assign(permissionSetObject, {
         inlinePolicyDocument: JSON.parse(
-          message.getInlinePolicyForPermissionSet.InlinePolicy
+          message.getInlinePolicyForPermissionSet.InlinePolicy,
         ),
       });
       logger(
@@ -208,7 +208,7 @@ export const handler = async (event: SNSEvent) => {
           status: requestStatus.InProgress,
           statusMessage: `Determined that the imported permission set has inline policy set`,
         },
-        functionLogMode
+        functionLogMode,
       );
     }
 
@@ -216,7 +216,7 @@ export const handler = async (event: SNSEvent) => {
     if (
       message.fetchPermissionsBoundary.Payload.result.PermissionsBoundary &&
       Object.keys(
-        message.fetchPermissionsBoundary.Payload.result.PermissionsBoundary
+        message.fetchPermissionsBoundary.Payload.result.PermissionsBoundary,
       ).length !== 0
     ) {
       Object.assign(permissionSetObject, {
@@ -250,7 +250,7 @@ export const handler = async (event: SNSEvent) => {
           status: requestStatus.InProgress,
           statusMessage: `Determined that the operation type is current config import`,
         },
-        functionLogMode
+        functionLogMode,
       );
       const fetchPermissionSet: GetCommandOutput =
         await ddbDocClientObject.send(
@@ -259,7 +259,7 @@ export const handler = async (event: SNSEvent) => {
             Key: {
               permissionSetName: permissionSetName,
             },
-          })
+          }),
         );
       const fetchArn: GetCommandOutput = await ddbDocClientObject.send(
         new GetCommand({
@@ -267,7 +267,7 @@ export const handler = async (event: SNSEvent) => {
           Key: {
             permissionSetName,
           },
-        })
+        }),
       );
       if (fetchPermissionSet.Item && fetchArn.Item) {
         logger(
@@ -280,7 +280,7 @@ export const handler = async (event: SNSEvent) => {
             status: requestStatus.InProgress,
             statusMessage: `Validated that permission set already exists, now determining delta`,
           },
-          functionLogMode
+          functionLogMode,
         );
 
         const sortedFetchItemManagedPolicies =
@@ -290,7 +290,7 @@ export const handler = async (event: SNSEvent) => {
 
         const diffCalculated = diff(
           fetchPermissionSet.Item,
-          permissionSetObject
+          permissionSetObject,
         );
         if (diffCalculated === undefined) {
           logger(
@@ -303,7 +303,7 @@ export const handler = async (event: SNSEvent) => {
               status: requestStatus.Completed,
               statusMessage: `No delta found, completing import operation`,
             },
-            functionLogMode
+            functionLogMode,
           );
         } else {
           const resolvedInstances: ListInstancesCommandOutput =
@@ -315,7 +315,7 @@ export const handler = async (event: SNSEvent) => {
               Item: {
                 ...permissionSetObject,
               },
-            })
+            }),
           );
           await s3clientObject.send(
             new PutObjectCommand({
@@ -323,7 +323,7 @@ export const handler = async (event: SNSEvent) => {
               Key: `permission_sets/${permissionSetName}.json`,
               Body: JSON.stringify(permissionSetObject),
               ServerSideEncryption: "AES256",
-            })
+            }),
           );
           logger(
             {
@@ -335,13 +335,13 @@ export const handler = async (event: SNSEvent) => {
               status: requestStatus.InProgress,
               statusMessage: `Delta found, updated solution persistence with new permission set object value`,
             },
-            functionLogMode
+            functionLogMode,
           );
           const fetchAccountsList = await ssoAdminClientObject.send(
             new ListAccountsForProvisionedPermissionSetCommand({
               InstanceArn: instanceArn,
               PermissionSetArn: permissionSetArn,
-            })
+            }),
           );
           if (fetchAccountsList.AccountIds?.length !== 0) {
             logger(
@@ -354,14 +354,14 @@ export const handler = async (event: SNSEvent) => {
                 status: requestStatus.InProgress,
                 statusMessage: `Determined that accounts are already assigned the permission set, triggering a resync`,
               },
-              functionLogMode
+              functionLogMode,
             );
             await ssoAdminClientObject.send(
               new ProvisionPermissionSetCommand({
                 InstanceArn: instanceArn,
                 PermissionSetArn: permissionSetArn,
                 TargetType: "ALL_PROVISIONED_ACCOUNTS",
-              })
+              }),
             );
           }
           logger(
@@ -374,7 +374,7 @@ export const handler = async (event: SNSEvent) => {
               status: requestStatus.Completed,
               statusMessage: `Delta handling complete, import permission set operation complete`,
             },
-            functionLogMode
+            functionLogMode,
           );
         }
       } else {
@@ -384,7 +384,7 @@ export const handler = async (event: SNSEvent) => {
             Key: `permission_sets/${permissionSetName}.json`,
             Body: JSON.stringify(permissionSetObject),
             ServerSideEncryption: "AES256",
-          })
+          }),
         );
         await ddbDocClientObject.send(
           new PutCommand({
@@ -392,7 +392,7 @@ export const handler = async (event: SNSEvent) => {
             Item: {
               ...permissionSetObject,
             },
-          })
+          }),
         );
         await ddbDocClientObject.send(
           new UpdateCommand({
@@ -404,7 +404,7 @@ export const handler = async (event: SNSEvent) => {
             ExpressionAttributeValues: {
               ":arnvalue": permissionSetArn,
             },
-          })
+          }),
         );
         logger(
           {
@@ -416,7 +416,7 @@ export const handler = async (event: SNSEvent) => {
             status: requestStatus.Completed,
             statusMessage: `Updated solution persistence, import permission set operation complete`,
           },
-          functionLogMode
+          functionLogMode,
         );
       }
     } else {
@@ -430,7 +430,7 @@ export const handler = async (event: SNSEvent) => {
           status: requestStatus.Aborted,
           statusMessage: `Unknown operation type, aborting import permission set operation`,
         },
-        functionLogMode
+        functionLogMode,
       );
     }
   } catch (err) {
@@ -448,7 +448,7 @@ export const handler = async (event: SNSEvent) => {
           requestId,
           err.name,
           err.message,
-          permissionSetNameValue
+          permissionSetNameValue,
         ),
       });
     } else {
@@ -461,7 +461,7 @@ export const handler = async (event: SNSEvent) => {
           requestId,
           "Unhandled exception",
           JSON.stringify(err),
-          permissionSetNameValue
+          permissionSetNameValue,
         ),
       });
     }

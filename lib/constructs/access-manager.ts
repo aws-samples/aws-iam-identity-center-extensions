@@ -26,7 +26,7 @@ export class AccessManager extends Construct {
   constructor(
     scope: Construct,
     id: string,
-    accessManagerProps: AccessManagerProps
+    accessManagerProps: AccessManagerProps,
   ) {
     super(scope, id);
 
@@ -35,22 +35,22 @@ export class AccessManager extends Construct {
      * lib/lambda-functions/application-handlers/linkManager.ts
      */
     accessManagerProps.FetchCrossStackValues.queuesKey.grantEncryptDecrypt(
-      accessManagerProps.LinkProcessor.linkManagerHandler
+      accessManagerProps.LinkProcessor.linkManagerHandler,
     );
     accessManagerProps.FetchCrossStackValues.linkManagerQueue.grantConsumeMessages(
-      accessManagerProps.LinkProcessor.linkManagerHandler
+      accessManagerProps.LinkProcessor.linkManagerHandler,
     );
     accessManagerProps.FetchCrossStackValues.snsTopicsKey.grantEncryptDecrypt(
-      accessManagerProps.LinkProcessor.linkManagerHandler
+      accessManagerProps.LinkProcessor.linkManagerHandler,
     );
     accessManagerProps.FetchCrossStackValues.errorNotificationsTopic.grantPublish(
-      accessManagerProps.LinkProcessor.linkManagerHandler
+      accessManagerProps.LinkProcessor.linkManagerHandler,
     );
     accessManagerProps.FetchCrossStackValues.ddbTablesKey.grantEncryptDecrypt(
-      accessManagerProps.LinkProcessor.linkManagerHandler
+      accessManagerProps.LinkProcessor.linkManagerHandler,
     );
     accessManagerProps.FetchCrossStackValues.provisionedLinksTable.grantReadWriteData(
-      accessManagerProps.LinkProcessor.linkManagerHandler
+      accessManagerProps.LinkProcessor.linkManagerHandler,
     );
     accessManagerProps.LinkProcessor.linkManagerHandler.addToRolePolicy(
       new PolicyStatement({
@@ -59,7 +59,7 @@ export class AccessManager extends Construct {
             .linkManagerHandlerSSOAPIRoleArn,
         ],
         actions: ["sts:AssumeRole"],
-      })
+      }),
     );
     accessManagerProps.LinkProcessor.linkManagerHandler.addToRolePolicy(
       new PolicyStatement({
@@ -67,7 +67,7 @@ export class AccessManager extends Construct {
           accessManagerProps.FetchCrossStackValues.waiterHandlerSSOAPIRoleArn,
         ],
         actions: ["sts:AssumeRole"],
-      })
+      }),
     );
 
     /**
@@ -75,22 +75,22 @@ export class AccessManager extends Construct {
      * lib/lambda-functions/application-handlers/permissionSetTopicProcessor.ts
      */
     accessManagerProps.FetchCrossStackValues.snsTopicsKey.grantEncryptDecrypt(
-      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor
+      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor,
     );
     accessManagerProps.FetchCrossStackValues.errorNotificationsTopic.grantPublish(
-      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor
+      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor,
     );
     accessManagerProps.PermissionSetProcessor.permissionSetSyncTopic.grantPublish(
-      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor
+      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor,
     );
     accessManagerProps.FetchCrossStackValues.ddbTablesKey.grantEncryptDecrypt(
-      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor
+      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor,
     );
     accessManagerProps.FetchCrossStackValues.permissionSetTable.grantReadWriteData(
-      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor
+      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor,
     );
     accessManagerProps.FetchCrossStackValues.permissionSetArnTable.grantReadWriteData(
-      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor
+      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor,
     );
     accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor.addToRolePolicy(
       new PolicyStatement({
@@ -99,7 +99,7 @@ export class AccessManager extends Construct {
             .permissionSetHandlerSSOAPIRoleArn,
         ],
         actions: ["sts:AssumeRole"],
-      })
+      }),
     );
     accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor.addToRolePolicy(
       new PolicyStatement({
@@ -107,16 +107,16 @@ export class AccessManager extends Construct {
           accessManagerProps.FetchCrossStackValues.waiterHandlerSSOAPIRoleArn,
         ],
         actions: ["sts:AssumeRole"],
-      })
+      }),
     );
     accessManagerProps.PermissionSetProcessor.managedPolicyQueueProcessor.addToRolePolicy(
       new PolicyStatement({
         resources: [accessManagerProps.FetchCrossStackValues.ssoMpRoleArn],
         actions: ["sts:AssumeRole"],
-      })
+      }),
     );
     accessManagerProps.PermissionSetProcessor.managedPolicyQueue.grantSendMessages(
-      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor
+      accessManagerProps.PermissionSetProcessor.permissionSetTopicProcessor,
     );
 
     /**
@@ -125,25 +125,25 @@ export class AccessManager extends Construct {
      * lib/lambda-functions/application-handlers/groupsCud.ts
      */
     accessManagerProps.FetchCrossStackValues.queuesKey.grantEncryptDecrypt(
-      accessManagerProps.SSOGroupProcessor.ssoGroupHandler
+      accessManagerProps.SSOGroupProcessor.ssoGroupHandler,
     );
     accessManagerProps.FetchCrossStackValues.linkManagerQueue.grantSendMessages(
-      accessManagerProps.SSOGroupProcessor.ssoGroupHandler
+      accessManagerProps.SSOGroupProcessor.ssoGroupHandler,
     );
     accessManagerProps.FetchCrossStackValues.snsTopicsKey.grantEncryptDecrypt(
-      accessManagerProps.SSOGroupProcessor.ssoGroupHandler
+      accessManagerProps.SSOGroupProcessor.ssoGroupHandler,
     );
     accessManagerProps.FetchCrossStackValues.errorNotificationsTopic.grantPublish(
-      accessManagerProps.SSOGroupProcessor.ssoGroupHandler
+      accessManagerProps.SSOGroupProcessor.ssoGroupHandler,
     );
     accessManagerProps.FetchCrossStackValues.ddbTablesKey.grantEncryptDecrypt(
-      accessManagerProps.SSOGroupProcessor.ssoGroupHandler
+      accessManagerProps.SSOGroupProcessor.ssoGroupHandler,
     );
     accessManagerProps.FetchCrossStackValues.linksTable.grantReadWriteData(
-      accessManagerProps.SSOGroupProcessor.ssoGroupHandler
+      accessManagerProps.SSOGroupProcessor.ssoGroupHandler,
     );
     accessManagerProps.FetchCrossStackValues.permissionSetArnTable.grantReadData(
-      accessManagerProps.SSOGroupProcessor.ssoGroupHandler
+      accessManagerProps.SSOGroupProcessor.ssoGroupHandler,
     );
     accessManagerProps.SSOGroupProcessor.ssoGroupHandler.addToRolePolicy(
       new PolicyStatement({
@@ -152,7 +152,7 @@ export class AccessManager extends Construct {
           accessManagerProps.FetchCrossStackValues.listInstancesSSOAPIRoleArn,
         ],
         actions: ["sts:AssumeRole"],
-      })
+      }),
     );
 
     /**
@@ -161,25 +161,25 @@ export class AccessManager extends Construct {
      * lib/lambda-functions/application-handlers/usersCud.ts
      */
     accessManagerProps.FetchCrossStackValues.queuesKey.grantEncryptDecrypt(
-      accessManagerProps.SSOGroupProcessor.ssoUserHandler
+      accessManagerProps.SSOGroupProcessor.ssoUserHandler,
     );
     accessManagerProps.FetchCrossStackValues.linkManagerQueue.grantSendMessages(
-      accessManagerProps.SSOGroupProcessor.ssoUserHandler
+      accessManagerProps.SSOGroupProcessor.ssoUserHandler,
     );
     accessManagerProps.FetchCrossStackValues.snsTopicsKey.grantEncryptDecrypt(
-      accessManagerProps.SSOGroupProcessor.ssoUserHandler
+      accessManagerProps.SSOGroupProcessor.ssoUserHandler,
     );
     accessManagerProps.FetchCrossStackValues.errorNotificationsTopic.grantPublish(
-      accessManagerProps.SSOGroupProcessor.ssoUserHandler
+      accessManagerProps.SSOGroupProcessor.ssoUserHandler,
     );
     accessManagerProps.FetchCrossStackValues.ddbTablesKey.grantEncryptDecrypt(
-      accessManagerProps.SSOGroupProcessor.ssoUserHandler
+      accessManagerProps.SSOGroupProcessor.ssoUserHandler,
     );
     accessManagerProps.FetchCrossStackValues.linksTable.grantReadWriteData(
-      accessManagerProps.SSOGroupProcessor.ssoUserHandler
+      accessManagerProps.SSOGroupProcessor.ssoUserHandler,
     );
     accessManagerProps.FetchCrossStackValues.permissionSetArnTable.grantReadData(
-      accessManagerProps.SSOGroupProcessor.ssoUserHandler
+      accessManagerProps.SSOGroupProcessor.ssoUserHandler,
     );
     accessManagerProps.SSOGroupProcessor.ssoUserHandler.addToRolePolicy(
       new PolicyStatement({
@@ -190,7 +190,7 @@ export class AccessManager extends Construct {
             .listGroupsIdentityStoreAPIRoleArn,
         ],
         actions: ["sts:AssumeRole"],
-      })
+      }),
     );
 
     /**
@@ -198,25 +198,25 @@ export class AccessManager extends Construct {
      * lib/lambda-functions/application-handlers/linkTopicProcessor.ts
      */
     accessManagerProps.FetchCrossStackValues.queuesKey.grantEncryptDecrypt(
-      accessManagerProps.LinkProcessor.linkTopicProcessor
+      accessManagerProps.LinkProcessor.linkTopicProcessor,
     );
     accessManagerProps.FetchCrossStackValues.linkManagerQueue.grantSendMessages(
-      accessManagerProps.LinkProcessor.linkTopicProcessor
+      accessManagerProps.LinkProcessor.linkTopicProcessor,
     );
     accessManagerProps.FetchCrossStackValues.snsTopicsKey.grantEncryptDecrypt(
-      accessManagerProps.LinkProcessor.linkTopicProcessor
+      accessManagerProps.LinkProcessor.linkTopicProcessor,
     );
     accessManagerProps.FetchCrossStackValues.errorNotificationsTopic.grantPublish(
-      accessManagerProps.LinkProcessor.linkTopicProcessor
+      accessManagerProps.LinkProcessor.linkTopicProcessor,
     );
     accessManagerProps.FetchCrossStackValues.ddbTablesKey.grantEncryptDecrypt(
-      accessManagerProps.LinkProcessor.linkTopicProcessor
+      accessManagerProps.LinkProcessor.linkTopicProcessor,
     );
     accessManagerProps.FetchCrossStackValues.linksTable.grantReadData(
-      accessManagerProps.LinkProcessor.linkTopicProcessor
+      accessManagerProps.LinkProcessor.linkTopicProcessor,
     );
     accessManagerProps.FetchCrossStackValues.permissionSetArnTable.grantReadData(
-      accessManagerProps.LinkProcessor.linkTopicProcessor
+      accessManagerProps.LinkProcessor.linkTopicProcessor,
     );
     accessManagerProps.LinkProcessor.linkTopicProcessor.addToRolePolicy(
       new PolicyStatement({
@@ -227,7 +227,7 @@ export class AccessManager extends Construct {
           accessManagerProps.FetchCrossStackValues.orgListSMRoleArn,
         ],
         actions: ["sts:AssumeRole"],
-      })
+      }),
     );
 
     /**
@@ -236,28 +236,28 @@ export class AccessManager extends Construct {
      * lib/lambda-functions/application-handlers/orgEvents.ts
      */
     accessManagerProps.FetchCrossStackValues.queuesKey.grantEncryptDecrypt(
-      accessManagerProps.OrgEvents.orgEventsHandler
+      accessManagerProps.OrgEvents.orgEventsHandler,
     );
     accessManagerProps.FetchCrossStackValues.linkManagerQueue.grantSendMessages(
-      accessManagerProps.OrgEvents.orgEventsHandler
+      accessManagerProps.OrgEvents.orgEventsHandler,
     );
     accessManagerProps.FetchCrossStackValues.snsTopicsKey.grantEncryptDecrypt(
-      accessManagerProps.OrgEvents.orgEventsHandler
+      accessManagerProps.OrgEvents.orgEventsHandler,
     );
     accessManagerProps.FetchCrossStackValues.errorNotificationsTopic.grantPublish(
-      accessManagerProps.OrgEvents.orgEventsHandler
+      accessManagerProps.OrgEvents.orgEventsHandler,
     );
     accessManagerProps.FetchCrossStackValues.ddbTablesKey.grantEncryptDecrypt(
-      accessManagerProps.OrgEvents.orgEventsHandler
+      accessManagerProps.OrgEvents.orgEventsHandler,
     );
     accessManagerProps.FetchCrossStackValues.linksTable.grantReadData(
-      accessManagerProps.OrgEvents.orgEventsHandler
+      accessManagerProps.OrgEvents.orgEventsHandler,
     );
     accessManagerProps.FetchCrossStackValues.permissionSetArnTable.grantReadData(
-      accessManagerProps.OrgEvents.orgEventsHandler
+      accessManagerProps.OrgEvents.orgEventsHandler,
     );
     accessManagerProps.FetchCrossStackValues.provisionedLinksTable.grantReadData(
-      accessManagerProps.OrgEvents.orgEventsHandler
+      accessManagerProps.OrgEvents.orgEventsHandler,
     );
 
     accessManagerProps.OrgEvents.orgEventsHandler.addToRolePolicy(
@@ -269,7 +269,7 @@ export class AccessManager extends Construct {
           accessManagerProps.FetchCrossStackValues.orgListParentsRoleArn,
         ],
         actions: ["sts:AssumeRole"],
-      })
+      }),
     );
 
     /**
@@ -277,22 +277,22 @@ export class AccessManager extends Construct {
      * lib/lambda-functions/application-handlers/permissionSetSync.ts
      */
     accessManagerProps.FetchCrossStackValues.queuesKey.grantEncryptDecrypt(
-      accessManagerProps.PermissionSetProcessor.permissionSetSyncHandler
+      accessManagerProps.PermissionSetProcessor.permissionSetSyncHandler,
     );
     accessManagerProps.FetchCrossStackValues.linkManagerQueue.grantSendMessages(
-      accessManagerProps.PermissionSetProcessor.permissionSetSyncHandler
+      accessManagerProps.PermissionSetProcessor.permissionSetSyncHandler,
     );
     accessManagerProps.FetchCrossStackValues.snsTopicsKey.grantEncryptDecrypt(
-      accessManagerProps.PermissionSetProcessor.permissionSetSyncHandler
+      accessManagerProps.PermissionSetProcessor.permissionSetSyncHandler,
     );
     accessManagerProps.FetchCrossStackValues.errorNotificationsTopic.grantPublish(
-      accessManagerProps.PermissionSetProcessor.permissionSetSyncHandler
+      accessManagerProps.PermissionSetProcessor.permissionSetSyncHandler,
     );
     accessManagerProps.FetchCrossStackValues.ddbTablesKey.grantEncryptDecrypt(
-      accessManagerProps.PermissionSetProcessor.permissionSetSyncHandler
+      accessManagerProps.PermissionSetProcessor.permissionSetSyncHandler,
     );
     accessManagerProps.FetchCrossStackValues.linksTable.grantReadData(
-      accessManagerProps.PermissionSetProcessor.permissionSetSyncHandler
+      accessManagerProps.PermissionSetProcessor.permissionSetSyncHandler,
     );
 
     accessManagerProps.PermissionSetProcessor.permissionSetSyncHandler.addToRolePolicy(
@@ -304,7 +304,7 @@ export class AccessManager extends Construct {
           accessManagerProps.FetchCrossStackValues.orgListSMRoleArn,
         ],
         actions: ["sts:AssumeRole"],
-      })
+      }),
     );
 
     /**
@@ -313,16 +313,16 @@ export class AccessManager extends Construct {
      * lib/lambda-functions/application-handlers/processTargetAccountSMListener.ts
      */
     accessManagerProps.FetchCrossStackValues.queuesKey.grantEncryptDecrypt(
-      accessManagerProps.LinkProcessor.processTargetAccountSMListenerHandler
+      accessManagerProps.LinkProcessor.processTargetAccountSMListenerHandler,
     );
     accessManagerProps.FetchCrossStackValues.linkManagerQueue.grantSendMessages(
-      accessManagerProps.LinkProcessor.processTargetAccountSMListenerHandler
+      accessManagerProps.LinkProcessor.processTargetAccountSMListenerHandler,
     );
     accessManagerProps.FetchCrossStackValues.snsTopicsKey.grantEncryptDecrypt(
-      accessManagerProps.LinkProcessor.processTargetAccountSMListenerHandler
+      accessManagerProps.LinkProcessor.processTargetAccountSMListenerHandler,
     );
     accessManagerProps.FetchCrossStackValues.errorNotificationsTopic.grantPublish(
-      accessManagerProps.LinkProcessor.processTargetAccountSMListenerHandler
+      accessManagerProps.LinkProcessor.processTargetAccountSMListenerHandler,
     );
   }
 }
