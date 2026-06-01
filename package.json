@@ -46,7 +46,7 @@
     "uuid": "^10.0.0"
   },
   "dependencies": {
-    "aws-cdk-lib": "^2.160.0",
+    "aws-cdk-lib": "^2.189.1",
     "constructs": "^10.3.0",
     "js-yaml": "^4.1.0",
     "source-map-support": "^0.5.21"
