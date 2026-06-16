@@ -48,7 +48,7 @@
   "dependencies": {
     "aws-cdk-lib": "^2.160.0",
     "constructs": "^10.3.0",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.2.0",
     "source-map-support": "^0.5.21"
   }
 }
