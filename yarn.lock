@@ -1680,12 +1680,10 @@ aws-cdk-lib@^2.260.0:
     table "^6.9.0"
     yaml "1.10.3"
 
-aws-cdk@^2.160.0:
-  version "2.160.0"
-  resolved "https://registry.yarnpkg.com/aws-cdk/-/aws-cdk-2.160.0.tgz#5043311e4e576fda53b3ce761d47cbc1004fb309"
-  integrity sha512-JquccawrU2dp0cS80my65oLLNRUJZflKRKIRSVjQ1A9W4bNns/xhSqaVlL41NAsGSYBWxCzzWHrV3yOFShU87A==
-  optionalDependencies:
-    fsevents "2.3.2"
+aws-cdk@^2.1143.0:
+  version "2.1143.0"
+  resolved "https://registry.yarnpkg.com/aws-cdk/-/aws-cdk-2.1143.0.tgz#56e90684394233c4614ffa5e8b863400ca4cd403"
+  integrity sha512-bTbgEmNuN6UMDAyhGFWOAnriafSu7j0cAjaFKRw1/WEs6RE5g062D2v2+YE8Dw6qw7RgNGQPH5Nv47TsK5kZSQ==
 
 babel-jest@^29.7.0:
   version "29.7.0"
@@ -1960,10 +1958,10 @@ concat-map@0.0.1:
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
   integrity sha1-2Klr13/Wjfd5OnMDajug1UBdR3s=
 
-constructs@^10.3.0:
-  version "10.3.0"
-  resolved "https://registry.yarnpkg.com/constructs/-/constructs-10.3.0.tgz#4c246fce9cf8e77711ad45944e9fbd41f1501965"
-  integrity sha512-vbK8i3rIb/xwZxSpTjz3SagHn1qq9BChLEfy5Hf6fB3/2eFbrwt2n9kHwQcS0CPTRBesreeAcsJfMq2229FnbQ==
+constructs@^10.5.0:
+  version "10.8.1"
+  resolved "https://registry.yarnpkg.com/constructs/-/constructs-10.8.1.tgz#83877700caa85fdfee9eacd16fd4be16393a7aa6"
+  integrity sha512-98yGXYyhePqPYh3cYu8nzBERmAhC0DONe3UD03okK0nehZ7hYP4wgZuf02a04+uOWxnTJ5Rpp5m0GRNpwyLGGA==
 
 convert-source-map@^1.6.0, convert-source-map@^1.7.0:
   version "1.8.0"
@@ -2639,7 +2637,7 @@ fs.realpath@^1.0.0:
   resolved "https://registry.yarnpkg.com/fs.realpath/-/fs.realpath-1.0.0.tgz#1504ad2523158caa40db4a2787cb01411994ea4f"
   integrity sha1-FQStJSMVjKpA20onh8sBQRmU6k8=
 
-fsevents@2.3.2, fsevents@^2.3.2:
+fsevents@^2.3.2:
   version "2.3.2"
   resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-2.3.2.tgz#8a526f78b8fdf4623b709e0b975c52c24c02fd1a"
   integrity sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==

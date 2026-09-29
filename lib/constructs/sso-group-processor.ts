@@ -42,7 +42,7 @@ export class SSOGroupProcessor extends Construct {
       this,
       name(buildConfig, "ssoGroupHandler"),
       {
-        runtime: Runtime.NODEJS_20_X,
+        runtime: Runtime.NODEJS_22_X,
         functionName: name(buildConfig, "ssoGroupHandler"),
         architecture: Architecture.ARM_64,
         entry: join(
@@ -96,7 +96,7 @@ export class SSOGroupProcessor extends Construct {
       this,
       name(buildConfig, "ssoUserHandler"),
       {
-        runtime: Runtime.NODEJS_20_X,
+        runtime: Runtime.NODEJS_22_X,
         functionName: name(buildConfig, "ssoUserHandler"),
         architecture: Architecture.ARM_64,
         entry: join(

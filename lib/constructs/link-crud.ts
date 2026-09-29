@@ -72,7 +72,7 @@ export class LinkCRUD extends Construct {
         billingMode: BillingMode.PAY_PER_REQUEST,
         encryption: TableEncryption.CUSTOMER_MANAGED,
         encryptionKey: linkCRUDProps.ddbTablesKey,
-        pointInTimeRecovery: true,
+        pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
         removalPolicy: RemovalPolicy.DESTROY,
       },
     );
@@ -94,7 +94,7 @@ export class LinkCRUD extends Construct {
       billingMode: BillingMode.PAY_PER_REQUEST,
       encryption: TableEncryption.CUSTOMER_MANAGED,
       encryptionKey: linkCRUDProps.ddbTablesKey,
-      pointInTimeRecovery: true,
+      pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
       removalPolicy: RemovalPolicy.DESTROY,
     });
 
@@ -136,7 +136,7 @@ export class LinkCRUD extends Construct {
         name(buildConfig, "linkApiHandler"),
         {
           functionName: name(buildConfig, "linkApiHandler"),
-          runtime: Runtime.NODEJS_20_X,
+          runtime: Runtime.NODEJS_22_X,
           entry: join(
             __dirname,
             "../",
@@ -189,7 +189,7 @@ export class LinkCRUD extends Construct {
         name(buildConfig, "linkCuHandler"),
         {
           functionName: name(buildConfig, "linkCuHandler"),
-          runtime: Runtime.NODEJS_20_X,
+          runtime: Runtime.NODEJS_22_X,
           entry: join(
             __dirname,
             "../",
@@ -235,7 +235,7 @@ export class LinkCRUD extends Construct {
         name(buildConfig, "linkDelHandler"),
         {
           functionName: name(buildConfig, "linkDelHandler"),
-          runtime: Runtime.NODEJS_20_X,
+          runtime: Runtime.NODEJS_22_X,
           entry: join(
             __dirname,
             "../",

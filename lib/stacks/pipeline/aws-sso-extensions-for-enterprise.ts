@@ -9,6 +9,8 @@ import {
   ShellStep,
 } from "aws-cdk-lib/pipelines";
 import { S3Trigger } from "aws-cdk-lib/aws-codepipeline-actions";
+import { PipelineType } from "aws-cdk-lib/aws-codepipeline";
+import { BuildSpec, LinuxBuildImage } from "aws-cdk-lib/aws-codebuild";
 import { Bucket } from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
 import { BuildConfig } from "../../build/buildConfig";
@@ -73,12 +75,26 @@ export class AwsSsoExtensionsForEnterprise extends Stack {
     }
     const pipeline = new CodePipeline(this, fullname(buildConfig, "pipeline"), {
       pipelineName: fullname(buildConfig, "pipeline"),
+      pipelineType: PipelineType.V1,
       crossAccountKeys: true,
       publishAssetsInParallel: false,
+      codeBuildDefaults: {
+        buildEnvironment: {
+          buildImage: LinuxBuildImage.STANDARD_7_0,
+        },
+        partialBuildSpec: BuildSpec.fromObject({
+          phases: {
+            install: {
+              "runtime-versions": {
+                nodejs: "22",
+              },
+            },
+          },
+        }),
+      },
       synth: new ShellStep(fullname(buildConfig, "synth"), {
         input: inputSource,
         commands: [
-          "yarn global add aws-cdk@2.x", //Because CodeBuild standard 5.0 does not yet have AWS CDK monorepo as default CDK package
           "mkdir ./lib/lambda-layers/nodejs-layer/nodejs/payload-schema-definitions",
           "cp -R ./lib/payload-schema-definitions/* ./lib/lambda-layers/nodejs-layer/nodejs/payload-schema-definitions/",
           "yarn --cwd ./lib/lambda-layers/nodejs-layer/nodejs install --frozen-lockfile --silent",

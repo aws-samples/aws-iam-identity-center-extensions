@@ -1,6 +1,7 @@
 {
   "name": "aws-sso-extensions-for-enterprise",
-  "version": "3.1.9",
+  "version": "3.2.0",
+  "license": "MIT",
   "bin": {
     "aws-sso-extensions-for-enterprise": "bin/aws-sso-extensions-for-enterprise.js"
   },
@@ -32,7 +33,7 @@
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
-    "aws-cdk": "^2.160.0",
+    "aws-cdk": "^2.1143.0",
     "esbuild": "^0.28.1",
     "eslint": "^8.56.0",
     "eslint-plugin-import": "^2.29.1",
@@ -47,7 +48,7 @@
   },
   "dependencies": {
     "aws-cdk-lib": "^2.260.0",
-    "constructs": "^10.3.0",
+    "constructs": "^10.5.0",
     "js-yaml": "^4.3.2",
     "source-map-support": "^0.5.21"
   }

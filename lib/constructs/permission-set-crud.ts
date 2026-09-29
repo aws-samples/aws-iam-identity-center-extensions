@@ -72,7 +72,7 @@ export class PermissionSetCRUD extends Construct {
         billingMode: BillingMode.PAY_PER_REQUEST,
         encryption: TableEncryption.CUSTOMER_MANAGED,
         encryptionKey: PermissionSetCRUDProps.ddbTablesKey,
-        pointInTimeRecovery: true,
+        pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
         removalPolicy: RemovalPolicy.DESTROY,
       },
     );
@@ -89,7 +89,7 @@ export class PermissionSetCRUD extends Construct {
         billingMode: BillingMode.PAY_PER_REQUEST,
         encryption: TableEncryption.CUSTOMER_MANAGED,
         encryptionKey: PermissionSetCRUDProps.ddbTablesKey,
-        pointInTimeRecovery: true,
+        pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true },
         removalPolicy: RemovalPolicy.DESTROY,
       },
     );
@@ -103,7 +103,7 @@ export class PermissionSetCRUD extends Construct {
         name(buildConfig, "psApiHandler"),
         {
           functionName: name(buildConfig, "psApiHandler"),
-          runtime: Runtime.NODEJS_20_X,
+          runtime: Runtime.NODEJS_22_X,
           architecture: Architecture.ARM_64,
           entry: join(
             __dirname,
@@ -160,7 +160,7 @@ export class PermissionSetCRUD extends Construct {
         name(buildConfig, "psCuHandler"),
         {
           functionName: name(buildConfig, "psCuHandler"),
-          runtime: Runtime.NODEJS_20_X,
+          runtime: Runtime.NODEJS_22_X,
           architecture: Architecture.ARM_64,
           entry: join(
             __dirname,
@@ -224,7 +224,7 @@ export class PermissionSetCRUD extends Construct {
         name(buildConfig, "psDelHandler"),
         {
           functionName: name(buildConfig, "psDelHandler"),
-          runtime: Runtime.NODEJS_20_X,
+          runtime: Runtime.NODEJS_22_X,
           architecture: Architecture.ARM_64,
           entry: join(
             __dirname,

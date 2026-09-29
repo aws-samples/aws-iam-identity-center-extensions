@@ -25,7 +25,7 @@ export class LambdaLayers extends Construct {
         code: Code.fromAsset(
           join(__dirname, "../", "lambda-layers", "nodejs-layer"),
         ),
-        compatibleRuntimes: [Runtime.NODEJS_20_X],
+        compatibleRuntimes: [Runtime.NODEJS_22_X],
         compatibleArchitectures: [Architecture.ARM_64],
       },
     );

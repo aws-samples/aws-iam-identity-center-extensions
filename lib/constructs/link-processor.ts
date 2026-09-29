@@ -52,7 +52,7 @@ export class LinkProcessor extends Construct {
       name(buildConfig, "linkManagerHandler"),
       {
         functionName: name(buildConfig, "linkManagerHandler"),
-        runtime: Runtime.NODEJS_20_X,
+        runtime: Runtime.NODEJS_22_X,
         architecture: Architecture.ARM_64,
         entry: join(
           __dirname,
@@ -69,7 +69,7 @@ export class LinkProcessor extends Construct {
             "@aws-sdk/client-sns",
             "@aws-sdk/client-sso-admin",
             "@aws-sdk/credential-providers",
-            "@aws-sdk/util-waiter",
+            "@smithy/util-waiter",
             "uuid",
           ],
           minify: true,
@@ -107,7 +107,7 @@ export class LinkProcessor extends Construct {
       this,
       name(buildConfig, "processTargetAccountSMListenerHandler"),
       {
-        runtime: Runtime.NODEJS_20_X,
+        runtime: Runtime.NODEJS_22_X,
         functionName: name(
           buildConfig,
           "processTargetAccountSMListenerHandler",
@@ -143,7 +143,7 @@ export class LinkProcessor extends Construct {
       name(buildConfig, "linkTopicProcessor"),
       {
         functionName: name(buildConfig, "linkTopicProcessor"),
-        runtime: Runtime.NODEJS_20_X,
+        runtime: Runtime.NODEJS_22_X,
         entry: join(
           __dirname,
           "../",

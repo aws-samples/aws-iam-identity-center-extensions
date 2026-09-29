@@ -12,7 +12,7 @@ import {
   WaiterConfiguration,
   WaiterResult,
   WaiterState,
-} from "@aws-sdk/util-waiter";
+} from "@smithy/util-waiter";
 import { logModes, requestStatus } from "../../helpers/src/interfaces";
 import { logger } from "../../helpers/src/utilities";
 
