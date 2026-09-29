@@ -23,7 +23,7 @@
     "@smithy/util-waiter": "^4.6.2",
     "ajv": "^8.11.0",
     "json-diff": "^0.9.0",
-    "uuid": "^9.0.0"
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "@types/json-diff": "^0.9.0",
