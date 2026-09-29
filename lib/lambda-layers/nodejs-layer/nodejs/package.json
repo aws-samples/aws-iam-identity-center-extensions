@@ -2,6 +2,7 @@
   "name": "aws-sso-extensions-for-enterprise-layer",
   "version": "3.1.9",
   "description": "AWS SSO Permissions Utility Layer",
+  "license": "MIT",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
