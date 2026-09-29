@@ -100,7 +100,7 @@ export class PermissionSetProcessor extends Construct {
       name(buildConfig, "permissionSetTopicProcessor"),
       {
         functionName: name(buildConfig, "permissionSetTopicProcessor"),
-        runtime: Runtime.NODEJS_20_X,
+        runtime: Runtime.NODEJS_22_X,
         architecture: Architecture.ARM_64,
         entry: join(
           __dirname,
@@ -118,7 +118,7 @@ export class PermissionSetProcessor extends Construct {
             "@aws-sdk/client-sso-admin",
             "@aws-sdk/credential-providers",
             "@aws-sdk/lib-dynamodb",
-            "@aws-sdk/util-waiter",
+            "@smithy/util-waiter",
             "json-diff",
             "uuid",
           ],
@@ -160,7 +160,7 @@ export class PermissionSetProcessor extends Construct {
       this,
       name(buildConfig, "permissionSetSyncHandler"),
       {
-        runtime: Runtime.NODEJS_20_X,
+        runtime: Runtime.NODEJS_22_X,
         architecture: Architecture.ARM_64,
         functionName: name(buildConfig, "permissionSetSyncHandler"),
         entry: join(
@@ -216,7 +216,7 @@ export class PermissionSetProcessor extends Construct {
       this,
       name(buildConfig, "managedPolicyQueueProcessor"),
       {
-        runtime: Runtime.NODEJS_20_X,
+        runtime: Runtime.NODEJS_22_X,
         architecture: Architecture.ARM_64,
         functionName: name(buildConfig, "managedPolicyQueueProcessor"),
         entry: join(

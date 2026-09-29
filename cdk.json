@@ -1,4 +1,6 @@
 {
   "app": "npx ts-node --prefer-ts-exts bin/aws-sso-extensions-for-enterprise.ts",
-  "context": {}
+  "context": {
+    "@aws-cdk/customresources:installLatestAwsSdkDefault": false
+  }
 }
