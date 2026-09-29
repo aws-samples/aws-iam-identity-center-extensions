@@ -11,7 +11,15 @@ import {
   LambdaRestApi,
   LogGroupLogDestination,
 } from "aws-cdk-lib/aws-apigateway";
-import { Effect, IRole, PolicyStatement, Role } from "aws-cdk-lib/aws-iam";
+import {
+  AnyPrincipal,
+  ArnPrincipal,
+  Effect,
+  IRole,
+  PolicyDocument,
+  PolicyStatement,
+  Role,
+} from "aws-cdk-lib/aws-iam";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { LogGroup, RetentionDays } from "aws-cdk-lib/aws-logs";
 import { CfnOutput } from "aws-cdk-lib";
@@ -49,6 +57,34 @@ export class LambdaProxyAPI extends Construct {
       },
     );
 
+    /**
+     * Restrict invoke to the configured caller role. The explicit Deny is
+     * required because same-account IAM auth evaluates identity and resource
+     * policies as a union, so an Allow alone would not block a principal that
+     * already holds a generic execute-api:Invoke.
+     */
+    const apiResourcePolicy = new PolicyDocument({
+      statements: [
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          principals: [new ArnPrincipal(lambdaProxyAPIProps.apiCallerRoleArn)],
+          actions: ["execute-api:Invoke"],
+          resources: ["execute-api:/*"],
+        }),
+        new PolicyStatement({
+          effect: Effect.DENY,
+          principals: [new AnyPrincipal()],
+          actions: ["execute-api:Invoke"],
+          resources: ["execute-api:/*"],
+          conditions: {
+            StringNotEquals: {
+              "aws:PrincipalArn": lambdaProxyAPIProps.apiCallerRoleArn,
+            },
+          },
+        }),
+      ],
+    });
+
     this.lambdaProxyAPI = new LambdaRestApi(
       this,
       name(buildConfig, lambdaProxyAPIProps.apiNameKey),
@@ -56,6 +92,7 @@ export class LambdaProxyAPI extends Construct {
         handler: lambdaProxyAPIProps.proxyfunction,
         restApiName: name(buildConfig, lambdaProxyAPIProps.apiNameKey),
         proxy: false,
+        policy: apiResourcePolicy,
         deployOptions: {
           accessLogDestination: new LogGroupLogDestination(
             this.lambdaProxyAPILogGroup,
