@@ -1,5 +1,7 @@
 # AWS IAM Identity Center Extensions For Enterprise
 
+> **Disclaimer:** This is sample code, for non-production usage. You should work with your security and legal teams to meet your organizational security, regulatory and compliance requirements before deployment.
+
 ## Table of Contents
 
 - [Overview](#Overview)
